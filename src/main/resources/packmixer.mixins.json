@@ -1,0 +1,19 @@
+{
+	"required": true,
+	"package": "de.philjoel.packmixer.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"GameRendererMixin",
+		"LightTextureMixin",
+		"ScreenEffectRendererMixin",
+		"ItemInHandRendererMixin",
+		"LevelMixin",
+		"ClientPacketListenerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 0
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

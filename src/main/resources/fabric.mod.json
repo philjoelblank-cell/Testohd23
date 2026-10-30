@@ -1,0 +1,27 @@
+{
+	"schemaVersion": 1,
+	"id": "testohd_styles",
+	"version": "${version}",
+	"name": "Testohd Styles",
+	"description": "Testohd Styles – Texturen pro Item mischen, eigene & Weihnachts-Packs, Online-Packs, Einstellungen und Cosmetics. Made by Testohd23.",
+	"authors": [
+		"Testohd23"
+	],
+	"license": "CC0-1.0",
+	"icon": "assets/testohd_styles/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"de.philjoel.packmixer.PackMixerClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"mixins": [
+		"packmixer.mixins.json"
+	]
+}

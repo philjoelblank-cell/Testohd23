@@ -1,0 +1,56 @@
+package de.philjoel.packmixer;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.Identifier;
+import org.lwjgl.glfw.GLFW;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class PackMixerClient implements ClientModInitializer {
+	public static final String MOD_ID = "testohd_styles";
+	public static final Logger LOGGER = LoggerFactory.getLogger("Testohd Styles");
+	public static final String CREDIT = "Made by Testohd23";
+
+	private static KeyMapping openKey;
+
+	public static KeyMapping openKey() {
+		return openKey;
+	}
+
+	@Override
+	public void onInitializeClient() {
+		PackMixerConfig.ensureDirs();
+		PackMixerConfig.loadCategories(); // writes categories.json on first start
+
+		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
+		openKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+				"key.packmixer.open", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, category));
+		Features.zoomKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+				"key.packmixer.zoom", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, category));
+
+		Cosmetics.init();
+
+		// create the built-in "Made by Testohd23" packs once the game has loaded its textures
+		ClientLifecycleEvents.CLIENT_STARTED.register(client -> Updater.checkAsync());
+		ClientLifecycleEvents.CLIENT_STARTED.register(client -> BuiltinPacks.generateIfNeeded(() -> {
+			// new pack versions were written: re-apply your saved choices so nothing you picked gets lost
+			if (!PackMixerConfig.loadSelection().isEmpty() || PackMixerConfig.settings().ancientDebris) PackBuilder.rebuildAndApply();
+		}));
+
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			Features.tick(client);
+			CosmeticEffects.tick(client);
+			Updater.tick(client);
+			while (openKey.consumeClick()) {
+				if (client.screen == null) {
+					client.setScreen(new PackMixerScreen(null));
+				}
+			}
+		});
+	}
+}
