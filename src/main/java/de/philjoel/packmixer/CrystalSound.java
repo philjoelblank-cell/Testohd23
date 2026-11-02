@@ -63,8 +63,16 @@ public final class CrystalSound {
 	/** @return true if the explosion sound was handled here (vanilla sound must not play) */
 	public static boolean handle(ClientLevel level, double x, double y, double z, float volume, float pitch) {
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
+		boolean crystal = isCrystal(x, y, z);
+		if (crystal) {
+			try {
+				CrystalPacks.burst(level, x, y, z);
+			} catch (Throwable e) {
+				PackMixerClient.LOGGER.warn("Crystal burst failed: {}", e.toString());
+			}
+		}
 		if (!s.crystalSilent && !packSound()) return false;
-		if (!isCrystal(x, y, z)) return false;
+		if (!crystal) return false;
 		if (s.crystalSilent) return true;
 		level.playLocalSound(x, y, z, SOUND, SoundSource.BLOCKS, volume, pitch, false);
 		return true;

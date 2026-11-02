@@ -176,6 +176,8 @@ public final class PackMixerConfig {
 
 		// End crystal explosions without sound
 		public boolean crystalSilent = false;
+		/** Last pack that brought crystal explosion sounds (kept when an animated crystal pack is chosen). */
+		public String crystalSoundPack = "";
 
 		// Updates from GitHub
 		public boolean autoUpdate = true;

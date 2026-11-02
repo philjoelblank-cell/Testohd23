@@ -15,6 +15,9 @@ final class DefaultCategories {
 				List.of("textures/item/end_crystal.png", "textures/entity/end_crystal/end_crystal.png"),
 				List.of("textures/item/end_crystal.png", "textures/entity/end_crystal/*.png",
 						"models/item/end_crystal.json", "items/end_crystal.json")));
+		l.add(new Category("explosion", "Explosionen",
+				List.of("textures/particle/explosion_6.png", "textures/particle/explosion_3.png"),
+				List.of("textures/particle/explosion_*.png", "particles/explosion.json")));
 		l.add(new Category("respawn_anchor", "Seelenanker",
 				List.of("textures/block/respawn_anchor_top.png", "textures/block/respawn_anchor_side4.png"),
 				List.of("textures/block/respawn_anchor_*.png", "models/block/respawn_anchor_*.json",

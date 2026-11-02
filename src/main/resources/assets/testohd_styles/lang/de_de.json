@@ -338,5 +338,16 @@
   "packmixer.pack.desc.e_black": "§8Schwarz §3– Energie-Mace & Speer §7– Made by Testohd23",
   "packmixer.pack.desc.e_teal": "§3Türkis §b– Energie-Mace & Speer §7– Made by Testohd23",
   "packmixer.category.spear": "Speere",
-  "packmixer.settings.glint_gear": "Glanz nur auf Tools & Rüstung"
+  "packmixer.settings.glint_gear": "Glanz nur auf Tools & Rüstung",
+  "packmixer.category.explosion": "Explosionen",
+  "packmixer.pack.kristall_frost_puls": "Kristall Frost-Puls",
+  "packmixer.pack.kristall_plasma": "Kristall Plasma",
+  "packmixer.pack.kristall_inferno": "Kristall Inferno",
+  "packmixer.pack.kristall_void": "Kristall Void",
+  "packmixer.pack.kristall_tuerkis": "Kristall Türkis",
+  "packmixer.pack.desc.c_frost": "§bFrost-Puls §7– animierter Kristall + Explosion – Made by Testohd23",
+  "packmixer.pack.desc.c_plasma": "§dPlasma §7– animierter Kristall + Explosion – Made by Testohd23",
+  "packmixer.pack.desc.c_inferno": "§6Inferno §7– animierter Kristall + Explosion – Made by Testohd23",
+  "packmixer.pack.desc.c_void": "§5Void §7– animierter Kristall + Explosion – Made by Testohd23",
+  "packmixer.pack.desc.c_teal": "§3Türkis §7– animierter Kristall + Explosion – Made by Testohd23"
 }

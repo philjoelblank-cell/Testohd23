@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 13;
+	public static final int VERSION = 14;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
@@ -340,6 +340,7 @@ public final class BuiltinPacks {
 		if (builtinNames == null) {
 			java.util.Set<String> n = new java.util.HashSet<>();
 			for (Theme t : THEMES) n.add(folder(t));
+			n.addAll(CrystalPacks.names());
 			builtinNames = n;
 		}
 		return builtinNames.contains(packName);
@@ -374,6 +375,8 @@ public final class BuiltinPacks {
 			}
 		}
 		PackExtras.clearFields();
+		frostAnim = false;
+		CrystalPacks.generateAll(PackMixerConfig.packsDir());
 	}
 
 	private static void deleteDir(Path dir) throws java.io.IOException {
@@ -387,6 +390,7 @@ public final class BuiltinPacks {
 
 	private static void generate(Theme th, Path root) throws Exception {
 		current = th;
+		frostAnim = th.style == Style.FROST;
 		Path a = root.resolve("assets/minecraft/textures");
 		Files.createDirectories(a);
 
@@ -557,8 +561,45 @@ public final class BuiltinPacks {
 			else if (current.style == Style.DUO) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
 		}
 		Files.createDirectories(out.getParent());
+		if (frostAnim && img.getWidth() == img.getHeight() && (path.contains("/textures/item/")
+				|| path.endsWith("/block/obsidian.png") || path.endsWith("/block/glowstone.png"))) {
+			NativeImage strip = frostStrip(img, path.hashCode());
+			img.close();
+			strip.writeToFile(out);
+			strip.close();
+			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+			return;
+		}
 		img.writeToFile(out);
 		img.close();
+	}
+
+	/** Frost pack is animated: an icy shine runs over every item, with small twinkles. */
+	static boolean frostAnim;
+
+	static NativeImage frostStrip(NativeImage img, int seed) {
+		int w = img.getWidth(), h = img.getHeight(), n = 16;
+		int u = Math.max(1, w / 16);
+		NativeImage out = new NativeImage(w, h * n, true);
+		for (int f = 0; f < n; f++) {
+			double pos = f / (double) n * 2.2 - 0.6;
+			for (int y = 0; y < h; y++)
+				for (int x = 0; x < w; x++) {
+					int p = img.getPixel(x, y);
+					int a = p >>> 24;
+					if (a < 10) {
+						out.setPixel(x, f * h + y, p);
+						continue;
+					}
+					double d = (x + (h - 1 - y)) / (double) (w + h - 2);
+					double band = Math.exp(-Math.pow((d - pos) * 8, 2)) * 0.7;
+					int c = gradientAt(new int[]{p & 0xFFFFFF, 0xEBFAFF}, band);
+					int tw = Math.floorMod(hash(x / u * 7 + seed, y / u * 13 + f * 101), 1000);
+					if (tw < 25) c = 0xFFFFFF;
+					out.setPixel(x, f * h + y, (a << 24) | c);
+				}
+		}
+		return out;
 	}
 
 	static int darken(int rgb, double k) {

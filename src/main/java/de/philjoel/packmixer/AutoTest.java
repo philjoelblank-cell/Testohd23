@@ -201,6 +201,37 @@ final class AutoTest {
 			step("fp2 " + pack, 6, () -> { });
 			shot("sample_" + tag + "_first_b");
 		}
+		// ---- animated crystals + their explosion
+		command("item replace entity @p weapon.mainhand with air");
+		command("item replace entity @p weapon.offhand with end_crystal");
+		command("time set 13800");
+		for (CrystalPacks.Design d : CrystalPacks.DESIGNS) {
+			String tag = d.key();
+			step("crystal " + tag, 10, () -> {
+				Map<String, String> sel = PackMixerConfig.loadSelection();
+				sel.put("end_crystal", d.folder());
+				sel.remove("explosion");
+				PackMixerConfig.saveSelection(sel);
+				PackBuilder.rebuildAndApply();
+			});
+			when("reload " + tag, () -> mc.getOverlay() == null, () -> { });
+			command("kill @e[type=end_crystal]");
+			command("summon end_crystal ^ ^ ^4");
+			step("look " + tag, 30, () -> {
+				mc.options.fov().set(40);
+				mc.options.setCameraType(CameraType.FIRST_PERSON);
+				mc.player.setXRot(8);
+			});
+			shot("crystal_" + tag + "_a");
+			step("wait " + tag, 5, () -> { });
+			shot("crystal_" + tag + "_b");
+			command("damage @e[type=end_crystal,limit=1,sort=nearest] 1");
+			step("boom " + tag, 2, () -> { });
+			shot("crystal_" + tag + "_boom1");
+			step("boom2 " + tag, 6, () -> { });
+			shot("crystal_" + tag + "_boom2");
+			step("after " + tag, 30, () -> mc.options.fov().set(70));
+		}
 		step("hud", 10, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });
