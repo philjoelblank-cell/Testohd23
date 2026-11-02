@@ -216,7 +216,10 @@ final class AutoTest {
 			});
 			when("reload " + tag, () -> mc.getOverlay() == null, () -> { });
 			command("kill @e[type=end_crystal]");
-			command("execute as @p at @p rotated 0 0 run summon end_crystal ~ ~ ~7");
+			command("fill -12 199 -4 12 199 18 smooth_quartz");
+			command("fill -12 200 -4 12 214 18 air");
+			command("tp @p 0.5 200 0.5 0 0");
+			command("summon end_crystal 0.5 200 7.5");
 			step("look " + tag, 30, () -> {
 				mc.options.fov().set(50);
 				mc.options.setCameraType(CameraType.FIRST_PERSON);
