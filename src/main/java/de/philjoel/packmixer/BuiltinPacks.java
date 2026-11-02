@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 9;
+	public static final int VERSION = 10;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
@@ -741,8 +741,6 @@ public final class BuiltinPacks {
 					if (nx < 0 || ny < 0 || nx >= w || ny >= fh || !solid[(y - y % fh + ny) * w + nx]) { edge = true; break; }
 				}
 				if (edge) col = PackExtras.mix(0x05030F, col, 0.35);
-				int r = Math.floorMod(hash(px * 31 + 7, py * 17 + 3), 1000);
-				if (!edge && r < 30) col = r < 12 ? 0xFFFFFF : 0xCFF6FF; // a few stars
 				img.setPixel(x, y, (a << 24) | col);
 			}
 	}
