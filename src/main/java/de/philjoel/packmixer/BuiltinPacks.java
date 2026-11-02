@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 8;
+	public static final int VERSION = 9;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
@@ -535,8 +535,9 @@ public final class BuiltinPacks {
 			if (current.style == Style.RAINBOW) rainbow(img);
 			else if (current.style == Style.GALAXY) galaxy(img);
 		}
-		if (current != null && path.contains("/heart/")) { // hearts follow rainbow / gradient too
+		if (current != null && path.contains("/heart/")) { // hearts follow rainbow / galaxy / gradient too
 			if (current.style == Style.RAINBOW) rainbow(img);
+			else if (current.style == Style.GALAXY) galaxy(img);
 		}
 		if (current != null && (styled || path.contains("/heart/"))) {
 			if (current.style == Style.GRADIENT) gradient(img, GRADIENTS.get(current.name));
@@ -708,16 +709,41 @@ public final class BuiltinPacks {
 			}
 	}
 
-	/** Galaxy: keeps the dark-purple colours and sprinkles stars over it. */
+	/** Galaxy colours: deep space -> indigo -> purple -> pink nebula -> cyan glow. */
+	static final int[] GALAXY = {0x070720, 0x1A1260, 0x4B1FA8, 0x9B3BD6, 0xF062C8, 0x7FE8FF};
+
+	/**
+	 * Galaxy: a smooth nebula (colour clouds) that follows the shape of the texture, a dark outline for clean
+	 * edges and only a few bright stars – instead of random noise.
+	 */
 	static void galaxy(NativeImage img) {
 		int w = img.getWidth(), h = img.getHeight();
+		int fh = Math.min(w, h), u = Math.max(1, w / 16);
+		boolean[] solid = new boolean[w * h];
+		for (int y = 0; y < h; y++)
+			for (int x = 0; x < w; x++) solid[y * w + x] = (img.getPixel(x, y) >>> 24) >= 10;
 		for (int y = 0; y < h; y++)
 			for (int x = 0; x < w; x++) {
 				int p = img.getPixel(x, y);
-				if ((p >>> 24) < 10) continue;
-				int r = Math.floorMod(hash(x * 7 + 3, y * 13 + 5), 100);
-				if (r < 4) img.setPixel(x, y, 0xFFFFFFFF);
-				else if (r < 7) img.setPixel(x, y, 0xFFB9A8FF);
+				int a = p >>> 24;
+				if (a < 10) continue;
+				int px = x / u, py = (y % fh) / u;
+				double l = lum(p) / 255.0;
+				double n = PackExtras.fbm(px * 0.22, py * 0.22, 0.5, 7);       // nebula clouds
+				double diag = (px + (fh / u - 1 - py)) / (2.0 * fh / u);       // dark handle -> bright tip
+				double t = Math.max(0, Math.min(1, 0.08 + diag * 0.62 + (n - 0.5) * 0.7 + l * 0.3));
+				int c = gradientAt(GALAXY, t);
+				double k = 0.5 + 0.85 * l;
+				int col = PackExtras.mix(0, c, Math.min(1.2, k));
+				boolean edge = false;
+				for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+					int nx = x + d[0] * u, ny = y % fh + d[1] * u;
+					if (nx < 0 || ny < 0 || nx >= w || ny >= fh || !solid[(y - y % fh + ny) * w + nx]) { edge = true; break; }
+				}
+				if (edge) col = PackExtras.mix(0x05030F, col, 0.35);
+				int r = Math.floorMod(hash(px * 31 + 7, py * 17 + 3), 1000);
+				if (!edge && r < 30) col = r < 12 ? 0xFFFFFF : 0xCFF6FF; // a few stars
+				img.setPixel(x, y, (a << 24) | col);
 			}
 	}
 

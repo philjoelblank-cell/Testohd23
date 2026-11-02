@@ -157,18 +157,13 @@ public class CosmeticsScreen extends Screen {
 				g.drawString(font, glyph, -font.width(glyph) / 2, -4, col, true);
 				g.pose().popMatrix();
 			} else {
-				g.fill(cx - headS, headY + headS, cx + headS, Math.min(y + h - 12, headY + headS + headS / 2), 0xFF111116);
-				g.fill(cx - headS / 2, headY, cx + headS / 2, headY + headS, 0xFF2A2A31);
-				g.fill(cx - headS / 3, headY + headS / 2, cx - headS / 8, headY + headS / 2 + 2, 0xFFE8E8F0);
-				g.fill(cx + headS / 8, headY + headS / 2, cx + headS / 3, headY + headS / 2 + 2, 0xFFE8E8F0);
-				int is = (int) (headS * (slot == Cosmetics.Slot.HEAD ? 2.3f : 2.0f));
-				int bob = id.equals("halo") ? (int) Math.round(Math.sin(t * 2.5) * 1.5) : 0;
-				int iy = switch (slot) {
-					case HEAD -> headY - is / 2 + 1 + bob;
-					case FACE -> headY + headS / 2 - is / 2;
-					default -> headY + headS - is / 2;
-				};
-				Ui.item(g, Cosmetics.hatStack(id), cx - is / 2, iy, is);
+				// one 3D model: a dark bust wearing the item, so it sits exactly where it sits on your skin
+				int is = Math.min(w - 6, h - 12);
+				float bob = (float) Math.sin(t * 2 + id.hashCode() % 7) * 1.2f;
+				g.pose().pushMatrix();
+				g.pose().translate(0, bob);
+				Ui.item(g, Cosmetics.cardStack(id), cx - is / 2, y + 2, is);
+				g.pose().popMatrix();
 			}
 			String label = getMessage().getString();
 			if (Ui.smallWidth(label) > w - 4) {

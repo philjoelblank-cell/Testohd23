@@ -51,10 +51,7 @@ final class PackExtras {
 		}
 		// ---- fire (animated)
 		for (String f : new String[]{"fire_0", "fire_1"}) {
-			safe(() -> {
-				recolorTo(th, "block/" + f + ".png", a, brighter(th.ramp()));
-				copyMeta("block/" + f + ".png", a);
-			});
+			safe(() -> lowFire(th, "block/" + f + ".png", a));
 		}
 		// ---- hotbar
 		safe(() -> recolorTo(th, "gui/sprites/hud/hotbar.png", a, th.ramp()));
@@ -68,21 +65,42 @@ final class PackExtras {
 		safe(() -> sky(th, root));
 	}
 
-	/** The sun is drawn additively: black must stay black, only the bright part gets the colour. */
+	/** Sun as a glowing star with light rays (drawn additively: black = invisible). */
 	private static void sun(BuiltinPacks.Theme th, Path a) throws Exception {
-		NativeImage img = vanilla("environment/celestial/sun.png");
-		if (img == null) return;
-		int col = mix(skyColors(th)[2], 0xFFFFFF, 0.35);
-		for (int y = 0; y < img.getHeight(); y++)
-			for (int x = 0; x < img.getWidth(); x++) {
-				int p = img.getPixel(x, y);
-				double l = lum(p) / 255.0;
-				int c = mix(0x000000, col, Math.min(1, l * 1.15));
-				if (l > 0.9) c = mix(c, 0xFFFFFF, (l - 0.9) * 6);
-				img.setPixel(x, y, (p & 0xFF000000) | c);
+		int n = 256;
+		NativeImage img = new NativeImage(n, n, true);
+		int tint = mix(skyColors(th)[2], 0xFFF4D0, 0.55);
+		for (int y = 0; y < n; y++)
+			for (int x = 0; x < n; x++) {
+				double dx = (x - n / 2 + 0.5) / (n / 2.0), dy = (y - n / 2 + 0.5) / (n / 2.0);
+				double r = Math.sqrt(dx * dx + dy * dy);
+				double core = Math.exp(-r * r * 90);
+				double halo = Math.exp(-r * 6) * 0.55;
+				double rays = (Math.exp(-Math.abs(dx - dy) * 60) + Math.exp(-Math.abs(dx + dy) * 60)) * Math.max(0, 1 - r) * 0.45
+						+ (Math.exp(-Math.abs(dy) * 90) * 0.25) * Math.max(0, 1 - r * 1.1);
+				double v = Math.min(1, core * 1.4 + halo + rays);
+				int col = mix(0x000000, mix(tint, 0xFFFFFF, core), v);
+				img.setPixel(x, y, 0xFF000000 | col);
 			}
 		BuiltinPacks.current = null;
 		save(img, a.resolve("environment/celestial/sun.png"));
+	}
+
+	/** Low fire: the flames are moved down, so burning doesn't cover half of the screen any more. */
+	private static void lowFire(BuiltinPacks.Theme th, String path, Path a) throws Exception {
+		NativeImage img = vanilla(path);
+		if (img == null) return;
+		recolor(img, brighter(th.ramp()), 0);
+		int w = img.getWidth(), h = img.getHeight(), fh = Math.min(w, h);
+		int shift = fh * 7 / 16;
+		for (int f = 0; f < h / fh; f++)
+			for (int x = 0; x < w; x++)
+				for (int y = fh - 1; y >= 0; y--) {
+					int src = y - shift;
+					img.setPixel(x, f * fh + y, src >= 0 ? img.getPixel(x, f * fh + src) : 0);
+				}
+		save(img, a.resolve(path));
+		copyMeta(path, a);
 	}
 
 	private static void recolorTo(BuiltinPacks.Theme th, String path, Path a, int[] ramp) throws Exception {
@@ -274,62 +292,128 @@ final class PackExtras {
 		boolean xmas = th.style().christmas();
 		boolean galaxy = th.style() == BuiltinPacks.Style.GALAXY;
 
-		// ---- day: gradient from a light horizon to a deeper zenith + clouds
-		int zenith = mix(c[1], 0x000000, 0.15), horizon = mix(c[2], 0xFFFFFF, 0.45);
-		NativeImage day = skyImage((x, y, z) -> {
-			double h = Math.max(0, y);
-			int col = y < 0 ? mix(horizon, c[0], Math.min(1, -y * 2.5)) : mix(horizon, zenith, Math.pow(h, 0.55));
-			if (y > -0.05) {
-				double cl = fbm(x * 3, y * 3, z * 3, seed);
-				double cloud = Math.max(0, (cl - 0.52) * 3.2) * Math.min(1, (y + 0.05) * 6);
-				col = mix(col, 0xFFFFFF, Math.min(0.85, cloud));
+		if (galaxy) { // galaxy: space sky all day, nebula + stars
+			java.util.Random rg = new java.util.Random(seed);
+			NativeImage space = skyImage((x, y, z) -> {
+				double n = fbm(x * 2.0, y * 2.0, z * 2.0, seed + 3);
+				double band = Math.exp(-Math.pow((x * 0.5 + y * 0.85) * 2.0, 2));
+				double t = Math.max(0, Math.min(1, (n - 0.3) * 1.6 + band * 0.25));
+				int col = BuiltinPacks.gradientAt(BuiltinPacks.GALAXY, t * 0.85);
+				col = mix(0x050418, col, Math.min(1, 0.35 + t));
+				return 0xFF000000 | col;
+			});
+			for (int i = 0; i < 1600; i++) {
+				double x = rg.nextGaussian(), y = rg.nextGaussian(), z = rg.nextGaussian();
+				double len = Math.sqrt(x * x + y * y + z * z);
+				dot(space, x / len, y / len, z / len, rg.nextInt(5) == 0 ? 0xFFCFF6FF : 0xFFFFFFFF, rg.nextInt(14) == 0 ? 2 : 1);
 			}
-			return 0xE6000000 | col; // a little see-through: blends with the normal sky colour
+			BuiltinPacks.current = null;
+			save(space, dir.resolve("sky1.png"));
+			Files.writeString(dir.resolve("sky1.properties"), """
+					# Made by Testohd23 – galaxy sky (day and night)
+					source=./sky1.png
+					blend=alpha
+					rotate=true
+					speed=0.5
+					""", StandardCharsets.UTF_8);
+			Files.deleteIfExists(dir.resolve("sky2.png"));
+			Files.deleteIfExists(dir.resolve("sky2.properties"));
+			return;
+		}
+
+		// ---- day: deep saturated sky, bright horizon, big soft clouds lit from above (like the big PvP sky packs)
+		int zenith = mix(c[0], c[1], 0.45), mid = c[1], horizon = mix(c[2], 0xFFFFFF, 0.55);
+		NativeImage day = skyImage((x, y, z) -> {
+			double e = y;
+			int sky = e >= 0 ? (e < 0.25 ? mix(horizon, mid, e / 0.25) : mix(mid, zenith, Math.min(1, (e - 0.25) / 0.75)))
+					: mix(horizon, mix(c[0], 0x000000, 0.3), Math.min(1, -e * 3));
+			if (e > -0.08) {
+				double d = cloud(x, y, z, seed);
+				double band = Math.max(0, 1 - Math.abs(e - 0.18) * 1.8); // most clouds a bit above the horizon
+				double cover = smooth(0.5 - band * 0.1, 0.66 - band * 0.08, d) * Math.min(1, (e + 0.08) * 8);
+				if (cover > 0) {
+					double lit = Math.max(0, Math.min(1, 0.6 + (d - cloud(x, y - 0.05, z, seed)) * 7)); // light from above
+					int shadow = mix(mix(mid, 0x8090A0, 0.4), 0xFFFFFF, 0.25);
+					int cl = mix(shadow, 0xFFFFFF, lit);
+					cl = mix(cl, horizon, Math.max(0, 0.25 - e)); // haze near the horizon
+					sky = mix(sky, cl, Math.min(1, cover));
+				}
+			}
+			return 0xFF000000 | sky;
 		});
 		BuiltinPacks.current = null; // no item post effects on the sky
 		save(day, dir.resolve("sky1.png"));
 		Files.writeString(dir.resolve("sky1.properties"), """
 				# Made by Testohd23 – day sky
 				source=./sky1.png
-				startFadeIn=4:30
-				endFadeIn=6:30
-				endFadeOut=19:30
-				startFadeOut=17:30
-				blend=alpha
+				startFadeIn=5:00
+				endFadeIn=6:00
+				startFadeOut=17:50
+				endFadeOut=18:40
+				blend=replace
 				rotate=false
 				""", StandardCharsets.UTF_8);
 
-		// ---- night: nebula + stars, drawn additively and turning with the night sky
-		NativeImage night = skyImage((x, y, z) -> {
-			double n = fbm(x * 2.2, y * 2.2, z * 2.2, seed + 1);
-			double band = Math.exp(-Math.pow((x * 0.6 + y * 0.8) * 2.2, 2)); // milky-way like band
-			double neb = Math.max(0, n - 0.42) * 2.2 * (galaxy ? 1.4 : 0.9) * (0.35 + band);
-			int col = mix(0x000000, mix(c[0], c[2], n), Math.min(1, neb));
-			if (xmas) { // aurora curtains
-				double au = Math.max(0, Math.sin(x * 9 + fbm(x * 2, 0, z * 2, seed) * 6)) * Math.max(0, y - 0.15) * 1.2;
-				col = mix(col, 0x2EFF8A, Math.min(0.55, au * 0.6));
-			}
-			return 0xFF000000 | col;
-		});
+		// ---- night: dark dramatic clouds with a coloured glow behind them, stars and mountains on the horizon
+		int glow = mix(c[2], c[1], 0.35);
 		java.util.Random rnd = new java.util.Random(seed);
-		for (int i = 0; i < 1400; i++) {
-			double x = rnd.nextGaussian(), y = rnd.nextGaussian(), z = rnd.nextGaussian();
+		NativeImage night = skyImage((x, y, z) -> {
+			double e = y;
+			double az = Math.atan2(z, x);
+			int sky = e >= 0 ? mix(mix(glow, 0x000000, 0.15), mix(c[0], 0x000000, 0.85), Math.min(1, Math.pow(e / 0.6, 0.7)))
+					: mix(glow, 0x000000, Math.min(1, -e * 4));
+			double d = cloud(x * 0.9, y * 1.2, z * 0.9, seed + 5);
+			double cover = smooth(0.46, 0.6, d) * Math.min(1, Math.max(0, (e + 0.05) * 6));
+			if (cover > 0) {
+				double rim = 1 - smooth(0.46, 0.6, d); // bright edges, dark inside
+				int dark = mix(0x050208, c[0], 0.2);
+				int cl = mix(dark, mix(glow, 0xFFFFFF, 0.35), Math.min(1, rim * 0.95 * (0.45 + Math.max(0, 0.45 - e) * 1.5)));
+				sky = mix(sky, cl, Math.min(1, cover * 1.2));
+			}
+			if (xmas) { // aurora curtains
+				double au = Math.max(0, Math.sin(x * 9 + fbm(x * 2, 0, z * 2, seed) * 6)) * Math.max(0, e - 0.2) * 1.2;
+				sky = mix(sky, 0x2EFF8A, Math.min(0.45, au * 0.5));
+			}
+			// mountains
+			double m = 0.04 + 0.16 * fbm(Math.cos(az) * 3, Math.sin(az) * 3, 0.3, seed + 9) + 0.05 * fbm(Math.cos(az) * 9, Math.sin(az) * 9, 0.7, seed + 2);
+			if (e < m - 0.06) sky = mix(0x020104, c[0], 0.1 + Math.max(0, (e - m + 0.12)) * 1.2);
+			return 0xFF000000 | sky;
+		});
+		for (int i = 0; i < 2200; i++) {
+			double x = rnd.nextGaussian(), y = Math.abs(rnd.nextGaussian()) + 0.15, z = rnd.nextGaussian();
 			double len = Math.sqrt(x * x + y * y + z * z);
-			int b = 150 + rnd.nextInt(106);
+			int b = 120 + rnd.nextInt(136);
 			int tint = rnd.nextInt(4) == 0 ? mix(0xFFFFFF, c[2], 0.5) : 0xFFFFFF;
 			int col = 0xFF000000 | mix(0x000000, tint, b / 255.0);
-			dot(night, x / len, y / len, z / len, col, rnd.nextInt(12) == 0 ? 2 : 1);
+			double nx = x / len, ny = y / len, nz = z / len;
+			if (cloud(nx * 0.9, ny * 1.2, nz * 0.9, seed + 5) < 0.47) dot(night, nx, ny, nz, col, rnd.nextInt(15) == 0 ? 2 : 1);
 		}
 		save(night, dir.resolve("sky2.png"));
 		Files.writeString(dir.resolve("sky2.properties"), """
 				# Made by Testohd23 – night sky
 				source=./sky2.png
-				startFadeIn=17:30
-				endFadeIn=19:30
-				endFadeOut=6:00
-				startFadeOut=4:30
-				blend=add
-				rotate=true
+				startFadeIn=18:30
+				endFadeIn=18:45
+				startFadeOut=5:00
+				endFadeOut=5:25
+				blend=replace
+				rotate=false
 				""", StandardCharsets.UTF_8);
+		// the sky box has its own clouds: switch the blocky vanilla clouds off
+		NativeImage none = new NativeImage(1, 1, true);
+		none.setPixel(0, 0, 0);
+		save(none, root.resolve("assets/minecraft/textures/environment/clouds.png"));
+	}
+
+	/** Billowy cloud density (domain-warped noise). */
+	static double cloud(double x, double y, double z, int seed) {
+		double wx = fbm(x * 1.3 + 4.1, y * 1.3, z * 1.3, seed + 11) - 0.5;
+		double wz = fbm(x * 1.3, y * 1.3 + 2.7, z * 1.3, seed + 12) - 0.5;
+		return fbm(x * 1.5 + wx * 1.3, y * 2.6, z * 1.5 + wz * 1.3, seed);
+	}
+
+	static double smooth(double a, double b, double v) {
+		double t = Math.max(0, Math.min(1, (v - a) / (b - a)));
+		return t * t * (3 - 2 * t);
 	}
 }

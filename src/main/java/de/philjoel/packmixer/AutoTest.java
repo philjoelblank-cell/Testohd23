@@ -91,7 +91,7 @@ final class AutoTest {
 		});
 		step("select pack", 5, () -> {
 			Map<String, String> sel = new LinkedHashMap<>();
-			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, "Galaxie");
+			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, c.id.equals("sky") ? "Verlauf Sonnenuntergang" : "Galaxie");
 			PackMixerConfig.saveSelection(sel);
 			PackBuilder.rebuildAndApply();
 		});
@@ -140,6 +140,9 @@ final class AutoTest {
 		command("time set 23200");
 		step("sunrise", 40, () -> mc.player.setXRot(-15));
 		shot("world_sunrise");
+		command("time set 12500");
+		step("sunset", 40, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
+		shot("world_sunset");
 		step("effects", 10, () -> {
 			mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
 			Cosmetics.Slot.EFFECT.set("fx_galaxy");
@@ -170,6 +173,11 @@ final class AutoTest {
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });
 		shot("world_hud");
+		command("setblock ~ ~ ~ fire");
+		step("burn", 25, () -> { });
+		shot("world_fire");
+		command("setblock ~ ~ ~ air");
+		command("effect give @p fire_resistance 60");
 		step("menu in world", 30, () -> mc.setScreen(new PackMixerScreen(null)));
 		shot("world_menu");
 		step("quit", 40, () -> {

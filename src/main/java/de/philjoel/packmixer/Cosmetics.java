@@ -145,6 +145,13 @@ public final class Cosmetics {
 		return stack;
 	}
 
+	/** Card preview: the item on a small dark bust (models/item/card_*.json). */
+	public static ItemStack cardStack(String id) {
+		ItemStack stack = new ItemStack(Items.PAPER);
+		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "card_" + id));
+		return stack;
+	}
+
 	static void init() {
 		LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, helper, context) -> {
 			if (entityRenderer instanceof AvatarRenderer<?> avatar) {
