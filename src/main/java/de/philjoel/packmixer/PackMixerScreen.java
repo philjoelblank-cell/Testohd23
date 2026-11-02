@@ -65,6 +65,7 @@ public class PackMixerScreen extends Screen {
 
 	@Override
 	protected void init() {
+		GuiFit.fit(this);
 		if (rescanOnReturn) {
 			rescanOnReturn = false;
 			rescan();
@@ -406,6 +407,7 @@ public class PackMixerScreen extends Screen {
 
 	@Override
 	public void removed() {
+		GuiFit.restore();
 		previews.clear();
 		super.removed();
 	}

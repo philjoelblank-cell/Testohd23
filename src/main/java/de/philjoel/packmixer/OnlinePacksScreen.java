@@ -48,6 +48,7 @@ public class OnlinePacksScreen extends Screen {
 
 	@Override
 	protected void init() {
+		GuiFit.fit(this);
 		int maxW = Math.min(this.width - 12, 620);
 		px0 = (this.width - maxW) / 2;
 		px1 = px0 + maxW;
@@ -236,5 +237,11 @@ public class OnlinePacksScreen extends Screen {
 	@Override
 	public boolean isPauseScreen() {
 		return false;
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
+		GuiFit.restore();
 	}
 }

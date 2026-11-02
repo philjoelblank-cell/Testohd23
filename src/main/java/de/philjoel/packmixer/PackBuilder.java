@@ -131,6 +131,7 @@ public final class PackBuilder {
 		if (enabled && repo.isAvailable(id)) {
 			repo.addPack(id); // added last = highest priority
 		}
+		SkyboxRenderer.markDirty();
 		mc.options.updateResourcePacks(repo); // saves options.txt and reloads if the list changed
 		if (before.equals(mc.options.resourcePacks)) {
 			mc.reloadResourcePacks(); // list unchanged, but the files inside changed
@@ -152,6 +153,23 @@ public final class PackBuilder {
 			todo.clear();
 			for (Map.Entry<String, byte[]> e : pack.readAll(batch).entrySet()) {
 				result.put(e.getKey(), e.getValue());
+				if (e.getKey().endsWith(".properties")) { // OptiFine sky: source=./sky1.png etc.
+					String key = e.getKey();
+					String folder = key.substring(0, key.lastIndexOf('/') + 1);
+					for (String line : new String(e.getValue(), StandardCharsets.UTF_8).split("\\R")) {
+						line = line.trim();
+						if (!line.startsWith("source")) continue;
+						int eq = line.indexOf('=');
+						if (eq < 0) continue;
+						String src = line.substring(eq + 1).trim();
+						String ref = src.startsWith("./") ? folder + src.substring(2)
+								: src.startsWith("~/") ? "optifine/" + src.substring(2)
+								: src.startsWith("assets/minecraft/") ? src.substring(17)
+								: src.contains(":") ? src.substring(src.indexOf(':') + 1) : src;
+						if (pack.has(ref) && seen.add(ref)) todo.add(ref);
+					}
+					continue;
+				}
 				if (!e.getKey().endsWith(".json")) continue;
 				Matcher m = REFERENCE.matcher(new String(e.getValue(), StandardCharsets.UTF_8));
 				while (m.find()) {

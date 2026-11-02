@@ -68,6 +68,7 @@ public final class PackMixerConfig {
 		ensureDirs();
 		Path file = categoriesFile();
 		if (Files.exists(file)) {
+			List<Category> result = null;
 			try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
 				List<Category> list = GSON.fromJson(r, new TypeToken<List<Category>>() {}.getType());
 				if (list != null && !list.isEmpty()) {
@@ -76,20 +77,21 @@ public final class PackMixerConfig {
 						if (c.name == null) c.name = c.id;
 						if (c.icons == null) c.icons = new ArrayList<>();
 					}
-					// add built-in categories that are new in this mod version
-					boolean added = false;
-					for (Category def : DefaultCategories.create()) {
-						if (list.stream().noneMatch(c -> c.id.equals(def.id))) {
-							list.add(def);
-							added = true;
-						}
-					}
-					if (added) write(file, list);
-					return list;
+					// built-in categories always come from the mod (so fixes arrive), your own ones are kept
+					List<Category> defaults = DefaultCategories.create();
+					java.util.Set<String> ids = new java.util.HashSet<>();
+					for (Category d : defaults) ids.add(d.id);
+					List<Category> merged = new ArrayList<>(defaults);
+					for (Category c : list) if (!ids.contains(c.id)) merged.add(c);
+					result = merged;
 				}
 			} catch (Exception e) {
 				PackMixerClient.LOGGER.error("categories.json is broken, using defaults", e);
 				return DefaultCategories.create();
+			}
+			if (result != null) {
+				write(file, result); // after the file was closed (Windows can't replace an open file)
+				return result;
 			}
 		}
 		List<Category> defaults = DefaultCategories.create();
@@ -164,6 +166,10 @@ public final class PackMixerConfig {
 
 		// Design
 		public boolean menuSnow = false;
+
+		// Cosmetics of other players
+		public boolean shareCosmetics = true;      // let other mod users see yours
+		public boolean showOthersCosmetics = true; // see theirs
 
 		// Updates from GitHub
 		public boolean autoUpdate = true;

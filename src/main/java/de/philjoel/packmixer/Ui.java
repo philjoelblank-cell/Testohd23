@@ -163,7 +163,7 @@ public final class Ui {
 		return net.minecraft.client.resources.language.I18n.exists(key) ? net.minecraft.client.resources.language.I18n.get(key) : name;
 	}
 
-	/** Pack name: built-in "Testohd …" packs get the brand in gradient colours. */
+	/** Pack name: built-in packs are drawn in the brand gradient. */
 	public static void packName(GuiGraphics g, String name, int centerX, int y, int maxW, boolean bright) {
 		String shown = packDisplay(name);
 		if (font().width(shown) > maxW) {
@@ -171,9 +171,8 @@ public final class Ui {
 			shown = shown + "...";
 		}
 		int x = centerX - font().width(shown) / 2;
-		if (shown.startsWith("Testohd")) {
-			int w = gradientText(g, "Testohd", x, y);
-			g.drawString(font(), shown.substring(7), x + w, y, bright ? TEXT : DIM, false);
+		if (BuiltinPacks.isBuiltin(name)) { // built-in packs: name in the brand gradient
+			gradientText(g, shown, x, y);
 		} else {
 			g.drawString(font(), shown, x, y, bright ? TEXT : DIM, false);
 		}
@@ -287,15 +286,71 @@ public final class Ui {
 			drawIcon(g, p, x, y, size, 0xFFFFFFFF);
 			return;
 		}
-		float sway = (float) Math.sin(t * 1.4 + phase) * (hover ? 0.18f : 0.07f);
-		float scale = hover ? 1.08f + (float) Math.sin(t * 4) * 0.02f : 1f;
+		boolean flat = p.path() != null && (p.path().contains("/gui/") || p.path().contains("/sky/")
+				|| p.path().contains("/environment/") || p.path().contains("/misc/"));
+		if (flat) { // GUI parts and skies: no wobbling, just a soft pulse
+			float pulse = 1f + (float) Math.sin(t * 2 + phase) * (hover ? 0.035f : 0.015f);
+			g.pose().pushMatrix();
+			g.pose().translate(x + size / 2f, y + size / 2f);
+			g.pose().scale(pulse, pulse);
+			g.pose().translate(-size / 2f, -size / 2f);
+			drawIcon(g, p, 0, 0, size, 0xFFFFFFFF);
+			g.pose().popMatrix();
+			return;
+		}
 		g.pose().pushMatrix();
 		g.pose().translate(x + size / 2f, y + size / 2f + bob);
-		g.pose().rotate(sway);
-		g.pose().scale(scale, scale);
+		if (hover) {
+			// hovered: the item turns around like a dropped item, with a bit of thickness
+			double turn = (t - hoverStart(phase)) * 3.2;
+			float sx = (float) Math.cos(turn);
+			float scale = 1.12f;
+			if (Math.abs(sx) < 0.12f) sx = Math.copySign(0.12f, sx);
+			g.pose().scale(scale, scale);
+			for (int i = 3; i >= 1; i--) { // edge / depth
+				g.pose().pushMatrix();
+				g.pose().translate((float) Math.sin(turn) * i * 0.45f, 0);
+				g.pose().scale(sx, 1f);
+				g.pose().translate(-size / 2f, -size / 2f);
+				drawIcon(g, p, 0, 0, size, 0xFF000000 | (0x50 + i * 0x10) * 0x010101);
+				g.pose().popMatrix();
+			}
+			g.pose().scale(sx, 1f);
+		} else {
+			// idle: floats, sways and breathes a little
+			float sway = (float) Math.sin(t * 1.4 + phase) * 0.07f;
+			float breathe = 1f + (float) Math.sin(t * 2.6 + phase) * 0.02f;
+			g.pose().rotate(sway);
+			g.pose().scale(breathe, breathe);
+		}
 		g.pose().translate(-size / 2f, -size / 2f);
 		drawIcon(g, p, 0, 0, size, 0xFFFFFFFF);
 		g.pose().popMatrix();
+	}
+
+	private static final java.util.Map<Float, Float> HOVER_START = new java.util.HashMap<>();
+	private static long lastHoverFrame;
+
+	/** Lets the spin start facing forward when the mouse enters a card. */
+	private static float hoverStart(float phase) {
+		long now = System.currentTimeMillis();
+		if (now - lastHoverFrame > 120) HOVER_START.clear();
+		lastHoverFrame = now;
+		return HOVER_START.computeIfAbsent(phase, k -> time());
+	}
+
+	/** Small twinkling stars around a selected card's preview. */
+	public static void sparkles(GuiGraphics g, int cx, int cy, int radius, float phase) {
+		float t = time();
+		for (int i = 0; i < 4; i++) {
+			double a = t * 1.3 + i * Math.PI / 2 + phase;
+			int px = cx + (int) Math.round(Math.cos(a) * radius), py = cy + (int) Math.round(Math.sin(a) * radius * 0.8);
+			float tw = (float) (Math.sin(t * 5 + i * 1.7) * 0.5 + 0.5);
+			int alpha = (int) (90 + tw * 165);
+			int c = (alpha << 24) | 0xFFFFFF;
+			g.fill(px, py - 1, px + 1, py + 2, c);
+			g.fill(px - 1, py, px + 2, py + 1, c);
+		}
 	}
 
 	// ---- smart icons: entity/GUI atlases are cut into a readable picture, strips animate, everything keeps its aspect
@@ -350,6 +405,13 @@ public final class Ui {
 				g.pose().popMatrix();
 			}
 			g.pose().popMatrix();
+			return;
+		}
+		if (p.path() != null && p.path().contains("/sky/") && tw * 2 == th * 3) {
+			// sky box (3x2 faces): slowly look around along the horizon (bottom row)
+			int face = tw / 3;
+			float pan = (float) ((Math.sin(time() * 0.35) * 0.5 + 0.5) * face * 2);
+			g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x, y, pan, (float) face, size, size, face, face, tw, th, color);
 			return;
 		}
 		if (th > tw && th % tw == 0) { // animated strip (fire, clocks, ...): play the frames
@@ -519,8 +581,11 @@ public final class Ui {
 			g.fillGradient(x, y, x + w, y + h / 2, 0x14FFFFFF, 0x00FFFFFF);
 			int size = Math.min(w - 14, h - 20);
 			float phase = (pack == null ? 0 : pack.name.hashCode() % 1000) * 0.0123f;
+			g.enableScissor(x, y, x + w, y + h);
 			drawPreview(g, cache, category, pack, x + (w - size) / 2, y + 5, size, phase, hover, true);
-			if (pack != null) badge(g, pack.name.startsWith("Testohd") ? "TS" : "PACK", x + 3, y + h - 20);
+			if (selected) sparkles(g, x + w / 2, y + 5 + size / 2, size / 2 + 2, phase);
+			g.disableScissor();
+			if (pack != null) badge(g, BuiltinPacks.isBuiltin(pack.name) ? "TS" : "PACK", x + 3, y + h - 20);
 			if (favorite) g.drawString(font(), "★", x + w - 9, y + 3, GOLD, false);
 			packName(g, label, x + w / 2, y + h - 10, w - 6, selected || hover);
 			if (selected) selectedFrame(g, x, y, w, h);

@@ -102,6 +102,7 @@ public class PackMixerSettingsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		GuiFit.fit(this);
 		int w = Math.min(this.width - 16, Math.max(380, (int) (this.width * 0.66)));
 		int h = Math.min(this.height - 26, Math.max(220, (int) (this.height * 0.7)));
 		x0 = (this.width - w) / 2;
@@ -234,10 +235,12 @@ public class PackMixerSettingsScreen extends Screen {
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.chat", () -> s.chatMessageOnApply, v -> s.chatMessageOnApply = v)); y += 18;
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.snow", () -> s.menuSnow, v -> s.menuSnow = v)); y += 18;
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.autoupdate", () -> s.autoUpdate, v -> s.autoUpdate = v)); y += 18;
+				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.share_cosmetics", () -> s.shareCosmetics, v -> s.shareCosmetics = v)); y += 18;
+				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.show_cosmetics", () -> s.showOthersCosmetics, v -> s.showOthersCosmetics = v)); y += 18;
 				addRenderableWidget(Ui.glass(Component.translatable("packmixer.builtin.regenerate"), b -> {
 					b.active = false;
 					s.builtinPacksVersion = 0;
-					BuiltinPacks.generateIfNeeded(() -> { b.active = true; saved(); });
+					BuiltinPacks.generateIfNeeded(() -> { b.active = true; saved(); PackBuilder.rebuildAndApply(); });
 				}).bounds(x, y, cw, 14).build()); y += 18;
 			}
 			case "profiles" -> {
@@ -306,7 +309,7 @@ public class PackMixerSettingsScreen extends Screen {
 				Features.zoomKey().setKey(Features.zoomKey().getDefaultKey());
 				KeyMapping.resetMapping();
 			}
-			case "packmixer" -> { s.includeResourcePacksFolder = true; s.chatMessageOnApply = true; s.menuSnow = false; s.autoUpdate = true; }
+			case "packmixer" -> { s.includeResourcePacksFolder = true; s.chatMessageOnApply = true; s.menuSnow = false; s.autoUpdate = true; s.shareCosmetics = true; s.showOthersCosmetics = true; }
 			default -> {
 				if (e.id.startsWith("sound.")) {
 					SoundSource src = SoundSource.values()[soundEntries.indexOf(e)];
@@ -502,5 +505,11 @@ public class PackMixerSettingsScreen extends Screen {
 	@Override
 	public boolean isPauseScreen() {
 		return false;
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
+		GuiFit.restore();
 	}
 }

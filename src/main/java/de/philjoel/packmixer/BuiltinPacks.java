@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 7;
+	public static final int VERSION = 8;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
@@ -45,7 +45,7 @@ public final class BuiltinPacks {
 	}
 
 	/** Colour gradient pack: items/blocks/hearts get a diagonal gradient through the given colours. */
-	private static final java.util.Map<String, int[]> GRADIENTS = new java.util.HashMap<>();
+	static final java.util.Map<String, int[]> GRADIENTS = new java.util.HashMap<>();
 
 	private static Theme gradient(String name, String key, String crosshair, int... stops) {
 		GRADIENTS.put(name, stops);
@@ -325,23 +325,57 @@ public final class BuiltinPacks {
 		t.start();
 	}
 
+	/** Folder / display name of a built-in pack: without the "Testohd" in front. */
+	public static String folder(Theme th) {
+		return th.name.startsWith("Testohd ") ? th.name.substring(8) : th.name;
+	}
+
+	private static java.util.Set<String> builtinNames;
+
+	/** True for the packs this mod generates itself. */
+	public static boolean isBuiltin(String packName) {
+		if (builtinNames == null) {
+			java.util.Set<String> n = new java.util.HashSet<>();
+			for (Theme t : THEMES) n.add(folder(t));
+			builtinNames = n;
+		}
+		return builtinNames.contains(packName);
+	}
+
 	public static void generateAll() throws Exception {
-		// remove built-in packs that are no longer part of the mod (only our own generated folders)
+		// 1) old folders ("Testohd …" names, removed pattern packs) go away, your choices move to the new names
 		java.util.Map<String, String> sel = PackMixerConfig.loadSelection();
+		List<String> favs = PackMixerConfig.settings().favorites;
 		boolean selChanged = false;
 		for (Theme old : ALL_THEMES) {
-			if (old.style() != Style.PATTERN) continue;
-			Path dir = PackMixerConfig.packsDir().resolve(old.name());
-			if (Files.isDirectory(dir)) {
-				try (var walk = Files.walk(dir)) {
-					for (Path p : walk.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(p);
+			String newName = old.style() == Style.PATTERN ? null : folder(old);
+			if (!old.name().equals(newName)) deleteDir(PackMixerConfig.packsDir().resolve(old.name()));
+			if (newName == null) deleteDir(PackMixerConfig.packsDir().resolve(folder(old)));
+			for (Map.Entry<String, String> e : sel.entrySet()) {
+				if (e.getValue().equals(old.name())) {
+					e.setValue(newName);
+					selChanged = true;
 				}
 			}
-			selChanged |= sel.values().removeIf(v -> v.equals(old.name()));
+			for (int i = 0; i < favs.size(); i++) if (favs.get(i).equals(old.name())) favs.set(i, newName);
 		}
+		sel.values().removeIf(java.util.Objects::isNull);
+		favs.removeIf(java.util.Objects::isNull);
 		if (selChanged) PackMixerConfig.saveSelection(sel);
+		// 2) (re)generate every pack; one broken texture must never stop the rest
 		for (Theme theme : THEMES) {
-			generate(theme, PackMixerConfig.packsDir().resolve(theme.name));
+			try {
+				generate(theme, PackMixerConfig.packsDir().resolve(folder(theme)));
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.error("Built-in pack {} failed", theme.name, e);
+			}
+		}
+	}
+
+	private static void deleteDir(Path dir) throws java.io.IOException {
+		if (!Files.isDirectory(dir)) return;
+		try (var walk = Files.walk(dir)) {
+			for (Path p : walk.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(p);
 		}
 	}
 
@@ -431,6 +465,9 @@ public final class BuiltinPacks {
 			copyMeta(path, a);
 		}
 
+		// ---- everything else: placed / worn / thrown things, GUI, sky
+		safe(() -> PackExtras.generate(th, a, root));
+
 		// ---- pack.mcmeta + icon
 		Files.writeString(root.resolve("pack.mcmeta"), """
 				{
@@ -446,6 +483,18 @@ public final class BuiltinPacks {
 
 	// ======================================================================= helpers
 
+	interface Step {
+		void run() throws Exception;
+	}
+
+	static void safe(Step step) {
+		try {
+			step.run();
+		} catch (Exception e) {
+			PackMixerClient.LOGGER.warn("Built-in pack part failed: {}", e.toString());
+		}
+	}
+
 	static NativeImage vanilla(String texturePath) {
 		try {
 			var res = Minecraft.getInstance().getVanillaPackResources();
@@ -460,7 +509,7 @@ public final class BuiltinPacks {
 		}
 	}
 
-	private static void copyMeta(String texturePath, Path texturesRoot) {
+	static void copyMeta(String texturePath, Path texturesRoot) {
 		try {
 			var res = Minecraft.getInstance().getVanillaPackResources();
 			IoSupplier<InputStream> s = res.getResource(PackType.CLIENT_RESOURCES,
@@ -476,18 +525,20 @@ public final class BuiltinPacks {
 	}
 
 	/** Theme being generated right now (for rainbow / galaxy post effects). */
-	private static Theme current;
+	static Theme current;
 
-	private static void save(NativeImage img, Path out) throws Exception {
+	static void save(NativeImage img, Path out) throws Exception {
 		String path = out.toString().replace('\\', '/');
-		if (current != null && (path.contains("/item/") || path.contains("/block/"))) {
+		boolean styled = path.contains("/item/") || path.contains("/block/") || path.contains("/entity/")
+				|| path.contains("/hud/food") || path.contains("/hud/hotbar");
+		if (current != null && styled && !path.contains("/environment/")) {
 			if (current.style == Style.RAINBOW) rainbow(img);
 			else if (current.style == Style.GALAXY) galaxy(img);
 		}
 		if (current != null && path.contains("/heart/")) { // hearts follow rainbow / gradient too
 			if (current.style == Style.RAINBOW) rainbow(img);
 		}
-		if (current != null && (path.contains("/item/") || path.contains("/block/") || path.contains("/heart/"))) {
+		if (current != null && (styled || path.contains("/heart/"))) {
 			if (current.style == Style.GRADIENT) gradient(img, GRADIENTS.get(current.name));
 			else if (current.style == Style.PATTERN) pattern(img, PATTERNS.get(current.name));
 			else if (current.style == Style.DUO) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
@@ -587,7 +638,7 @@ public final class BuiltinPacks {
 		};
 	}
 
-	private static int[] brighter(int[] ramp) {
+	static int[] brighter(int[] ramp) {
 		int[] r = new int[ramp.length];
 		for (int i = 0; i < ramp.length; i++) r[i] = ramp(ramp, 0.35 + 0.65 * i / (ramp.length - 1.0));
 		return r;
@@ -597,13 +648,13 @@ public final class BuiltinPacks {
 		for (int y = 0; y < img.getHeight(); y++)
 			for (int x = 0; x < img.getWidth(); x++) {
 				int p = img.getPixel(x, y);
-				int l = lum(p);
+				int l = Math.min(255, lum(p) * 5 / 2); // the glint is drawn additively: it has to be bright to be visible
 				int r = ((rgb >> 16) & 0xFF) * l / 255, g = ((rgb >> 8) & 0xFF) * l / 255, b = (rgb & 0xFF) * l / 255;
 				img.setPixel(x, y, (p & 0xFF000000) | (r << 16) | (g << 8) | b);
 			}
 	}
 
-	private static int hash(int x, int y) {
+	static int hash(int x, int y) {
 		int h = x * 374761393 + y * 668265263;
 		h = (h ^ (h >>> 13)) * 1274126177;
 		return h ^ (h >>> 16);
@@ -683,7 +734,7 @@ public final class BuiltinPacks {
 		paint(img, hat, Map.of('R', 0xFFD01020, 'W', 0xFFFFFFFF), 0, -1);
 	}
 
-	private static void paint(NativeImage img, String[] art, Map<Character, Integer> colors, int ox, int oy) {
+	static void paint(NativeImage img, String[] art, Map<Character, Integer> colors, int ox, int oy) {
 		for (int y = 0; y < art.length; y++)
 			for (int x = 0; x < art[y].length(); x++) {
 				Integer c = colors.get(art[y].charAt(x));
@@ -726,7 +777,7 @@ public final class BuiltinPacks {
 				'3', 0xFF000000 | base, '4', 0xFFFFFFFF, 'S', 0xFF000000 | (th.style == Style.TREE ? 0xD43A3A : 0xFFE680)));
 	}
 
-	private static int darker(int rgb, double f) {
+	static int darker(int rgb, double f) {
 		int r = (int) (((rgb >> 16) & 0xFF) * f), g = (int) (((rgb >> 8) & 0xFF) * f), b = (int) ((rgb & 0xFF) * f);
 		return (r << 16) | (g << 8) | b;
 	}

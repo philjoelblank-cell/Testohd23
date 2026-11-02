@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Client-side cosmetics for your own player (only you can see them).
+ * Client-side cosmetics. Your own come from the settings; other players who also use the mod are shown with
+ * theirs (shared through {@link CosmeticSync}).
  * HEAD / FACE / BACK are 3D item models (assets/testohd_styles/items/hat_*.json),
  * EFFECT is a particle aura (see {@link CosmeticEffects}).
  */
@@ -50,17 +51,22 @@ public final class Cosmetics {
 			Map.entry("fx_cherry", Rarity.EPIC), Map.entry("fx_enchant", Rarity.EPIC),
 			Map.entry("cat_ears", Rarity.RARE), Map.entry("straw_hat", Rarity.RARE), Map.entry("monocle", Rarity.RARE),
 			Map.entry("backpack", Rarity.RARE), Map.entry("fx_hearts", Rarity.RARE), Map.entry("fx_notes", Rarity.RARE),
-			Map.entry("mask", Rarity.COMMON));
+			Map.entry("mask", Rarity.COMMON),
+			Map.entry("wizard_hat", Rarity.EPIC), Map.entry("headphones", Rarity.RARE), Map.entry("viking_helmet", Rarity.EPIC),
+			Map.entry("phoenix_wings", Rarity.LEGENDARY),
+			Map.entry("fx_rainbow", Rarity.LEGENDARY), Map.entry("fx_galaxy", Rarity.LEGENDARY), Map.entry("fx_totem", Rarity.LEGENDARY),
+			Map.entry("fx_lightwings", Rarity.LEGENDARY), Map.entry("fx_lightning", Rarity.EPIC), Map.entry("fx_void", Rarity.EPIC));
 
 	public static Rarity rarity(String id) {
 		return RARITY.getOrDefault(id, Rarity.COMMON);
 	}
 
 	public enum Slot {
-		HEAD(List.of("crown", "halo", "top_hat", "santa_hat", "horns", "straw_hat", "cat_ears")),
+		HEAD(List.of("crown", "halo", "wizard_hat", "viking_helmet", "top_hat", "santa_hat", "horns", "headphones", "straw_hat", "cat_ears")),
 		FACE(List.of("sunglasses", "monocle", "mask")),
-		BACK(List.of("angel_wings", "devil_wings", "backpack")),
-		EFFECT(List.of("fx_sparkle", "fx_souls", "fx_flames", "fx_snow", "fx_cherry", "fx_enchant", "fx_hearts", "fx_notes"));
+		BACK(List.of("phoenix_wings", "angel_wings", "devil_wings", "backpack")),
+		EFFECT(List.of("fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
+				"fx_flames", "fx_snow", "fx_cherry", "fx_enchant", "fx_hearts", "fx_notes"));
 
 		public final List<String> items;
 
@@ -88,7 +94,44 @@ public final class Cosmetics {
 				case EFFECT -> s.effect = id;
 			}
 			PackMixerConfig.saveSettings();
+			CosmeticSync.publishSoon();
 		}
+	}
+
+	/** What one player wears. */
+	public record Loadout(String head, String face, String back, String effect) {
+		public static final Loadout NONE = new Loadout("", "", "", "");
+
+		public String get(Slot slot) {
+			return switch (slot) {
+				case HEAD -> head;
+				case FACE -> face;
+				case BACK -> back;
+				case EFFECT -> effect;
+			};
+		}
+
+		public boolean isEmpty() {
+			return head.isEmpty() && face.isEmpty() && back.isEmpty() && effect.isEmpty();
+		}
+	}
+
+	/** Your own cosmetics. */
+	public static Loadout own() {
+		if (!PackMixerConfig.settings().cosmeticsEnabled) return Loadout.NONE;
+		return new Loadout(Slot.HEAD.get(), Slot.FACE.get(), Slot.BACK.get(), Slot.EFFECT.get());
+	}
+
+	/** Cosmetics of any player: yours from the settings, other mod users' from {@link CosmeticSync}. */
+	public static Loadout of(java.util.UUID uuid) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player != null && mc.player.getUUID().equals(uuid)) return own();
+		if (!PackMixerConfig.settings().showOthersCosmetics) return Loadout.NONE;
+		return CosmeticSync.get(uuid);
+	}
+
+	public static boolean valid(Slot slot, String id) {
+		return id.isEmpty() || slot.items.contains(id);
 	}
 
 	/** Kept for older code: the head items. */
@@ -117,15 +160,18 @@ public final class Cosmetics {
 
 		@Override
 		public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
-			PackMixerConfig.Settings s = PackMixerConfig.settings();
-			if (!s.cosmeticsEnabled || state.isInvisible) return;
+			if (state.isInvisible) return;
 			Minecraft mc = Minecraft.getInstance();
-			if (mc.player == null || state.id != mc.player.getId()) return;
+			if (mc.level == null) return;
+			net.minecraft.world.entity.Entity entity = mc.level.getEntity(state.id);
+			if (!(entity instanceof net.minecraft.world.entity.player.Player player)) return;
+			Loadout loadout = of(player.getUUID());
+			if (loadout.isEmpty()) return;
 			PlayerModel model = this.getParentModel();
 			float t = state.ageInTicks;
 
 			for (Slot slot : new Slot[]{Slot.HEAD, Slot.FACE, Slot.BACK}) {
-				String id = slot.get();
+				String id = loadout.get(slot);
 				if (id.isEmpty()) continue;
 				ItemStackRenderState item = new ItemStackRenderState();
 				mc.getItemModelResolver().updateForTopItem(item, hatStack(id), ItemDisplayContext.HEAD, mc.level, null, 0);
@@ -139,8 +185,9 @@ public final class Cosmetics {
 					pose.mulPose(Axis.YP.rotationDegrees(180.0F));
 					pose.scale(0.625F, -0.625F, -0.625F);
 					if (id.endsWith("wings")) {
-						// gentle wing flap
-						float flap = 0.88F + 0.12F * (float) Math.sin(t * 0.25F);
+						// wing flap (phoenix wings beat faster)
+						float speed = id.equals("phoenix_wings") ? 0.4F : 0.25F;
+						float flap = 0.86F + 0.14F * (float) Math.sin(t * speed);
 						pose.scale(flap, 1.0F, 1.0F);
 					}
 				} else {
@@ -152,6 +199,8 @@ public final class Cosmetics {
 						pose.mulPose(Axis.YP.rotationDegrees(t * 3.0F));
 					} else if (id.equals("crown")) {
 						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.008F, 0.0F);
+					} else if (id.equals("wizard_hat")) {
+						pose.mulPose(Axis.ZP.rotationDegrees((float) Math.sin(t * 0.08F) * 2.5F));
 					}
 				}
 				item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);

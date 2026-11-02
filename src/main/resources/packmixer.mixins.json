@@ -8,7 +8,8 @@
 		"ScreenEffectRendererMixin",
 		"ItemInHandRendererMixin",
 		"LevelMixin",
-		"ClientPacketListenerMixin"
+		"ClientPacketListenerMixin",
+		"SkyRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0

@@ -21,6 +21,7 @@ public class CosmeticsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		GuiFit.fit(this);
 		int w = Math.min(this.width - 16, Math.max(380, (int) (this.width * 0.62)));
 		int h = Math.min(this.height - 26, Math.max(220, (int) (this.height * 0.66)));
 		x0 = (this.width - w) / 2;
@@ -69,7 +70,7 @@ public class CosmeticsScreen extends Screen {
 		int gx0 = tabsX;
 		int gy0 = y0 + 42;
 		int gw = x1 - 10 - gx0;
-		int cols = 4;
+		int cols = slot.items.size() + 1 > 12 ? 5 : 4;
 		int cw = (gw - (cols - 1) * 4) / cols;
 		int rows = (slot.items.size() + 1 + cols - 1) / cols;
 		int ch = Math.min(cw, (y1 - 22 - gy0 - 4 * (rows - 1)) / Math.max(2, rows));
@@ -190,12 +191,18 @@ public class CosmeticsScreen extends Screen {
 		}
 	}
 
-	private static final java.util.Map<String, String> EFFECT_GLYPH = java.util.Map.of(
-			"fx_sparkle", "✦", "fx_souls", "✺", "fx_flames", "✹", "fx_snow", "❄",
-			"fx_cherry", "✿", "fx_enchant", "✧", "fx_hearts", "♥", "fx_notes", "♪");
-	private static final java.util.Map<String, Integer> EFFECT_COLOR = java.util.Map.of(
-			"fx_sparkle", 0xFFFFF4C0, "fx_souls", 0xFF5FE6FF, "fx_flames", 0xFFFF8A2A, "fx_snow", 0xFFDFF4FF,
-			"fx_cherry", 0xFFFFA8D8, "fx_enchant", 0xFFB38CFF, "fx_hearts", 0xFFFF4D6A, "fx_notes", 0xFF6BFF8F);
+	private static final java.util.Map<String, String> EFFECT_GLYPH = java.util.Map.ofEntries(
+			java.util.Map.entry("fx_sparkle", "✦"), java.util.Map.entry("fx_souls", "✺"), java.util.Map.entry("fx_flames", "✹"),
+			java.util.Map.entry("fx_snow", "❄"), java.util.Map.entry("fx_cherry", "✿"), java.util.Map.entry("fx_enchant", "✧"),
+			java.util.Map.entry("fx_hearts", "♥"), java.util.Map.entry("fx_notes", "♪"), java.util.Map.entry("fx_rainbow", "◎"),
+			java.util.Map.entry("fx_galaxy", "✪"), java.util.Map.entry("fx_totem", "✵"), java.util.Map.entry("fx_lightning", "⚡"),
+			java.util.Map.entry("fx_void", "●"), java.util.Map.entry("fx_lightwings", "❦"));
+	private static final java.util.Map<String, Integer> EFFECT_COLOR = java.util.Map.ofEntries(
+			java.util.Map.entry("fx_sparkle", 0xFFFFF4C0), java.util.Map.entry("fx_souls", 0xFF5FE6FF), java.util.Map.entry("fx_flames", 0xFFFF8A2A),
+			java.util.Map.entry("fx_snow", 0xFFDFF4FF), java.util.Map.entry("fx_cherry", 0xFFFFA8D8), java.util.Map.entry("fx_enchant", 0xFFB38CFF),
+			java.util.Map.entry("fx_hearts", 0xFFFF4D6A), java.util.Map.entry("fx_notes", 0xFF6BFF8F), java.util.Map.entry("fx_rainbow", 0xFFFF7AD9),
+			java.util.Map.entry("fx_galaxy", 0xFF8A6CFF), java.util.Map.entry("fx_totem", 0xFFB6FF4A), java.util.Map.entry("fx_lightning", 0xFF7DF9FF),
+			java.util.Map.entry("fx_void", 0xFF9B30FF), java.util.Map.entry("fx_lightwings", 0xFFFFF6D0));
 
 	@Override
 	public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
@@ -235,5 +242,11 @@ public class CosmeticsScreen extends Screen {
 	@Override
 	public boolean isPauseScreen() {
 		return false;
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
+		GuiFit.restore();
 	}
 }

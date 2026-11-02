@@ -32,6 +32,18 @@ public final class PreviewCache {
 		if (cached != null) return cached == MISSING ? null : cached;
 		Preview loaded = null;
 		try {
+			if (category.id.equals("enchant_glint")) {
+				loaded = glint(pack);
+				cache.put(key, loaded == null ? MISSING : loaded);
+				return loaded;
+			}
+			if (category.id.equals("potions")) {
+				loaded = potion(pack);
+				if (loaded != null) {
+					cache.put(key, loaded);
+					return loaded;
+				}
+			}
 			byte[] png = null;
 			String path = null;
 			if (pack != null) {
@@ -96,6 +108,95 @@ public final class PreviewCache {
 		}
 		cache.put(key, loaded == null ? MISSING : loaded);
 		return loaded;
+	}
+
+	private static NativeImage readImage(SourcePack pack, String path) throws Exception {
+		byte[] png = pack != null && pack.has(path) ? pack.read(path) : null;
+		if (png == null) png = readVanilla(path);
+		return png == null ? null : NativeImage.read(new ByteArrayInputStream(png));
+	}
+
+	/** Enchant glint preview: a diamond sword with the pack's glint running over it (16 frame strip). */
+	private Preview glint(SourcePack pack) throws Exception {
+		NativeImage glint = readImage(pack, "textures/misc/enchanted_glint_item.png");
+		NativeImage sword = readImage(null, "textures/item/diamond_sword.png");
+		if (glint == null || sword == null) {
+			if (glint != null) glint.close();
+			if (sword != null) sword.close();
+			return null;
+		}
+		int w = sword.getWidth(), frames = 16;
+		NativeImage strip = new NativeImage(w, w * frames, true);
+		int gw = glint.getWidth(), gh = glint.getHeight();
+		for (int f = 0; f < frames; f++)
+			for (int y = 0; y < w; y++)
+				for (int x = 0; x < w; x++) {
+					int p = sword.getPixel(x, y);
+					if ((p >>> 24) < 10) {
+						strip.setPixel(x, f * w + y, 0);
+						continue;
+					}
+					// the glint scrolls diagonally, like on a real item
+					int gx = Math.floorMod((x * gw / w) / 2 + f * gw / frames, gw);
+					int gy = Math.floorMod((y * gh / w) / 2 + f * gh / (frames * 2), gh);
+					int q = glint.getPixel(gx, gy);
+					int r = Math.min(255, ((p >> 16) & 0xFF) + (int) (((q >> 16) & 0xFF) * 0.9));
+					int g = Math.min(255, ((p >> 8) & 0xFF) + (int) (((q >> 8) & 0xFF) * 0.9));
+					int b = Math.min(255, (p & 0xFF) + (int) ((q & 0xFF) * 0.9));
+					strip.setPixel(x, f * w + y, (p & 0xFF000000) | (r << 16) | (g << 8) | b);
+				}
+		glint.close();
+		sword.close();
+		return register(strip, "glint");
+	}
+
+	/** Potion preview: bottle + coloured liquid (in game the liquid is tinted, the file itself is grey). */
+	private Preview potion(SourcePack pack) throws Exception {
+		NativeImage bottle = readImage(pack, "textures/item/splash_potion.png");
+		if (bottle == null) bottle = readImage(pack, "textures/item/potion.png");
+		NativeImage overlay = readImage(pack, "textures/item/potion_overlay.png");
+		if (bottle == null || overlay == null) {
+			if (bottle != null) bottle.close();
+			if (overlay != null) overlay.close();
+			return null;
+		}
+		int w = bottle.getWidth(), h = bottle.getHeight();
+		NativeImage out = new NativeImage(w, h, true);
+		int tint = 0xF82423; // healing red
+		for (int y = 0; y < h; y++)
+			for (int x = 0; x < w; x++) {
+				int ox = x * overlay.getWidth() / w, oy = y * overlay.getHeight() / h;
+				int o = overlay.getPixel(ox, oy);
+				int c = bottle.getPixel(x, y);
+				if ((o >>> 24) > 10) {
+					int r = ((o >> 16) & 0xFF) * ((tint >> 16) & 0xFF) / 255, g = ((o >> 8) & 0xFF) * ((tint >> 8) & 0xFF) / 255,
+							b = (o & 0xFF) * (tint & 0xFF) / 255;
+					int under = (o & 0xFF000000) | (r << 16) | (g << 8) | b;
+					c = (c >>> 24) > 10 ? over(under, c) : under;
+				}
+				out.setPixel(x, y, c);
+			}
+		bottle.close();
+		overlay.close();
+		return register(out, "potion");
+	}
+
+	private static int over(int dst, int src) {
+		int sa = src >>> 24;
+		if (sa >= 250) return src;
+		double a = sa / 255.0;
+		int r = (int) (((src >> 16) & 0xFF) * a + ((dst >> 16) & 0xFF) * (1 - a));
+		int g = (int) (((src >> 8) & 0xFF) * a + ((dst >> 8) & 0xFF) * (1 - a));
+		int b = (int) ((src & 0xFF) * a + (dst & 0xFF) * (1 - a));
+		return 0xFF000000 | (r << 16) | (g << 8) | b;
+	}
+
+	private Preview register(NativeImage image, String path) {
+		Identifier id = Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "preview/" + (counter++));
+		DynamicTexture texture = new DynamicTexture(() -> "packmixer preview " + id, image);
+		Minecraft.getInstance().getTextureManager().register(id, texture);
+		registered.add(id);
+		return new Preview(id, image.getWidth(), image.getHeight(), path);
 	}
 
 	private static int badness(String p) {

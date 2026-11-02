@@ -78,8 +78,9 @@ final class DefaultCategories {
 				List.of("textures/gui/container/inventory.png"),
 				List.of("textures/gui/container/inventory.png")));
 		l.add(new Category("sky", "Himmel",
-				List.of("textures/environment/celestial/sun.png", "textures/environment/clouds.png"),
-				List.of("textures/environment/**.png", "optifine/sky/**")));
+				List.of("optifine/sky/world0/sky1.png", "optifine/sky/world0/sky2.png", "textures/environment/celestial/sun.png",
+						"textures/environment/clouds.png"),
+				List.of("textures/environment/**.png", "optifine/sky/**", "mcpatcher/sky/**")));
 		l.add(new Category("crosshair", "Fadenkreuz",
 				List.of("textures/gui/sprites/hud/crosshair.png"),
 				List.of("textures/gui/sprites/hud/crosshair.png",
@@ -107,6 +108,9 @@ final class DefaultCategories {
 		l.add(new Category("hearts", "Herzen",
 				List.of("textures/gui/sprites/hud/heart/full.png"),
 				List.of("textures/gui/sprites/hud/heart/*.png")));
+		l.add(new Category("hunger", "Hungerleiste",
+				List.of("textures/gui/sprites/hud/food_full.png"),
+				List.of("textures/gui/sprites/hud/food_*.png")));
 		return l;
 	}
 

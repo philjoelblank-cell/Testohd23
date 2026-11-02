@@ -46,6 +46,7 @@ public class PackMixerClient implements ClientModInitializer {
 			Features.tick(client);
 			CosmeticEffects.tick(client);
 			Updater.tick(client);
+			CosmeticSync.tick(client);
 			while (openKey.consumeClick()) {
 				if (client.screen == null) {
 					client.setScreen(new PackMixerScreen(null));
