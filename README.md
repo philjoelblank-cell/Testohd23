@@ -1,7 +1,11 @@
 # Testohd Styles – Fabric-Mod für Minecraft 1.21.11
 **Made by Testohd23**
 
-## Mod bauen (Windows, ein Doppelklick)
+## Fertige Mod herunterladen (auch für Freunde)
+Die fertige `.jar` gibt es unter **Releases** auf https://github.com/philjoelblank-cell/Testohd23 .
+In den mods-Ordner legen (Minecraft 1.21.11 + Fabric Loader + Fabric API) – danach **updatet sich die Mod von selbst**.
+
+## Mod selbst bauen (Windows, ein Doppelklick)
 1. Zip entpacken (Rechtsklick → „Alle extrahieren“).
 2. **`MOD_BAUEN.bat` doppelklicken.**
    - Fehlt Java 25 (wird zum Bauen gebraucht), installiert das Skript es automatisch.
@@ -24,15 +28,19 @@ Wenn der Build fehlschlägt, öffnet sich `build-log.txt` – die Datei an Claud
 - **Fertig** → Texturen werden angewendet. Alte 1.8-Packs werden automatisch umgerechnet.
 
 ### Eingebaute Packs (Made by Testohd23)
-Beim ersten Start erzeugt die Mod 49 cleane eigene Packs (Farben, Duo-Packs mit passendem Farbwechsel, Farbverläufe, Regenbogen, Galaxie, Weihnachten) in `.minecraft/testohd-styles/packs/`
-(aus deinen eigenen Minecraft-Texturen umgefärbt + selbst gezeichnete Pixel-Art):
-- **Testohd Neon Lila**, **Testohd Blutrot**, **Testohd Ozean** – PvP-Farbpacks
-- **Testohd Weihnachten Zuckerstange** – Zuckerstangen-Schwerter, Christbaumkugeln statt Enderperlen, Totem mit Weihnachtsmütze, Stern-Fadenkreuz, Schnee auf Gras
-- **Testohd Weihnachten Frost** – Eis-Look, Schneeflocken-Fadenkreuz und -Spinnweben, verschneite Blöcke
-- **Testohd Weihnachten Tannenbaum** – Tannengrün mit roten Griffen, Lichterketten-Obsidian, Goldkugeln, Tannenbaum-Fadenkreuz
+Beim ersten Start erzeugt die Mod 49 cleane Packs in `.minecraft/testohd-styles/packs/` (aus deinen eigenen
+Minecraft-Texturen umgefärbt): einfarbige Packs, Duo-Packs mit passendem Farbwechsel, Farbverläufe, Regenbogen,
+Galaxie und Weihnachten. Jedes Pack enthält:
+- Items, Blöcke, Herzen, Hungerleiste, Hotbar, Fadenkreuz, Verzauberungsglanz, Feuer
+- was man platziert/trägt/wirft: Endkristall, Schild (mit Emblem), Rüstung am Körper, Elytra-Flügel, Dreizack, Windkugel, Truhen
+- einen eigenen Himmel: Tag-Himmel mit Wolken + Nacht-Himmel mit Sternen und Nebel (OptiFine-Format), eigene Sonne
 Deine Auswahl, Einstellungen, Favoriten, Profile und eigenen Packs bleiben bei Updates erhalten
 (Sicherungskopie in `.minecraft/testohd-styles/backup/`).
 Neu erzeugen: Einstellungen → Testohd Styles → „Eingebaute Packs neu erzeugen“.
+
+### Eigene Himmel (Skyboxen)
+Sky-Packs im OptiFine/MCPatcher-Format (`assets/minecraft/optifine/sky/world0/sky*.properties`) werden von der Mod
+selbst gezeichnet – Kategorie „Himmel“ auswählen, fertig (Tag/Nacht-Überblendung, Drehung, Blend add/alpha).
 
 ### Online-Packs (⬇ Online)
 Suche echte Texture Packs auf **modrinth.com** direkt im Spiel (Beliebt, PvP, Weihnachten, Winter, Dunkel, Neu
@@ -47,14 +55,16 @@ Partikel, Low Fire, **Ancient Debris** (leuchtender Rahmen, nur Textur – kein 
 **Sprache**, Steuerung (Tasten ändern), Testohd-Styles-Optionen, 3 Profile.
 
 ### Cosmetics
-- **Kopf:** Krone, Heiligenschein, Zylinder, Weihnachtsmütze, Hörner, Strohhut, Katzenohren
-- **Gesicht:** Sonnenbrille, Monokel, Maske · **Rücken:** Engelsflügel, Teufelsflügel, Rucksack
-- **Effekte:** Partikel-Auren, die um dich kreisen – Sternenstaub, Seelenfeuer, Flammen, Schneesturm,
-  Kirschblüten, Magie, Herzen, Musik
+- **Kopf:** Krone, Heiligenschein, Zaubererhut, Wikingerhelm, Zylinder, Weihnachtsmütze, Hörner, Kopfhörer, Strohhut, Katzenohren
+- **Gesicht:** Sonnenbrille, Monokel, Maske · **Rücken:** Phönixflügel, Engelsflügel, Teufelsflügel, Rucksack
+- **Effekte:** Lichtflügel, Regenbogen-Ring, Galaxie-Orbit, Totem-Wirbel, Sternenstaub, Seelenfeuer, Blitz,
+  Void-Strudel, Flammenring, Schneewolke, Kirschblüten, Magie, Herzen, Musik
 - Seltenheiten (Gewöhnlich/Selten/Episch/Legendär); legendäre Teile glänzen (Verzauberungs-Schimmer)
 - Animationen: Heiligenschein schwebt und dreht sich, Flügel schlagen, Partikel-Akzente
   (Heiligenschein funkelt, Krone glitzert, Weihnachtsmütze schneit, Teufelsflügel rauchen ...)
-- **Nur du siehst sie** (clientseitig). Effekte in der Ego-Sicht sind abschaltbar.
+- **Andere mit der Mod sehen deine Cosmetics** (und du ihre). Dafür schickt die Mod nur deine Spieler-UUID und die
+  Namen deiner Cosmetics an einen öffentlichen ntfy.sh-Kanal. Beides kann in den Einstellungen ausgeschaltet werden.
+- Effekte in der Ego-Sicht sind abschaltbar.
 
 ## Eigene Kategorien
 `.minecraft/testohd-styles/categories.json` – Pfade relativ zu `assets/minecraft/`, `*` = Dateiname,

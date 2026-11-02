@@ -20,7 +20,7 @@ import java.util.function.BooleanSupplier;
 final class AutoTest {
 	static final boolean ENABLED = Boolean.getBoolean("testohd.autotest");
 
-	private record Step(String name, BooleanSupplier ready, Runnable action, int wait) {
+	private record Step(String name, BooleanSupplier ready, Runnable action, int delay) {
 	}
 
 	private static final Deque<Step> steps = new ArrayDeque<>();
@@ -189,7 +189,7 @@ final class AutoTest {
 		} catch (Throwable e) {
 			PackMixerClient.LOGGER.error("autotest: step '{}' failed", s.name(), e);
 		}
-		waitTicks = s.wait();
+		waitTicks = s.delay();
 	}
 
 	private AutoTest() {
