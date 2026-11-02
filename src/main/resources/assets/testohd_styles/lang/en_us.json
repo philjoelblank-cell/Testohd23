@@ -332,5 +332,11 @@
   "packmixer.hat.fx_lightning": "Lightning",
   "packmixer.hat.fx_void": "Void Vortex",
   "packmixer.hat.fx_lightwings": "Light Wings",
-  "packmixer.settings.crystal_silent": "Silent crystal explosions"
+  "packmixer.settings.crystal_silent": "Silent crystal explosions",
+  "packmixer.pack.energie_schwarz": "Energy Black",
+  "packmixer.pack.energie_tuerkis": "Energy Turquoise",
+  "packmixer.pack.desc.e_black": "§8Black §3– energy mace & spear §7– Made by Testohd23",
+  "packmixer.pack.desc.e_teal": "§3Turquoise §b– energy mace & spear §7– Made by Testohd23",
+  "packmixer.category.spear": "Spears",
+  "packmixer.settings.glint_gear": "Glint only on tools & armor"
 }

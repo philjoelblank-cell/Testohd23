@@ -46,6 +46,10 @@ final class DefaultCategories {
 				List.of("textures/item/mace.png"),
 				List.of("textures/item/mace.png", "models/item/mace.json", "models/item/handheld_mace.json",
 						"items/mace.json")));
+		l.add(new Category("spear", "Speere",
+				List.of("textures/item/netherite_spear.png", "textures/item/diamond_spear.png"),
+				List.of("textures/item/*_spear.png", "textures/item/*_spear_in_hand.png", "models/item/*_spear*.json",
+						"items/*_spear.json")));
 		l.add(new Category("bow", "Bögen",
 				List.of("textures/item/bow.png"),
 				List.of("textures/item/bow.png", "textures/item/bow_pulling_*.png",

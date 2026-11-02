@@ -171,6 +171,9 @@ public final class PackMixerConfig {
 		public boolean shareCosmetics = true;      // let other mod users see yours
 		public boolean showOthersCosmetics = true; // see theirs
 
+		// Enchantment glint only on tools / weapons / armor
+		public boolean glintOnlyGear = true;
+
 		// End crystal explosions without sound
 		public boolean crystalSilent = false;
 

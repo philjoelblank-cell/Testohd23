@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 11;
+	public static final int VERSION = 12;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
@@ -274,6 +274,9 @@ public final class BuiltinPacks {
 			gradient("Testohd Verlauf Lila Gold", "g_purplegold", "ring_dot", 0x5B0FB5, 0xB34BE0, 0xFFD700),
 			gradient("Testohd Verlauf Smaragd Gold", "g_emeraldgold", "small_plus", 0x0B6E4F, 0x3CCB7F, 0xF7D046),
 			gradient("Testohd Verlauf Weihnachten", "g_xmas", "tree", 0xE0102A, 0xFFD24A, 0x1EB846),
+			// ---- energy: dark / turquoise with a running light on mace and spears
+			duo("Testohd Energie Schwarz", "e_black", "ring_dot", 0x1A1D22, 0x2FD9C6),
+			duo("Testohd Energie Tuerkis", "e_teal", "circle", 0x0E9C92, 0xB8FFF6),
 			// ---- duo: clean colour + matching colour shift in the highlights
 			duo("Testohd Duo Lila Pink", "d_purplepink", "ring_dot", 0x7B2FE0, 0xFF7AD9),
 			duo("Testohd Duo Blau Cyan", "d_bluecyan", "small_plus", 0x1F4FE0, 0x5CF0FF),
@@ -709,6 +712,10 @@ public final class BuiltinPacks {
 				img.setPixel(x, y, (a << 24) | hsv((x + y) / (float) (w + h) * 1.2f, 0.75f, 0.3f + 0.7f * l));
 			}
 	}
+
+	/** Energy packs: theme name -> colour of the running light on mace and spears. */
+	static final java.util.Map<String, Integer> ENERGY = java.util.Map.of(
+			"Testohd Energie Schwarz", 0x35F2DD, "Testohd Energie Tuerkis", 0xE6FFFC);
 
 	/** Galaxy colours: deep space -> indigo -> purple -> pink nebula -> cyan glow. */
 	static final int[] GALAXY = {0x070720, 0x1A1260, 0x4B1FA8, 0x9B3BD6, 0xF062C8, 0x7FE8FF};

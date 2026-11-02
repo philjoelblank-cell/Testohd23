@@ -332,5 +332,11 @@
   "packmixer.hat.fx_lightning": "Blitz",
   "packmixer.hat.fx_void": "Void-Strudel",
   "packmixer.hat.fx_lightwings": "Lichtflügel",
-  "packmixer.settings.crystal_silent": "Kristall-Explosion stumm"
+  "packmixer.settings.crystal_silent": "Kristall-Explosion stumm",
+  "packmixer.pack.energie_schwarz": "Energie Schwarz",
+  "packmixer.pack.energie_tuerkis": "Energie Türkis",
+  "packmixer.pack.desc.e_black": "§8Schwarz §3– Energie-Mace & Speer §7– Made by Testohd23",
+  "packmixer.pack.desc.e_teal": "§3Türkis §b– Energie-Mace & Speer §7– Made by Testohd23",
+  "packmixer.category.spear": "Speere",
+  "packmixer.settings.glint_gear": "Glanz nur auf Tools & Rüstung"
 }

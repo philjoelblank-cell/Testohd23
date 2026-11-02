@@ -45,6 +45,13 @@ final class PackExtras {
 				"crossbow_arrow", "crossbow_firework"}) {
 			safe(() -> toolTo(th, "item/" + c + ".png", a));
 		}
+		// ---- spears (inventory + in hand)
+		for (String mat : new String[]{"wooden", "stone", "copper", "iron", "golden", "diamond", "netherite"}) {
+			safe(() -> toolTo(th, "item/" + mat + "_spear.png", a));
+			safe(() -> toolTo(th, "item/" + mat + "_spear_in_hand.png", a));
+		}
+		// ---- animated mace + spears for the energy packs
+		if (BuiltinPacks.ENERGY.containsKey(th.name())) safe(() -> energy(th, a));
 		// ---- chests
 		for (String c : new String[]{"normal", "normal_left", "normal_right"}) {
 			safe(() -> recolorTo(th, "entity/chest/" + c + ".png", a, th.ramp()));
@@ -84,6 +91,55 @@ final class PackExtras {
 			}
 		BuiltinPacks.current = null;
 		save(img, a.resolve("environment/celestial/sun.png"));
+	}
+
+	/**
+	 * Energy packs (black / turquoise): mace and spears get a glowing band of light that runs over them
+	 * (animated texture, 16 frames), like the big PvP packs.
+	 */
+	private static void energy(BuiltinPacks.Theme th, Path a) throws Exception {
+		int glow = BuiltinPacks.ENERGY.get(th.name());
+		java.util.List<String> paths = new java.util.ArrayList<>(java.util.List.of("item/mace.png"));
+		for (String mat : new String[]{"wooden", "stone", "copper", "iron", "golden", "diamond", "netherite"}) {
+			paths.add("item/" + mat + "_spear.png");
+			paths.add("item/" + mat + "_spear_in_hand.png");
+		}
+		for (String path : paths) {
+			Path file = a.resolve(path);
+			if (!Files.exists(file)) continue;
+			NativeImage base;
+			try (java.io.InputStream in = Files.newInputStream(file)) {
+				base = NativeImage.read(in);
+			}
+			int w = base.getWidth(), h = Math.min(base.getHeight(), w), frames = 16;
+			NativeImage strip = new NativeImage(w, h * frames, true);
+			for (int f = 0; f < frames; f++) {
+				double pos = f / (double) frames * 2.4 - 0.7;              // band from the handle to the tip
+				double pulse = 0.5 + 0.5 * Math.sin(f / (double) frames * Math.PI * 2);
+				for (int y = 0; y < h; y++)
+					for (int x = 0; x < w; x++) {
+						int p = base.getPixel(x, y);
+						if ((p >>> 24) < 10) {
+							strip.setPixel(x, f * h + y, 0);
+							continue;
+						}
+						double d = (x + (h - 1 - y)) / (double) (w + h - 2);  // 0 handle .. 1 tip
+						double band = Math.exp(-Math.pow((d - pos) * 7, 2));
+						double l = lum(p) / 255.0;
+						double edge = l > 0.55 ? (l - 0.55) * 0.9 * (0.6 + 0.4 * pulse) : 0; // bright parts breathe
+						int c = mix(p & 0xFFFFFF, glow, Math.min(1, band * 0.85 + edge));
+						if (band > 0.75) c = mix(c, 0xFFFFFF, (band - 0.75) * 1.6);
+						strip.setPixel(x, f * h + y, (p & 0xFF000000) | c);
+					}
+			}
+			base.close();
+			BuiltinPacks.Theme keep = BuiltinPacks.current;
+			BuiltinPacks.current = null; // already coloured
+			save(strip, file);
+			BuiltinPacks.current = keep;
+			Files.writeString(file.resolveSibling(file.getFileName() + ".mcmeta"),
+					"{\"animation\": {\"frametime\": 2, \"interpolate\": true}}\n", StandardCharsets.UTF_8);
+		}
 	}
 
 	/** Low fire: the flames are moved down, so burning doesn't cover half of the screen any more. */

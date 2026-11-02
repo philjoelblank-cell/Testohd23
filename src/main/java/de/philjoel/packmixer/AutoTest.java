@@ -91,7 +91,8 @@ final class AutoTest {
 		});
 		step("select pack", 5, () -> {
 			Map<String, String> sel = new LinkedHashMap<>();
-			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, c.id.equals("sky") ? "Verlauf Sonnenuntergang" : "Galaxie");
+			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, c.id.equals("sky") ? "Verlauf Sonnenuntergang"
+					: c.id.equals("mace") || c.id.equals("spear") || c.id.equals("armor") ? "Energie Schwarz" : "Galaxie");
 			PackMixerConfig.saveSelection(sel);
 			PackBuilder.rebuildAndApply();
 		});
@@ -169,6 +170,13 @@ final class AutoTest {
 		shot("world_wings_front");
 		step("totem", 40, () -> Cosmetics.Slot.EFFECT.set("fx_totem"));
 		shot("world_fx_totem");
+		command("item replace entity @p weapon.mainhand with netherite_spear[enchantments={sharpness:1}]");
+		command("item replace entity @p weapon.offhand with mace");
+		command("item replace entity @p armor.chest with netherite_chestplate");
+		step("spear", 30, () -> { });
+		shot("world_spear_front");
+		step("spear fp", 20, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
+		shot("world_spear_first");
 		step("hud", 10, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });
