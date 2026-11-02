@@ -204,7 +204,7 @@ final class AutoTest {
 		// ---- animated crystals + their explosion
 		command("item replace entity @p weapon.mainhand with air");
 		command("item replace entity @p weapon.offhand with end_crystal");
-		command("time set 13800");
+		command("time set 6000");
 		for (CrystalPacks.Design d : CrystalPacks.DESIGNS) {
 			String tag = d.key();
 			step("crystal " + tag, 10, () -> {
@@ -216,16 +216,17 @@ final class AutoTest {
 			});
 			when("reload " + tag, () -> mc.getOverlay() == null, () -> { });
 			command("kill @e[type=end_crystal]");
-			command("summon end_crystal ^ ^ ^4");
+			command("execute as @p at @p rotated 0 0 run summon end_crystal ~ ~ ~4");
 			step("look " + tag, 30, () -> {
 				mc.options.fov().set(40);
 				mc.options.setCameraType(CameraType.FIRST_PERSON);
-				mc.player.setXRot(8);
+				mc.player.setYRot(0);
+				mc.player.setXRot(5);
 			});
 			shot("crystal_" + tag + "_a");
 			step("wait " + tag, 5, () -> { });
 			shot("crystal_" + tag + "_b");
-			command("damage @e[type=end_crystal,limit=1,sort=nearest] 1");
+			command("execute at @p run damage @e[type=end_crystal,limit=1,sort=nearest] 1");
 			step("boom " + tag, 2, () -> { });
 			shot("crystal_" + tag + "_boom1");
 			step("boom2 " + tag, 6, () -> { });

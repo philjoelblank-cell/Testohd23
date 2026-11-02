@@ -955,7 +955,7 @@ public final class BuiltinPacks {
 		if (Files.exists(sword)) {
 			try (InputStream in = Files.newInputStream(sword); NativeImage s = NativeImage.read(in)) {
 				int f = 48 / s.getWidth();
-				for (int y = 0; y < s.getHeight(); y++)
+				for (int y = 0; y < Math.min(s.getHeight(), s.getWidth()); y++)
 					for (int x = 0; x < s.getWidth(); x++) {
 						int p = s.getPixel(x, y);
 						if ((p >>> 24) < 10) continue;
