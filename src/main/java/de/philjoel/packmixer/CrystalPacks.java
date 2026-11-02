@@ -26,15 +26,15 @@ public final class CrystalPacks {
 	}
 
 	static final List<Design> DESIGNS = List.of(
-			new Design("Kristall Frost Puls", "c_frost", 0xBFEFFF, new int[]{0x0B3A66, 0x3FB6FF, 0xBFF2FF, 0xFFFFFF},
+			new Design("Kristall Frost Puls", "c_frost", 0x7FD8FF, new int[]{0x0B3A66, 0x1F8FD6, 0x5FD0FF, 0xD8F6FF},
 					0x8FE8FF, 0xFFFFFF, ParticleTypes.SNOWFLAKE),
-			new Design("Kristall Plasma", "c_plasma", 0xE8A6FF, new int[]{0x2A0050, 0x9B2CFF, 0xFF4FD8, 0xFFE0FF},
+			new Design("Kristall Plasma", "c_plasma", 0xC070FF, new int[]{0x2A0050, 0x8A1FE0, 0xFF4FD8, 0xFFB0F0},
 					0xB02CFF, 0xFF6FE0, ParticleTypes.ELECTRIC_SPARK),
-			new Design("Kristall Inferno", "c_inferno", 0xFFC27A, new int[]{0x3A0500, 0xC81E00, 0xFF8A00, 0xFFF0A0},
+			new Design("Kristall Inferno", "c_inferno", 0xFFA040, new int[]{0x3A0500, 0xD02000, 0xFF7A00, 0xFFD040},
 					0xFF5A00, 0xFFD040, ParticleTypes.FLAME),
-			new Design("Kristall Void", "c_void", 0x6A3AA8, new int[]{0x050208, 0x2A0F45, 0x8A2BFF, 0xE8CCFF},
+			new Design("Kristall Void", "c_void", 0x5A2AA0, new int[]{0x050208, 0x2A0F45, 0x7A2BFF, 0xC890FF},
 					0x7A2BFF, 0x1A0830, ParticleTypes.REVERSE_PORTAL),
-			new Design("Kristall Tuerkis", "c_teal", 0x8FF5EA, new int[]{0x04201E, 0x0E9C92, 0x35F2DD, 0xE6FFFC},
+			new Design("Kristall Tuerkis", "c_teal", 0x40E8D8, new int[]{0x04201E, 0x0E9C92, 0x35F2DD, 0xB8FFF6},
 					0x35F2DD, 0xE6FFFC, ParticleTypes.SOUL_FIRE_FLAME));
 
 	static boolean isCrystalPack(String name) {
@@ -120,7 +120,7 @@ public final class CrystalPacks {
 					if (al < 10) continue;
 					double l = BuiltinPacks.lum(p) / 255.0;
 					// young frames glow bright, older ones fade into the dark colour
-					double t = Math.max(0, Math.min(1, l * 1.15 - age * 0.45 + 0.15));
+					double t = Math.max(0, Math.min(1, 0.2 + l * 0.7 - age * 0.35));
 					img.setPixel(x, y, (al << 24) | BuiltinPacks.gradientAt(d.boomRamp, t));
 				}
 			BuiltinPacks.save(img, a.resolve(path));
@@ -276,7 +276,7 @@ public final class CrystalPacks {
 					double u = (x % face) * 16.0 / face, v = (y % face) * 16.0 / face;
 					if (x < w / 2) { // glass
 						int g = d.glass;
-						double k = Math.min(1.3, (0.35 + l * 0.95) * pulse);
+						double k = Math.min(1.35, (0.25 + l * 1.0) * pulse);
 						int rr = (int) Math.min(255, ((g >> 16) & 0xFF) * k), gg = (int) Math.min(255, ((g >> 8) & 0xFF) * k),
 								bb = (int) Math.min(255, (g & 0xFF) * k);
 						out = (al << 24) | (rr << 16) | (gg << 8) | bb;

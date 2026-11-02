@@ -216,9 +216,9 @@ final class AutoTest {
 			});
 			when("reload " + tag, () -> mc.getOverlay() == null, () -> { });
 			command("kill @e[type=end_crystal]");
-			command("execute as @p at @p rotated 0 0 run summon end_crystal ~ ~ ~4");
+			command("execute as @p at @p rotated 0 0 run summon end_crystal ~ ~ ~7");
 			step("look " + tag, 30, () -> {
-				mc.options.fov().set(40);
+				mc.options.fov().set(50);
 				mc.options.setCameraType(CameraType.FIRST_PERSON);
 				mc.player.setYRot(0);
 				mc.player.setXRot(5);
