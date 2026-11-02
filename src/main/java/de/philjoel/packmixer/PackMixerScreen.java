@@ -234,6 +234,15 @@ public class PackMixerScreen extends Screen {
 		}
 	}
 
+	/** Used by the automatic screenshot test. */
+	void testSelect(int index) {
+		selectCategory(index);
+	}
+
+	int categoryCount() {
+		return categories.size();
+	}
+
 	private void selectCategory(int index) {
 		category = index;
 		lastCategory = index;

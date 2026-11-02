@@ -30,7 +30,7 @@ public class PackMixerSettingsScreen extends Screen {
 			Supplier<String> value) {
 	}
 
-	private static String lastSelected = "item_position";
+	static String lastSelected = "item_position";
 	private static boolean lastSoundsTab = false;
 
 	private final Screen parent;

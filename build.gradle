@@ -30,3 +30,15 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21
 }
+
+// Automatic screenshot test (GitHub build only): ./gradlew runClient -Ptestohd_autotest
+loom {
+	runs {
+		client {
+			if (project.hasProperty("testohd_autotest")) {
+				vmArg "-Dtestohd.autotest=true"
+				programArgs "--width", "1920", "--height", "1080"
+			}
+		}
+	}
+}

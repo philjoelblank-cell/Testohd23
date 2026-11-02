@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 
 /** Cosmetics (layout as in the reference video): player left, Head/Face/Back tabs and cards right. */
 public class CosmeticsScreen extends Screen {
-	private static Cosmetics.Slot lastSlot = Cosmetics.Slot.HEAD;
+	static Cosmetics.Slot lastSlot = Cosmetics.Slot.HEAD;
 
 	private final Screen parent;
 	private final long openedAt = System.currentTimeMillis();
