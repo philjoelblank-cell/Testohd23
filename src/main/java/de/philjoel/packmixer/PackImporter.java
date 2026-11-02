@@ -1,8 +1,5 @@
 package de.philjoel.packmixer;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,27 +14,14 @@ public final class PackImporter {
 	public record Result(int added, int skipped) {
 	}
 
-	/** Opens the system file dialog (zip files, multi-select). Returns an empty list if cancelled. */
+	/**
+	 * Minecraft 26.x has no file dialog library any more: the packs folder is opened instead,
+	 * packs can be copied there or dragged into the window.
+	 */
 	public static List<Path> chooseZipFiles(String title) {
-		List<Path> out = new ArrayList<>();
-		Path start = Path.of(System.getProperty("user.home"), "Downloads");
-		String defaultPath = (Files.isDirectory(start) ? start : Path.of(System.getProperty("user.home")))
-				.toAbsolutePath() + java.io.File.separator;
-		String result;
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			PointerBuffer filters = stack.mallocPointer(1);
-			filters.put(stack.UTF8("*.zip"));
-			filters.flip();
-			result = TinyFileDialogs.tinyfd_openFileDialog(title, defaultPath, filters, "Texture Packs (*.zip)", true);
-		} catch (Throwable t) {
-			PackMixerClient.LOGGER.error("File dialog failed", t);
-			return out;
-		}
-		if (result == null || result.isBlank()) return out;
-		for (String s : result.split("\\|")) {
-			if (!s.isBlank()) out.add(Path.of(s));
-		}
-		return out;
+		PackMixerConfig.ensureDirs();
+		com.mojang.blaze3d.Blaze3D.openPath(PackMixerConfig.packsDir());
+		return new ArrayList<>();
 	}
 
 	/** Copies all valid packs (zip or folder) into the PackMixer packs folder. */

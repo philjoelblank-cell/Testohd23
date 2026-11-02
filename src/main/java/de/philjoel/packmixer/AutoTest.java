@@ -38,7 +38,7 @@ final class AutoTest {
 
 	private static void shot(String name) {
 		step("shot " + name, 3, () -> Screenshot.grab(Minecraft.getInstance().gameDirectory, name + ".png",
-				Minecraft.getInstance().getMainRenderTarget(), 1, c -> { }));
+				Minecraft.getInstance().gameRenderer.mainRenderTarget(), 1, c -> { }));
 	}
 
 	private static void command(String cmd) {
@@ -49,19 +49,19 @@ final class AutoTest {
 	}
 
 	private static void plan(Minecraft mc) {
-		when("game ready", () -> mc.getOverlay() == null && mc.screen != null
+		when("game ready", () -> mc.gui.overlay() == null && mc.gui.screen() != null
 				&& PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
 		for (int scale : new int[]{2, 3, 4}) {
 			step("gui scale " + scale, 5, () -> {
 				mc.options.guiScale().set(scale);
-				mc.resizeDisplay();
+				mc.resizeGui();
 			});
-			step("open menu", 30, () -> mc.setScreen(new PackMixerScreen(null)));
+			step("open menu", 30, () -> mc.gui.setScreen(new PackMixerScreen(null)));
 			int n = PackMixerConfig.loadCategories().size();
 			for (int i = 0; i < n; i++) {
 				int index = i;
 				step("category " + i, 25, () -> {
-					if (mc.screen instanceof PackMixerScreen s) s.testSelect(index);
+					if (mc.gui.screen() instanceof PackMixerScreen s) s.testSelect(index);
 				});
 				shot("menu_s" + scale + "_" + String.format("%02d", i));
 				if (scale != 3) break; // all categories once, the other scales only the first one
@@ -69,7 +69,7 @@ final class AutoTest {
 			for (String entry : new String[]{"item_position", "packmixer", "tt"}) {
 				step("settings " + entry, 20, () -> {
 					PackMixerSettingsScreen.lastSelected = entry;
-					mc.setScreen(new PackMixerSettingsScreen(null));
+					mc.gui.setScreen(new PackMixerSettingsScreen(null));
 				});
 				shot("settings_s" + scale + "_" + entry);
 				if (scale != 3) break;
@@ -77,7 +77,7 @@ final class AutoTest {
 			for (Cosmetics.Slot slot : Cosmetics.Slot.values()) {
 				step("cosmetics " + slot, 20, () -> {
 					CosmeticsScreen.lastSlot = slot;
-					mc.setScreen(new CosmeticsScreen(null));
+					mc.gui.setScreen(new CosmeticsScreen(null));
 				});
 				shot("cosmetics_s" + scale + "_" + slot.name().toLowerCase());
 				if (scale != 3) break;
@@ -86,8 +86,8 @@ final class AutoTest {
 		// ---- in a world: one built-in pack for everything + cosmetics
 		step("gui scale back", 5, () -> {
 			mc.options.guiScale().set(0);
-			mc.resizeDisplay();
-			mc.setScreen(null);
+			mc.resizeGui();
+			mc.gui.setScreen(null);
 		});
 		step("select pack", 5, () -> {
 			Map<String, String> sel = new LinkedHashMap<>();
@@ -95,18 +95,18 @@ final class AutoTest {
 			PackMixerConfig.saveSelection(sel);
 			PackBuilder.rebuildAndApply();
 		});
-		when("reload done", () -> mc.getOverlay() == null, () -> { });
+		when("reload done", () -> mc.gui.overlay() == null, () -> { });
 		step("create world", 40, () -> CreateWorldScreen.openFresh(mc, () -> { }));
-		when("create screen", () -> mc.screen instanceof CreateWorldScreen, () -> {
+		when("create screen", () -> mc.gui.screen() instanceof CreateWorldScreen, () -> {
 			try {
 				var m = CreateWorldScreen.class.getDeclaredMethod("onCreate");
 				m.setAccessible(true);
-				m.invoke(mc.screen);
+				m.invoke(mc.gui.screen());
 			} catch (Exception e) {
 				PackMixerClient.LOGGER.error("autotest: could not create world", e);
 			}
 		});
-		when("in world", () -> mc.player != null && mc.level != null && mc.screen == null, () -> {
+		when("in world", () -> mc.player != null && mc.level != null && mc.gui.screen() == null, () -> {
 			mc.options.renderDistance().set(4);
 			Cosmetics.Slot.HEAD.set("crown");
 			Cosmetics.Slot.BACK.set("phoenix_wings");
@@ -178,10 +178,10 @@ final class AutoTest {
 		shot("world_fire");
 		command("setblock ~ ~ ~ air");
 		command("effect give @p fire_resistance 60");
-		step("menu in world", 30, () -> mc.setScreen(new PackMixerScreen(null)));
+		step("menu in world", 30, () -> mc.gui.setScreen(new PackMixerScreen(null)));
 		shot("world_menu");
 		step("quit", 40, () -> {
-			mc.setScreen(null);
+			mc.gui.setScreen(null);
 			mc.stop();
 		});
 	}

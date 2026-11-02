@@ -1,23 +1,21 @@
 package de.philjoel.packmixer.mixin;
 
 import de.philjoel.packmixer.PackMixerConfig;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.OptionInstance;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.LightmapRenderStateExtractor;
+import net.minecraft.client.renderer.state.LightmapRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Fullbright: makes the light map use a very high brightness value. */
-@Mixin(LightTexture.class)
+/** Fullbright: maximum brightness + night vision light, only on your screen. */
+@Mixin(LightmapRenderStateExtractor.class)
 public abstract class LightTextureMixin {
-	@Redirect(method = "updateLightTexture",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;"))
-	private Object packmixer$fullbright(OptionInstance<?> option) {
-		Object value = option.get();
-		if (PackMixerConfig.settings().fullbright && option == Minecraft.getInstance().options.gamma()) {
-			return 16.0D;
+	@Inject(method = "extract", at = @At("TAIL"))
+	private void packmixer$fullbright(LightmapRenderState state, float partialTicks, CallbackInfo ci) {
+		if (PackMixerConfig.settings().fullbright) {
+			state.brightness = 16.0F;
+			state.nightVisionEffectIntensity = 1.0F;
 		}
-		return value;
 	}
 }

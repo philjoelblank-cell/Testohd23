@@ -190,7 +190,7 @@ public final class Cosmetics {
 					model.body.translateAndRotate(pose);
 					// a bit behind the back, so a chestplate never covers the wings
 					pose.translate(0.0F, 0.375F, id.endsWith("wings") ? 0.11F : 0.0F);
-					pose.mulPose(Axis.YP.rotationDegrees(180.0F));
+					pose.rotateDegrees(Axis.YP, (180.0F));
 					pose.scale(0.625F, -0.625F, -0.625F);
 					if (id.endsWith("wings")) {
 						// wing flap (phoenix wings beat faster)
@@ -204,11 +204,11 @@ public final class Cosmetics {
 					if (id.equals("halo")) {
 						// floating, slowly spinning halo
 						pose.translate(0.0F, (float) Math.sin(t * 0.12F) * 0.03F, 0.0F);
-						pose.mulPose(Axis.YP.rotationDegrees(t * 3.0F));
+						pose.rotateDegrees(Axis.YP, (t * 3.0F));
 					} else if (id.equals("crown")) {
 						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.008F, 0.0F);
 					} else if (id.equals("wizard_hat")) {
-						pose.mulPose(Axis.ZP.rotationDegrees((float) Math.sin(t * 0.08F) * 2.5F));
+						pose.rotateDegrees(Axis.ZP, ((float) Math.sin(t * 0.08F) * 2.5F));
 					}
 				}
 				item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);

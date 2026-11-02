@@ -4,10 +4,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +27,10 @@ public class PackMixerClient implements ClientModInitializer {
 		PackMixerConfig.loadCategories(); // writes categories.json on first start
 
 		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
-		openKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-				"key.packmixer.open", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, category));
-		Features.zoomKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-				"key.packmixer.zoom", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, category));
+		openKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+				"key.packmixer.open", InputConstants.Type.KEYBOARD, InputConstants.KEY_K, category));
+		Features.zoomKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+				"key.packmixer.zoom", InputConstants.Type.KEYBOARD, InputConstants.KEY_C, category));
 
 		Cosmetics.init();
 
@@ -50,8 +49,8 @@ public class PackMixerClient implements ClientModInitializer {
 			AutoTest.tick(client);
 			CrystalSound.tick(client);
 			while (openKey.consumeClick()) {
-				if (client.screen == null) {
-					client.setScreen(new PackMixerScreen(null));
+				if (client.gui.screen() == null) {
+					client.gui.setScreen(new PackMixerScreen(null));
 				}
 			}
 		});

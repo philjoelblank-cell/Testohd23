@@ -35,7 +35,7 @@ public final class TotemTracker {
 	private static void send(Component msg) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.gui == null) return;
-		mc.gui.getChat().addMessage(Component.literal("[TT] ").withStyle(ChatFormatting.LIGHT_PURPLE).append(msg));
+		mc.gui.hud.getChat().addClientSystemMessage(Component.literal("[TT] ").withStyle(ChatFormatting.LIGHT_PURPLE).append(msg));
 	}
 
 	public static void reset() {

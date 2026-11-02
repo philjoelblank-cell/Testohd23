@@ -221,7 +221,7 @@ public class PackMixerSettingsScreen extends Screen {
 						.bounds(x, y, cw, 14).build()); y += 18;
 			}
 			case "language" -> {
-				addRenderableWidget(Ui.glass(Component.translatable("packmixer.language.open"), b -> this.minecraft.setScreen(
+				addRenderableWidget(Ui.glass(Component.translatable("packmixer.language.open"), b -> this.minecraft.gui.setScreen(
 						new net.minecraft.client.gui.screens.options.LanguageSelectScreen(this, options, this.minecraft.getLanguageManager())))
 						.bounds(x, y, cw, 14).build()); y += 18;
 			}
@@ -500,7 +500,7 @@ public class PackMixerSettingsScreen extends Screen {
 	public void onClose() {
 		PackMixerConfig.saveSettings();
 		this.minecraft.options.save();
-		this.minecraft.setScreen(parent);
+		this.minecraft.gui.setScreen(parent);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public final class Category {
 	/** Translated name ("packmixer.category.<id>") – falls back to the name from categories.json. */
 	public String displayName() {
 		String key = "packmixer.category." + id;
-		return net.minecraft.client.resources.language.I18n.exists(key) ? net.minecraft.client.resources.language.I18n.get(key) : name;
+		return net.minecraft.locale.Language.getInstance().has(key) ? net.minecraft.client.resources.language.I18n.get(key) : name;
 	}
 
 	public boolean isCube() {

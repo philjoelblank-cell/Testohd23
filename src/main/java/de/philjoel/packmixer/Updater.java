@@ -52,7 +52,7 @@ public final class Updater {
 	/** Shows the "update downloaded" message once the player is in a world. */
 	public static void tick(Minecraft mc) {
 		if (pendingMessage != null && mc.player != null) {
-			mc.gui.getChat().addMessage(pendingMessage);
+			mc.gui.hud.getChat().addClientSystemMessage(pendingMessage);
 			pendingMessage = null;
 		}
 	}

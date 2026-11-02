@@ -2,8 +2,9 @@ package de.philjoel.packmixer.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import de.philjoel.packmixer.PackMixerConfig;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.FirstPersonHandsAndItemsRenderer;
+import net.minecraft.client.renderer.state.level.FirstPersonHandsAndItemsRenderState;
+import net.minecraft.client.renderer.state.level.PlayerRenderState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -13,11 +14,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** Item position: moves / scales items held in first person. */
-@Mixin(ItemInHandRenderer.class)
+@Mixin(FirstPersonHandsAndItemsRenderer.class)
 public abstract class ItemInHandRendererMixin {
-	@Inject(method = "renderArmWithItem", at = @At("HEAD"))
-	private void packmixer$itemStart(AbstractClientPlayer player, float partialTick, float pitch, InteractionHand hand,
-			float swing, ItemStack stack, float equip, PoseStack pose, SubmitNodeCollector collector, int light, CallbackInfo ci) {
+	@Inject(method = "submitArmWithItem", at = @At("HEAD"))
+	private void packmixer$itemStart(PlayerRenderState playerState, FirstPersonHandsAndItemsRenderState state,
+			float partialTick, float pitch, InteractionHand hand, float attack, ItemStack stack, float equip, PoseStack pose,
+			SubmitNodeCollector collector, int light, CallbackInfo ci) {
 		pose.pushPose();
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
 		if (s.itemPositionEnabled && !stack.isEmpty()) {
@@ -29,9 +31,10 @@ public abstract class ItemInHandRendererMixin {
 		}
 	}
 
-	@Inject(method = "renderArmWithItem", at = @At("RETURN"))
-	private void packmixer$itemEnd(AbstractClientPlayer player, float partialTick, float pitch, InteractionHand hand,
-			float swing, ItemStack stack, float equip, PoseStack pose, SubmitNodeCollector collector, int light, CallbackInfo ci) {
+	@Inject(method = "submitArmWithItem", at = @At("RETURN"))
+	private void packmixer$itemEnd(PlayerRenderState playerState, FirstPersonHandsAndItemsRenderState state,
+			float partialTick, float pitch, InteractionHand hand, float attack, ItemStack stack, float equip, PoseStack pose,
+			SubmitNodeCollector collector, int light, CallbackInfo ci) {
 		pose.popPose();
 	}
 }

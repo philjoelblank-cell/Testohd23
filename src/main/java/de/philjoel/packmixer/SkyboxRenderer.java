@@ -1,18 +1,15 @@
 package de.philjoel.packmixer;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -30,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.Properties;
 
 /**
@@ -49,8 +44,6 @@ public final class SkyboxRenderer {
 	private static volatile boolean dirty = true;
 	private static List<String> lastPacks;
 	private static GpuBuffer box;
-	private static RenderPipeline additivePipeline;
-	private static boolean additiveFailed;
 
 	/** Called after the resource packs were (re)applied. */
 	public static void markDirty() {
@@ -62,7 +55,7 @@ public final class SkyboxRenderer {
 	private static void ensureLoaded(Minecraft mc) {
 		List<String> packs = new ArrayList<>(mc.getResourcePackRepository().getSelectedIds());
 		if (!dirty && packs.equals(lastPacks)) return;
-		if (mc.getOverlay() != null) return; // resources are still reloading
+		if (mc.gui.overlay() != null) return; // resources are still reloading
 		dirty = false;
 		lastPacks = packs;
 		for (Identifier id : loadedTextures) mc.getTextureManager().release(id);
@@ -179,16 +172,16 @@ public final class SkyboxRenderer {
 
 	// ======================================================================= drawing
 
-	/** Overworld: after the sky colour, before sun / moon / stars. */
-	public static void renderOverworld(float sunAngle, float rainBrightness) {
-		render(overworldLayers(), sunAngle, rainBrightness);
+	/** Overworld: after the sky colour, before sun / moon / stars (inside the vanilla sky render pass). */
+	public static void renderOverworld(RenderPass pass, float sunAngle, float rainBrightness) {
+		render(pass, overworldLayers(), sunAngle, rainBrightness);
 	}
 
 	/** The End: on top of the vanilla end sky. */
-	public static void renderEnd() {
+	public static void renderEnd(RenderPass pass) {
 		Minecraft mc = Minecraft.getInstance();
 		ensureLoaded(mc);
-		render(end, 0f, 1f);
+		render(pass, end, 0f, 1f);
 	}
 
 	private static List<Layer> overworldLayers() {
@@ -196,40 +189,34 @@ public final class SkyboxRenderer {
 		return overworld;
 	}
 
-	private static void render(List<Layer> layers, float sunAngle, float rain) {
+	private static void render(RenderPass pass, List<Layer> layers, float sunAngle, float rain) {
 		if (layers.isEmpty()) return;
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.level == null) return;
 		try {
 			if (box == null) box = buildBox();
-			int time = (int) Math.floorMod(mc.level.getDayTime(), 24000L);
-			GpuTextureView color = mc.getMainRenderTarget().getColorTextureView();
-			GpuTextureView depth = mc.getMainRenderTarget().getDepthTextureView();
-			RenderSystem.AutoStorageIndexBuffer quads = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+			int time = (int) Math.floorMod(mc.level.getOverworldClockTime(), 24000L);
+			RenderSystem.AutoStorageIndexBuffer quads = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
 			GpuBuffer indices = quads.getBuffer(36);
 			for (Layer l : layers) {
 				float b = Math.max(0f, Math.min(1f, fade(l, time) * rain));
 				if (b < 1e-4f) continue;
 				AbstractTexture tex = mc.getTextureManager().getTexture(l.texture);
-				RenderPipeline pipeline = l.additive ? additive() : RenderPipelines.END_SKY;
-				if (pipeline == null) pipeline = RenderPipelines.END_SKY;
-				Vector4f tint = pipeline == RenderPipelines.END_SKY ? new Vector4f(1f, 1f, 1f, b) : new Vector4f(b, b, b, 1f);
 				Matrix4fStack mv = RenderSystem.getModelViewStack();
 				mv.pushMatrix();
 				if (l.rotate) mv.rotate(sunAngle * l.speed, l.axis);
 				mv.rotateY((float) Math.toRadians(-90));
-				GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(mv, tint, new Vector3f(), new Matrix4f());
-				try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Testohd sky",
-						color, OptionalInt.empty(), depth, OptionalDouble.empty())) {
-					pass.setPipeline(pipeline);
-					RenderSystem.bindDefaultUniforms(pass);
-					pass.setUniform("DynamicTransforms", transform);
-					pass.bindTexture("Sampler0", tex.getTextureView(), tex.getSampler());
-					pass.setVertexBuffer(0, box);
-					pass.setIndexBuffer(indices, quads.type());
-					pass.drawIndexed(0, 0, 36, 1);
-				}
+				GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(mv), new Vector4f(1f, 1f, 1f, b));
 				mv.popMatrix();
+				pass.pushDebugGroup(() -> "Testohd sky");
+				pass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.END_SKY));
+				RenderSystem.bindDefaultUniforms(pass);
+				pass.setUniform("DynamicTransforms", transform);
+				pass.setUniform("Sampler0", tex.getTextureView(), tex.getSampler());
+				pass.setVertexBuffer(0, box.slice());
+				pass.setIndexBuffer(indices, quads.type());
+				pass.drawIndexed(36, 1, 0, 0, 0);
+				pass.popDebugGroup();
 			}
 		} catch (Throwable e) {
 			PackMixerClient.LOGGER.warn("Custom sky failed, turning it off: {}", e.toString());
@@ -238,32 +225,11 @@ public final class SkyboxRenderer {
 		}
 	}
 
-	private static RenderPipeline additive() {
-		if (additivePipeline == null && !additiveFailed) {
-			try {
-				additivePipeline = RenderPipeline.builder()
-						.withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-						.withUniform("Projection", UniformType.UNIFORM_BUFFER)
-						.withLocation(Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "pipeline/sky_additive"))
-						.withVertexShader("core/position_tex_color")
-						.withFragmentShader("core/position_tex_color")
-						.withSampler("Sampler0")
-						.withBlend(BlendFunction.ADDITIVE)
-						.withDepthWrite(false)
-						.withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
-						.build();
-			} catch (Throwable e) {
-				additiveFailed = true;
-			}
-		}
-		return additivePipeline;
-	}
-
 	/** The 6 faces exactly like OptiFine lays them out in the 3x2 image. */
 	private static GpuBuffer buildBox() {
 		VertexFormat format = DefaultVertexFormat.POSITION_TEX_COLOR;
 		try (ByteBufferBuilder bytes = ByteBufferBuilder.exactlySized(24 * format.getVertexSize())) {
-			BufferBuilder b = new BufferBuilder(bytes, VertexFormat.Mode.QUADS, format);
+			BufferBuilder b = new BufferBuilder(bytes, PrimitiveTopology.QUADS, format);
 			for (int side : new int[]{4, 1, 0, 5, 2, 3}) {
 				float tx = (side % 3) / 3f, ty = (side / 3) / 2f;
 				vertex(b, side, -1, -1, tx, ty);

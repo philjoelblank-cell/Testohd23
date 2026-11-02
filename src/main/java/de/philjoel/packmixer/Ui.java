@@ -160,7 +160,7 @@ public final class Ui {
 	public static String packDisplay(String name) {
 		if (name == null) return "";
 		String key = "packmixer.pack." + name.toLowerCase(java.util.Locale.ROOT).replace(' ', '_');
-		return net.minecraft.client.resources.language.I18n.exists(key) ? net.minecraft.client.resources.language.I18n.get(key) : name;
+		return net.minecraft.locale.Language.getInstance().has(key) ? net.minecraft.client.resources.language.I18n.get(key) : name;
 	}
 
 	/** Pack name: built-in packs are drawn in the brand gradient. */

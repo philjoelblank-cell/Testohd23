@@ -14,7 +14,7 @@ public final class Features {
 	static void tick(Minecraft mc) {
 		prevZoom = zoom;
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
-		boolean active = s.zoomEnabled && zoomKey != null && zoomKey.isDown() && mc.screen == null;
+		boolean active = s.zoomEnabled && zoomKey != null && zoomKey.isDown() && mc.gui.screen() == null;
 		float target = active ? (float) s.zoomFactor : 1f;
 		zoom += (target - zoom) * 0.5f;
 		if (Math.abs(zoom - target) < 0.01f) zoom = target;

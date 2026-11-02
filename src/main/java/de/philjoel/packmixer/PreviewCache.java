@@ -212,11 +212,9 @@ public final class PreviewCache {
 	}
 
 	private static byte[] readVanilla(String path) throws Exception {
-		var vanilla = Minecraft.getInstance().getVanillaPackResources();
-		IoSupplier<InputStream> res = vanilla.getResource(PackType.CLIENT_RESOURCES,
-				Identifier.fromNamespaceAndPath("minecraft", path));
-		if (res == null) return null;
-		try (InputStream in = res.get()) {
+		InputStream opened = BuiltinPacks.openVanilla(path);
+		if (opened == null) return null;
+		try (InputStream in = opened) {
 			return in.readAllBytes();
 		}
 	}

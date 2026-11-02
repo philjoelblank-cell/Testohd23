@@ -496,13 +496,18 @@ public final class BuiltinPacks {
 		}
 	}
 
+	/** Opens a file of the vanilla resources (26.x: through a vanilla-only resource manager). */
+	static InputStream openVanilla(String path) throws java.io.IOException {
+		var res = Minecraft.getInstance().getVanillaPackResources().asResourceManager()
+				.getResource(Identifier.fromNamespaceAndPath("minecraft", path));
+		return res.isPresent() ? res.get().open() : null;
+	}
+
 	static NativeImage vanilla(String texturePath) {
 		try {
-			var res = Minecraft.getInstance().getVanillaPackResources();
-			IoSupplier<InputStream> s = res.getResource(PackType.CLIENT_RESOURCES,
-					Identifier.fromNamespaceAndPath("minecraft", "textures/" + texturePath));
-			if (s == null) return null;
-			try (InputStream in = s.get()) {
+			InputStream opened = openVanilla("textures/" + texturePath);
+			if (opened == null) return null;
+			try (InputStream in = opened) {
 				return NativeImage.read(in);
 			}
 		} catch (Exception e) {
@@ -512,11 +517,9 @@ public final class BuiltinPacks {
 
 	static void copyMeta(String texturePath, Path texturesRoot) {
 		try {
-			var res = Minecraft.getInstance().getVanillaPackResources();
-			IoSupplier<InputStream> s = res.getResource(PackType.CLIENT_RESOURCES,
-					Identifier.fromNamespaceAndPath("minecraft", "textures/" + texturePath + ".mcmeta"));
-			if (s == null) return;
-			try (InputStream in = s.get()) {
+			InputStream opened = openVanilla("textures/" + texturePath + ".mcmeta");
+			if (opened == null) return;
+			try (InputStream in = opened) {
 				Path out = texturesRoot.resolve(texturePath + ".mcmeta");
 				Files.createDirectories(out.getParent());
 				Files.write(out, in.readAllBytes());

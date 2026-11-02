@@ -115,7 +115,7 @@ public class PackMixerScreen extends Screen {
 		int cosW = this.font.width("♟ " + Component.translatable("packmixer.cosmetics").getString()) + 10;
 		addRenderableWidget(new Ui.TextButton(favX - 4 - cosW, y0 + 4, cosW, 12,
 				Component.literal("♟ ").append(Component.translatable("packmixer.cosmetics")), false, Ui.TEXT,
-				() -> this.minecraft.setScreen(new CosmeticsScreen(this))));
+				() -> this.minecraft.gui.setScreen(new CosmeticsScreen(this))));
 
 		// ---------------------------------------------------------------- icon bar + Settings button
 		barY = y0 + 25;
@@ -123,7 +123,7 @@ public class PackMixerScreen extends Screen {
 		addRenderableWidget(new Ui.SettingsButton(x1 - 8 - settingsW, barY - 1, settingsW, ICON + 2,
 				Component.translatable("packmixer.settings"), () -> {
 					rescanOnReturn = true;
-					this.minecraft.setScreen(new PackMixerSettingsScreen(this));
+					this.minecraft.gui.setScreen(new PackMixerSettingsScreen(this));
 				}));
 		int barX0 = x0 + 10;
 		int barX1 = x1 - 8 - settingsW - 6;
@@ -221,9 +221,9 @@ public class PackMixerScreen extends Screen {
 			}));
 			menu.add(new MenuItem(Component.translatable("packmixer.menu.online"), () -> {
 				rescanOnReturn = true;
-				this.minecraft.setScreen(new OnlinePacksScreen(this));
+				this.minecraft.gui.setScreen(new OnlinePacksScreen(this));
 			}));
-			menu.add(new MenuItem(Component.translatable("packmixer.menu.folder"), () -> Util.getPlatform().openPath(PackMixerConfig.packsDir())));
+			menu.add(new MenuItem(Component.translatable("packmixer.menu.folder"), () -> com.mojang.blaze3d.Blaze3D.openPath(PackMixerConfig.packsDir())));
 			menu.add(new MenuItem(Component.translatable("packmixer.menu.reload"), () -> {
 				rescan();
 				setStatus(Component.translatable("packmixer.pack_count", library.size()).getString());
@@ -300,7 +300,7 @@ public class PackMixerScreen extends Screen {
 				if (event.x() >= mx && event.x() < mx + mw && event.y() >= iy && event.y() < iy + 12) {
 					menuOpen = false;
 					menu.get(i).action().run();
-					if (this.minecraft.screen == this) rebuildWidgets();
+					if (this.minecraft.gui.screen() == this) rebuildWidgets();
 					return true;
 				}
 			}
@@ -405,15 +405,15 @@ public class PackMixerScreen extends Screen {
 			} catch (Exception e) {
 				PackMixerClient.LOGGER.error("Testohd Styles: building the pack failed", e);
 			}
-			this.minecraft.setScreen(parent);
+			this.minecraft.gui.setScreen(parent);
 			PackBuilder.applyInGame(!selection.isEmpty());
 			dirty = false;
 			if (PackMixerConfig.settings().chatMessageOnApply && this.minecraft.player != null) {
-				this.minecraft.gui.getChat().addMessage(Component.literal("[Testohd Styles] ").withStyle(ChatFormatting.LIGHT_PURPLE)
+				this.minecraft.gui.hud.getChat().addClientSystemMessage(Component.literal("[Testohd Styles] ").withStyle(ChatFormatting.LIGHT_PURPLE)
 						.append(Component.translatable("packmixer.applied", selection.size()).withStyle(ChatFormatting.WHITE)));
 			}
 		} else {
-			this.minecraft.setScreen(parent);
+			this.minecraft.gui.setScreen(parent);
 		}
 	}
 
