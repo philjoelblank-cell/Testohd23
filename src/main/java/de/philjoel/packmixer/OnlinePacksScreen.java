@@ -1,7 +1,7 @@
 package de.philjoel.packmixer;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
@@ -178,7 +178,7 @@ public class OnlinePacksScreen extends Screen {
 	private final long openedAt = System.currentTimeMillis();
 
 	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		float in = Ui.intro(openedAt);
 		g.pose().pushMatrix();
 		g.pose().translate(0, (1 - in) * 6);
@@ -186,7 +186,7 @@ public class OnlinePacksScreen extends Screen {
 		g.pose().popMatrix();
 	}
 
-	private void renderContent(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	private void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		Ui.window(g, px0, py0, px1, py1);
 		Ui.headerBar(g, px0, py0, px1);
 		int visible = Math.max(1, (py1 - 18 - listY0) / rowH);
@@ -195,7 +195,7 @@ public class OnlinePacksScreen extends Screen {
 			g.fill(px0 + 8, ry, px1 - 8, ry + rowH - 4, Ui.CARD);
 		}
 
-		super.render(g, mouseX, mouseY, delta);
+		super.extractRenderState(g, mouseX, mouseY, delta);
 
 		Ui.header(g, this.width, Component.translatable("packmixer.online").getString());
 		Ui.brand(g, px0 + 18 + backW, py0 + 6, Component.translatable("packmixer.online").getString());
@@ -206,10 +206,10 @@ public class OnlinePacksScreen extends Screen {
 		for (int i = 0; i < visible && offset + i < results.size(); i++) {
 			Modrinth.Hit hit = results.get(offset + i);
 			int ry = listY0 + i * rowH;
-			g.drawString(this.font, Component.literal(this.font.plainSubstrByWidth(hit.title(), textW)).withStyle(ChatFormatting.BOLD),
+			g.text(this.font, Component.literal(this.font.plainSubstrByWidth(hit.title(), textW)).withStyle(ChatFormatting.BOLD),
 					px0 + 14, ry + 4, Ui.TEXT);
 			String meta = Component.translatable("packmixer.online.meta", hit.author(), formatCount(hit.downloads()), hit.lastVersion()).getString();
-			g.drawString(this.font, this.font.plainSubstrByWidth(meta, textW), px0 + 14, ry + 16, Ui.DIM);
+			g.text(this.font, this.font.plainSubstrByWidth(meta, textW), px0 + 14, ry + 16, Ui.DIM);
 		}
 		if (maxOffset > 0) {
 			int h = py1 - 18 - listY0;
@@ -218,9 +218,9 @@ public class OnlinePacksScreen extends Screen {
 			g.fill(px1 - 5, listY0, px1 - 3, listY0 + h, 0x30FFFFFF);
 			g.fill(px1 - 5, ty, px1 - 3, ty + thumb, 0xC0FFFFFF);
 		}
-		g.drawString(this.font, status, px0 + 8, py1 - 13, loading ? Ui.DIM : Ui.GOOD);
+		g.text(this.font, status, px0 + 8, py1 - 13, loading ? Ui.DIM : Ui.GOOD);
 		String note = Component.translatable("packmixer.online.note").getString();
-		g.drawString(this.font, note, px1 - 8 - this.font.width(note), py1 - 13, 0x80FFFFFF);
+		g.text(this.font, note, px1 - 8 - this.font.width(note), py1 - 13, 0x80FFFFFF);
 	}
 
 	private static String formatCount(long n) {

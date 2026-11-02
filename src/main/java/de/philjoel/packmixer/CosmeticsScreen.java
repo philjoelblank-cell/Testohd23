@@ -1,6 +1,6 @@
 package de.philjoel.packmixer;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
@@ -56,11 +56,11 @@ public class CosmeticsScreen extends Screen {
 				rebuildWidgets();
 			}) {
 				@Override
-				protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+				protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 					if (activeTab) g.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x55FFFFFF);
 					else if (isHoveredOrFocused()) g.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x20FFFFFF);
 					String t = getMessage().getString() + (worn ? " •" : " ·");
-					g.drawString(font, t, getX() + (getWidth() - font.width(t)) / 2, getY() + 3, activeTab ? Ui.TEXT : Ui.DIM, false);
+					g.text(font, t, getX() + (getWidth() - font.width(t)) / 2, getY() + 3, activeTab ? Ui.TEXT : Ui.DIM, false);
 				}
 			});
 			i++;
@@ -124,7 +124,7 @@ public class CosmeticsScreen extends Screen {
 		}
 
 		@Override
-		protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+		protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 			int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 			Cosmetics.Rarity rarity = id.isEmpty() ? Cosmetics.Rarity.COMMON : Cosmetics.rarity(id);
 			g.fill(x, y, x + w, y + h, selected ? 0x40FFFFFF : isHoveredOrFocused() ? 0x30FFFFFF : Ui.CARD);
@@ -138,7 +138,7 @@ public class CosmeticsScreen extends Screen {
 			int headY = y + h / 2 - headS / 2 - 2;
 			float t = Ui.time();
 			if (id.isEmpty()) {
-				g.renderOutline(cx - 9, headY - 2, 18, 18, Ui.DIM);
+				g.outline(cx - 9, headY - 2, 18, 18, Ui.DIM);
 				for (int k = -8; k <= 8; k++) g.fill(cx + k, headY + 7 - k, cx + k + 1, headY + 8 - k, Ui.DIM);
 			} else if (slot == Cosmetics.Slot.EFFECT) {
 				// animated swirl of the effect symbol
@@ -149,12 +149,12 @@ public class CosmeticsScreen extends Screen {
 					double a = t * 1.6 + k * Math.PI / 2;
 					int gx = cx + (int) (Math.cos(a) * r) - 3;
 					int gy = y + h / 2 - 6 + (int) (Math.sin(a) * r * 0.5);
-					g.drawString(font, glyph, gx, gy, k % 2 == 0 ? col : Ui.lerp(col, 0xFFFFFFFF, 0.5f), false);
+					g.text(font, glyph, gx, gy, k % 2 == 0 ? col : Ui.lerp(col, 0xFFFFFFFF, 0.5f), false);
 				}
 				g.pose().pushMatrix();
 				g.pose().translate(cx, y + h / 2f - 4);
 				g.pose().scale(2f, 2f);
-				g.drawString(font, glyph, -font.width(glyph) / 2, -4, col, true);
+				g.text(font, glyph, -font.width(glyph) / 2, -4, col, true);
 				g.pose().popMatrix();
 			} else {
 				// one 3D model: a dark bust wearing the item, so it sits exactly where it sits on your skin
@@ -204,7 +204,7 @@ public class CosmeticsScreen extends Screen {
 			java.util.Map.entry("fx_void", 0xFF9B30FF), java.util.Map.entry("fx_lightwings", 0xFFFFF6D0));
 
 	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		float in = Ui.intro(openedAt);
 		g.pose().pushMatrix();
 		g.pose().translate(0, (1 - in) * 6);
@@ -212,11 +212,11 @@ public class CosmeticsScreen extends Screen {
 		g.pose().popMatrix();
 	}
 
-	private void renderContent(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	private void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		Ui.header(g, this.width, null);
 		Ui.window(g, x0, y0, x1, y1);
 		Ui.headerBar(g, x0, y0, x1);
-		g.drawString(this.font, Component.translatable("packmixer.cosmetics"), x0 + 12, y0 + 6, Ui.TEXT, false);
+		g.text(this.font, Component.translatable("packmixer.cosmetics"), x0 + 12, y0 + 6, Ui.TEXT, false);
 		Ui.small(g, Component.translatable("packmixer.cosmetics.only_you").getString(),
 				x0 + 16 + this.font.width(Component.translatable("packmixer.cosmetics")), y0 + 7, Ui.FAINT);
 		g.fill(previewX1 + 1, y0 + 22, previewX1 + 2, y1 - 20, Ui.LINE);
@@ -225,7 +225,7 @@ public class CosmeticsScreen extends Screen {
 			int top = y0 + 26;
 			int bottom = y1 - 24;
 			int size = Math.max(30, Math.min(80, (bottom - top) / 2 - 6));
-			InventoryScreen.renderEntityInInventoryFollowsMouse(g, x0 + 6, top, previewX1 - 4, bottom, size, 0.0625f, mouseX, mouseY, this.minecraft.player);
+			InventoryScreen.extractEntityInInventoryFollowsMouse(g, x0 + 6, top, previewX1 - 4, bottom, size, 0.0625f, mouseX, mouseY, this.minecraft.player);
 			String hint = Component.translatable("packmixer.cosmetics.rotate").getString();
 			Ui.small(g, hint, (x0 + previewX1) / 2 - Ui.smallWidth(hint) / 2, y1 - 30, Ui.FAINT);
 		} else {
@@ -247,7 +247,7 @@ public class CosmeticsScreen extends Screen {
 			}
 		}
 
-		super.render(g, mouseX, mouseY, delta);
+		super.extractRenderState(g, mouseX, mouseY, delta);
 	}
 
 	@Override

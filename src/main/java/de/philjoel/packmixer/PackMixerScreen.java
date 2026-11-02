@@ -1,7 +1,7 @@
 package de.philjoel.packmixer;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -338,7 +338,7 @@ public class PackMixerScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		float in = Ui.intro(openedAt);
 		g.pose().pushMatrix();
 		g.pose().translate(0, (1 - in) * 6);
@@ -346,14 +346,14 @@ public class PackMixerScreen extends Screen {
 		g.pose().popMatrix();
 	}
 
-	private void renderContent(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	private void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		Ui.header(g, this.width, null);
 		Ui.window(g, x0, y0, x1, y1);
 		Ui.headerBar(g, x0, y0, x1);
 		Ui.brand(g, x0 + 28, y0 + 6, Component.translatable("packmixer.subtitle.textures").getString());
 		g.fill(x1 - 8 - 76, y0 + 15, x1 - 8, y0 + 16, Ui.LINE); // search underline
 
-		super.render(g, mouseX, mouseY, delta);
+		super.extractRenderState(g, mouseX, mouseY, delta);
 
 		Category cat = categories.isEmpty() ? null : categories.get(category);
 		if (cat != null) {
@@ -364,7 +364,7 @@ public class PackMixerScreen extends Screen {
 					+ (current == null ? Component.translatable("packmixer.default").getString() : Ui.packDisplay(current));
 			Ui.small(g, active, x1 - 36 - Ui.smallWidth(active), sectionY + 1, Ui.FAINT);
 			if (styles == 0 && !menuOpen) {
-				g.drawString(this.font, Component.translatable(favoritesOnly ? "packmixer.no_favorites" : "packmixer.empty_hint"),
+				g.text(this.font, Component.translatable(favoritesOnly ? "packmixer.no_favorites" : "packmixer.empty_hint"),
 						x0 + 10, cards.isEmpty() ? gridY + 4 : gridY1 - 12, Ui.DIM, false);
 			}
 		}
@@ -385,12 +385,12 @@ public class PackMixerScreen extends Screen {
 		if (menuOpen && !menu.isEmpty()) {
 			int mx = menuX(), my = menuY(), mw = menuW(), mh = menu.size() * 12 + 6;
 			g.fill(mx, my, mx + mw, my + mh, 0xF0141020);
-			g.renderOutline(mx, my, mw, mh, 0x60FFFFFF);
+			g.outline(mx, my, mw, mh, 0x60FFFFFF);
 			for (int i = 0; i < menu.size(); i++) {
 				int iy = my + 3 + i * 12;
 				boolean hover = mouseX >= mx && mouseX < mx + mw && mouseY >= iy && mouseY < iy + 12;
 				if (hover) g.fill(mx + 1, iy, mx + mw - 1, iy + 12, 0x30FFFFFF);
-				g.drawString(this.font, menu.get(i).label(), mx + 7, iy + 2, hover ? Ui.TEXT : Ui.DIM, false);
+				g.text(this.font, menu.get(i).label(), mx + 7, iy + 2, hover ? Ui.TEXT : Ui.DIM, false);
 			}
 		}
 	}

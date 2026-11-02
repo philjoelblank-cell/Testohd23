@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -270,12 +270,12 @@ public class PackMixerSettingsScreen extends Screen {
 	private AbstractWidget tab(int x, int y, int w, String label, int count, boolean on, Runnable action) {
 		return new Ui.FlatButton(x, y, w, 13, Component.literal(label), action) {
 			@Override
-			protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+			protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 				if (on) g.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x55FFFFFF);
 				else if (isHoveredOrFocused()) g.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x20FFFFFF);
 				int tw = font.width(label) + 4 + Ui.smallWidth(String.valueOf(count)) + 4;
 				int tx = getX() + (getWidth() - tw) / 2;
-				g.drawString(font, label, tx, getY() + 3, on ? Ui.TEXT : Ui.DIM, false);
+				g.text(font, label, tx, getY() + 3, on ? Ui.TEXT : Ui.DIM, false);
 				int bx = tx + font.width(label) + 4;
 				g.fill(bx, getY() + 3, bx + Ui.smallWidth(String.valueOf(count)) + 4, getY() + 10, 0x40FFFFFF);
 				Ui.small(g, String.valueOf(count), bx + 2, getY() + 4, Ui.DIM);
@@ -379,16 +379,16 @@ public class PackMixerSettingsScreen extends Screen {
 			}
 
 			@Override
-			public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float delta) {
+			public void extractWidgetRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 				int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 				g.fill(x, y, x + w, y + h, 0x30000000);
 				int fill = (int) (w * this.value);
 				g.fillGradient(x, y, x + fill, y + h, 0xD0E6E4F0, 0xB0C4C1D6);
 				g.fill(x + fill - 1, y - 1, x + fill + 2, y + h + 1, 0xFFFFFFFF);
-				g.renderOutline(x, y, w, h, isHoveredOrFocused() ? 0x80FFFFFF : 0x40FFFFFF);
+				g.outline(x, y, w, h, isHoveredOrFocused() ? 0x80FFFFFF : 0x40FFFFFF);
 				int tw = font.width(getMessage());
 				int tx = x + Math.max(4, Math.min(w - tw - 4, fill + 6));
-				g.drawString(font, getMessage(), tx, y + 3, Ui.TEXT, true);
+				g.text(font, getMessage(), tx, y + 3, Ui.TEXT, true);
 			}
 
 			@Override
@@ -432,7 +432,7 @@ public class PackMixerSettingsScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		float in = Ui.intro(openedAt);
 		g.pose().pushMatrix();
 		g.pose().translate(0, (1 - in) * 6);
@@ -440,7 +440,7 @@ public class PackMixerSettingsScreen extends Screen {
 		g.pose().popMatrix();
 	}
 
-	private void renderContent(GuiGraphics g, int mouseX, int mouseY, float delta) {
+	private void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		Ui.header(g, this.width, null);
 		Ui.window(g, x0, y0, x1, y1);
 		Ui.headerBar(g, x0, y0, x1);
@@ -455,7 +455,7 @@ public class PackMixerSettingsScreen extends Screen {
 			int top = Math.max(boxY1 + 6, y0 + (y1 - y0) / 2 - 10);
 			int bottom = y1 - 20;
 			if (bottom - top > 40) {
-				InventoryScreen.renderEntityInInventoryFollowsMouse(g, cx - 30, top, cx + 30, bottom,
+				InventoryScreen.extractEntityInInventoryFollowsMouse(g, cx - 30, top, cx + 30, bottom,
 						Math.max(20, Math.min(45, (bottom - top) / 2 - 4)), 0.0625f, mouseX, mouseY, this.minecraft.player);
 			}
 		}
@@ -466,14 +466,14 @@ public class PackMixerSettingsScreen extends Screen {
 		Entry e = entries().stream().filter(en -> en.id.equals(selected)).findFirst().orElse(entries().get(0));
 		int x = detailX0 + 8;
 		Ui.item(g, e.icon, x, y0 + 25, 10);
-		g.drawString(this.font, title(e), x + 14, y0 + 24, Ui.TEXT, false);
+		g.text(this.font, title(e), x + 14, y0 + 24, Ui.TEXT, false);
 		String desc = e.id.startsWith("sound.") ? tr("packmixer.sound.desc") : tr("packmixer.feature." + e.id + ".desc");
 		Ui.small(g, desc, x + 14, y0 + 34, Ui.FAINT);
 		g.fill(x - 4, boxY, x1 - 10, boxY1, 0x38000000);
 		Ui.section(g, title(e).getString(), null, x, boxY + 4);
 		g.fill(x, boxY + 14, x1 - 14, boxY + 15, Ui.LINE);
 
-		super.render(g, mouseX, mouseY, delta);
+		super.extractRenderState(g, mouseX, mouseY, delta);
 
 		// list decorations: icons, values, switches
 		for (int i = 0; i < sectionRows.size(); i++) {

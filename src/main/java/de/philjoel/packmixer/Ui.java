@@ -2,7 +2,7 @@ package de.philjoel.packmixer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -54,7 +54,7 @@ public final class Ui {
 	}
 
 	/** Window with background picture, dark tint, cut corners and corner brackets. */
-	public static void window(GuiGraphics g, int x0, int y0, int x1, int y1) {
+	public static void window(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1) {
 		int w = x1 - x0, h = y1 - y0;
 		float sx = BG_W / (float) w, sy = BG_H / (float) h;
 		// the rows inside the cut corners are drawn one by one, the middle in one go
@@ -91,12 +91,12 @@ public final class Ui {
 	}
 
 	/** Kept for older call sites. */
-	public static void panel(GuiGraphics g, int x0, int y0, int x1, int y1) {
+	public static void panel(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1) {
 		window(g, x0, y0, x1, y1);
 	}
 
 	/** Dark header band at the top of a window (height 18) + separator. */
-	public static void headerBar(GuiGraphics g, int x0, int y0, int x1) {
+	public static void headerBar(GuiGraphicsExtractor g, int x0, int y0, int x1) {
 		g.fill(x0 + CHAMFER, y0 + 1, x1 - 1, y0 + 2, 0x30000000);
 		for (int r = 1; r < 19; r++) {
 			int l = r < CHAMFER ? CHAMFER - r : 1;
@@ -106,29 +106,29 @@ public final class Ui {
 	}
 
 	/** "TESTOHD | SUBTITLE" brand text in the header. */
-	public static void brand(GuiGraphics g, int x, int y, String subtitle) {
+	public static void brand(GuiGraphicsExtractor g, int x, int y, String subtitle) {
 		Component b = Component.literal("TESTOHD").withStyle(net.minecraft.ChatFormatting.BOLD);
-		g.drawString(font(), b, x, y, TEXT, false);
+		g.text(font(), b, x, y, TEXT, false);
 		int bx = x + font().width(b) + 5;
 		g.fill(bx, y - 1, bx + 1, y + 8, LINE);
 		small(g, subtitle.toUpperCase(), bx + 5, y + 1, DIM);
 	}
 
 	/** Credit top-left of the screen. */
-	public static void header(GuiGraphics g, int screenWidth, String subtitle) {
-		g.drawString(font(), PackMixerClient.CREDIT, 6, 6, 0xFFD9C8FF, true);
+	public static void header(GuiGraphicsExtractor g, int screenWidth, String subtitle) {
+		g.text(font(), PackMixerClient.CREDIT, 6, 6, 0xFFD9C8FF, true);
 	}
 
-	public static void hLine(GuiGraphics g, int x0, int x1, int y) {
+	public static void hLine(GuiGraphicsExtractor g, int x0, int x1, int y) {
 		g.fill(x0, y, x1, y + 1, LINE);
 	}
 
 	/** Small text (75 %). */
-	public static void small(GuiGraphics g, String text, int x, int y, int color) {
+	public static void small(GuiGraphicsExtractor g, String text, int x, int y, int color) {
 		g.pose().pushMatrix();
 		g.pose().translate(x, y);
 		g.pose().scale(0.75f, 0.75f);
-		g.drawString(font(), text, 0, 0, color, false);
+		g.text(font(), text, 0, 0, color, false);
 		g.pose().popMatrix();
 	}
 
@@ -137,20 +137,20 @@ public final class Ui {
 	}
 
 	/** "| TITLE  12 Styles" section label. */
-	public static void section(GuiGraphics g, String title, String count, int x, int y) {
+	public static void section(GuiGraphicsExtractor g, String title, String count, int x, int y) {
 		g.fill(x, y, x + 1, y + 8, TEXT);
-		g.drawString(font(), title.toUpperCase(), x + 4, y, TEXT, false);
+		g.text(font(), title.toUpperCase(), x + 4, y, TEXT, false);
 		if (count != null && !count.isEmpty()) small(g, count, x + 8 + font().width(title.toUpperCase()), y + 2, FAINT);
 	}
 
 	/** Gradient text, used for the "Testohd" brand inside pack names. */
-	public static int gradientText(GuiGraphics g, String text, int x, int y) {
+	public static int gradientText(GuiGraphicsExtractor g, String text, int x, int y) {
 		int cx = x;
 		for (int i = 0; i < text.length(); i++) {
 			float t = text.length() <= 1 ? 0 : i / (float) (text.length() - 1);
 			int c = lerp(0xFFFF7AC6, 0xFF7AD9FF, t);
 			String ch = String.valueOf(text.charAt(i));
-			g.drawString(font(), ch, cx, y, c, false);
+			g.text(font(), ch, cx, y, c, false);
 			cx += font().width(ch);
 		}
 		return cx - x;
@@ -164,7 +164,7 @@ public final class Ui {
 	}
 
 	/** Pack name: built-in packs are drawn in the brand gradient. */
-	public static void packName(GuiGraphics g, String name, int centerX, int y, int maxW, boolean bright) {
+	public static void packName(GuiGraphicsExtractor g, String name, int centerX, int y, int maxW, boolean bright) {
 		String shown = packDisplay(name);
 		if (font().width(shown) > maxW) {
 			while (shown.length() > 1 && font().width(shown + "...") > maxW) shown = shown.substring(0, shown.length() - 1);
@@ -174,20 +174,20 @@ public final class Ui {
 		if (BuiltinPacks.isBuiltin(name)) { // built-in packs: name in the brand gradient
 			gradientText(g, shown, x, y);
 		} else {
-			g.drawString(font(), shown, x, y, bright ? TEXT : DIM, false);
+			g.text(font(), shown, x, y, bright ? TEXT : DIM, false);
 		}
 	}
 
 	/** Tiny tag like "TS" in the bottom-left of a card. */
-	public static void badge(GuiGraphics g, String text, int x, int y) {
+	public static void badge(GuiGraphicsExtractor g, String text, int x, int y) {
 		int w = smallWidth(text) + 4;
 		g.fill(x, y, x + w, y + 7, 0xC0303040);
 		g.fill(x, y, x + w, y + 1, 0x40FFFFFF);
 		small(g, text, x + 2, y + 1, 0xFFCFCFE0);
 	}
 
-	public static void selectedFrame(GuiGraphics g, int x, int y, int w, int h) {
-		g.renderOutline(x, y, w, h, 0xFFFFFFFF);
+	public static void selectedFrame(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+		g.outline(x, y, w, h, 0xFFFFFFFF);
 		for (int i = 0; i < 7; i++) g.fill(x + 1, y + 1 + i, x + 8 - i, y + 2 + i, 0xFFFFFFFF);
 	}
 
@@ -212,7 +212,7 @@ public final class Ui {
 		return h ^ (h >>> 16);
 	}
 
-	private static void snow(GuiGraphics g, int x0, int y0, int x1, int y1) {
+	private static void snow(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1) {
 		float t = time();
 		int w = x1 - x0, h = y1 - y0;
 		for (int i = 0; i < 30; i++) {
@@ -225,27 +225,27 @@ public final class Ui {
 	}
 
 	/** Item icon at any size. */
-	public static void item(GuiGraphics g, ItemStack stack, int x, int y, int size) {
+	public static void item(GuiGraphicsExtractor g, ItemStack stack, int x, int y, int size) {
 		g.pose().pushMatrix();
 		g.pose().translate(x, y);
 		g.pose().scale(size / 16f, size / 16f);
-		g.renderItem(stack, 0, 0);
+		g.item(stack, 0, 0);
 		g.pose().popMatrix();
 	}
 
 	/** White pill switch (as in the reference). */
-	public static void drawSwitch(GuiGraphics g, int x, int y, boolean on) {
+	public static void drawSwitch(GuiGraphicsExtractor g, int x, int y, boolean on) {
 		int w = 16, h = 8;
 		g.fill(x + 1, y, x + w - 1, y + h, on ? 0xFFC9C6D6 : 0xFF14121C);
 		g.fill(x, y + 1, x + w, y + h - 1, on ? 0xFFC9C6D6 : 0xFF14121C);
-		if (!on) g.renderOutline(x, y, w, h, 0x50FFFFFF);
+		if (!on) g.outline(x, y, w, h, 0x50FFFFFF);
 		int kx = on ? x + w - 7 : x + 1;
 		g.fill(kx + 1, y + 1, kx + 5, y + h - 1, 0xFFFFFFFF);
 		g.fill(kx, y + 2, kx + 6, y + h - 2, 0xFFFFFFFF);
 	}
 
 	/** Slider icon (three lines with knobs) used on the Settings button. */
-	public static void slidersIcon(GuiGraphics g, int x, int y, int color) {
+	public static void slidersIcon(GuiGraphicsExtractor g, int x, int y, int color) {
 		for (int i = 0; i < 3; i++) {
 			g.fill(x, y + i * 3, x + 9, y + i * 3 + 1, color);
 			int k = x + (i == 1 ? 6 : i == 0 ? 2 : 4);
@@ -255,7 +255,7 @@ public final class Ui {
 
 	// ======================================================================= previews
 
-	public static void drawPreview(GuiGraphics g, PreviewCache cache, Category cat, SourcePack pack, int x, int y, int size) {
+	public static void drawPreview(GuiGraphicsExtractor g, PreviewCache cache, Category cat, SourcePack pack, int x, int y, int size) {
 		drawPreview(g, cache, cat, pack, x, y, size, 0f, false, false);
 	}
 
@@ -264,7 +264,7 @@ public final class Ui {
 	 * items float and sway a little – like the reference video.
 	 * @param phase per-card offset so the cards don't move in sync
 	 */
-	public static void drawPreview(GuiGraphics g, PreviewCache cache, Category cat, SourcePack pack, int x, int y, int size,
+	public static void drawPreview(GuiGraphicsExtractor g, PreviewCache cache, Category cat, SourcePack pack, int x, int y, int size,
 			float phase, boolean hover, boolean animate) {
 		float t = time();
 		float bob = animate ? (float) Math.sin(t * 2.0 + phase) * size * 0.04f : 0f;
@@ -340,7 +340,7 @@ public final class Ui {
 	}
 
 	/** Small twinkling stars around a selected card's preview. */
-	public static void sparkles(GuiGraphics g, int cx, int cy, int radius, float phase) {
+	public static void sparkles(GuiGraphicsExtractor g, int cx, int cy, int radius, float phase) {
 		float t = time();
 		for (int i = 0; i < 4; i++) {
 			double a = t * 1.3 + i * Math.PI / 2 + phase;
@@ -386,7 +386,7 @@ public final class Ui {
 	}
 
 	/** Draws a preview texture nicely into a size x size box. */
-	public static void drawIcon(GuiGraphics g, PreviewCache.Preview p, int x, int y, int size, int color) {
+	public static void drawIcon(GuiGraphicsExtractor g, PreviewCache.Preview p, int x, int y, int size, int color) {
 		int tw = p.width(), th = p.height();
 		if (tw <= 0 || th <= 0) return;
 		Layout l = layoutFor(p.path());
@@ -431,13 +431,13 @@ public final class Ui {
 		g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x + (size - dw) / 2, y + (size - dh) / 2, 0f, 0f, dw, dh, tw, th, tw, th, color);
 	}
 
-	public static void drawFlat(GuiGraphics g, PreviewCache.Preview p, int x, int y, int size, int color) {
+	public static void drawFlat(GuiGraphicsExtractor g, PreviewCache.Preview p, int x, int y, int size, int color) {
 		int frameH = Math.min(p.width(), p.height());
 		g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x, y, 0f, 0f, size, size, p.width(), frameH, p.width(), p.height(), color);
 	}
 
 	/** Static isometric cube (kept for older callers). */
-	public static void drawCube(GuiGraphics g, PreviewCache.Preview top, PreviewCache.Preview side, int topTint, int x, int y, int size) {
+	public static void drawCube(GuiGraphicsExtractor g, PreviewCache.Preview top, PreviewCache.Preview side, int topTint, int x, int y, int size) {
 		drawCube(g, top, side, topTint, x, y, size, 45f);
 	}
 
@@ -445,7 +445,7 @@ public final class Ui {
 	 * Real 3D cube turned around the vertical axis by {@code yawDeg}, seen slightly from above.
 	 * Every visible face is a parallelogram on screen, so it can be drawn with one affine transform.
 	 */
-	public static void drawCube(GuiGraphics g, PreviewCache.Preview top, PreviewCache.Preview side, int topTint,
+	public static void drawCube(GuiGraphicsExtractor g, PreviewCache.Preview top, PreviewCache.Preview side, int topTint,
 			float x, float y, int size, float yawDeg) {
 		double a = Math.toRadians(yawDeg);
 		double ca = Math.cos(a), sa = Math.sin(a);
@@ -481,13 +481,13 @@ public final class Ui {
 	}
 
 	/** Draws a 16x16 texture onto the parallelogram tl / tr / bl. */
-	private static void faceQuad(GuiGraphics g, PreviewCache.Preview p, float[] tl, float[] tr, float[] bl, int color) {
+	private static void faceQuad(GuiGraphicsExtractor g, PreviewCache.Preview p, float[] tl, float[] tr, float[] bl, int color) {
 		int t = 16;
 		Matrix3x2f m = new Matrix3x2f((tr[0] - tl[0]) / t, (tr[1] - tl[1]) / t, (bl[0] - tl[0]) / t, (bl[1] - tl[1]) / t, tl[0], tl[1]);
 		face(g, p, m, t, color);
 	}
 
-	private static void face(GuiGraphics g, PreviewCache.Preview p, Matrix3x2f m, int t, int color) {
+	private static void face(GuiGraphicsExtractor g, PreviewCache.Preview p, Matrix3x2f m, int t, int color) {
 		g.pose().pushMatrix();
 		g.pose().mul(m);
 		drawFlat(g, p, 0, 0, t, color);
@@ -537,11 +537,11 @@ public final class Ui {
 		}
 
 		@Override
-		protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+		protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 			int x = getX(), y = getY(), s = getWidth();
 			if (selected) {
 				g.fill(x, y, x + s, y + s, 0x55FFFFFF);
-				g.renderOutline(x, y, s, s, 0x90FFFFFF);
+				g.outline(x, y, s, s, 0x90FFFFFF);
 			} else if (isHoveredOrFocused()) {
 				g.fill(x, y, x + s, y + s, 0x25FFFFFF);
 			}
@@ -580,7 +580,7 @@ public final class Ui {
 		}
 
 		@Override
-		protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+		protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 			int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 			boolean hover = isHoveredOrFocused();
 			g.fill(x, y, x + w, y + h, selected ? 0x40FFFFFF : hover ? 0x30FFFFFF : CARD);
@@ -592,7 +592,7 @@ public final class Ui {
 			if (selected) sparkles(g, x + w / 2, y + 5 + size / 2, size / 2 + 2, phase);
 			g.disableScissor();
 			if (pack != null) badge(g, BuiltinPacks.isBuiltin(pack.name) ? "TS" : "PACK", x + 3, y + h - 20);
-			if (favorite) g.drawString(font(), "★", x + w - 9, y + 3, GOLD, false);
+			if (favorite) g.text(font(), "★", x + w - 9, y + 3, GOLD, false);
 			packName(g, label, x + w / 2, y + h - 10, w - 6, selected || hover);
 			if (selected) selectedFrame(g, x, y, w, h);
 		}
@@ -610,7 +610,7 @@ public final class Ui {
 		}
 
 		@Override
-		protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+		protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 			int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 			if (highlighted) {
 				g.fill(x, y, x + w, y + h, 0x45FFFFFF);
@@ -619,7 +619,7 @@ public final class Ui {
 				g.fill(x, y, x + w, y + h, 0x22FFFFFF);
 			}
 			int c = !active ? 0xFF6A6478 : highlighted || isHoveredOrFocused() ? TEXT : color == TEXT ? DIM : color;
-			g.drawString(font(), getMessage(), x + 5, y + (h - 8) / 2, c, false);
+			g.text(font(), getMessage(), x + 5, y + (h - 8) / 2, c, false);
 		}
 	}
 
@@ -691,20 +691,20 @@ public final class Ui {
 		}
 
 		@Override
-		protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+		protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 			int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 			boolean hover = isHoveredOrFocused() && active;
 			int textColor;
 			if (light && active) {
 				g.fillGradient(x, y, x + w, y + h, hover ? 0xFFF4F3FA : 0xFFDCDAE6, hover ? 0xFFD2D0E0 : 0xFFB5B2C6);
-				g.renderOutline(x, y, w, h, 0xFF8E8AA4);
+				g.outline(x, y, w, h, 0xFF8E8AA4);
 				textColor = 0xFF2A2638;
 			} else {
 				g.fill(x, y, x + w, y + h, hover ? 0x40FFFFFF : 0x30000000);
-				g.renderOutline(x, y, w, h, hover ? 0x80FFFFFF : 0x40FFFFFF);
+				g.outline(x, y, w, h, hover ? 0x80FFFFFF : 0x40FFFFFF);
 				textColor = active ? TEXT : 0xFF6A6478;
 			}
-			g.drawString(font(), getMessage(), x + (w - font().width(getMessage())) / 2, y + (h - 8) / 2, textColor, false);
+			g.text(font(), getMessage(), x + (w - font().width(getMessage())) / 2, y + (h - 8) / 2, textColor, false);
 		}
 	}
 
@@ -715,13 +715,13 @@ public final class Ui {
 		}
 
 		@Override
-		protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float delta) {
+		protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 			int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 			boolean hover = isHoveredOrFocused();
 			g.fillGradient(x, y, x + w, y + h, hover ? 0xFFF4F3FA : 0xFFE2E0EC, hover ? 0xFFD2D0E0 : 0xFFBDBACD);
-			g.renderOutline(x, y, w, h, 0xFF8E8AA4);
+			g.outline(x, y, w, h, 0xFF8E8AA4);
 			slidersIcon(g, x + 6, y + h / 2 - 3, 0xFF3A3650);
-			g.drawString(font(), getMessage(), x + 19, y + (h - 8) / 2, 0xFF2A2638, false);
+			g.text(font(), getMessage(), x + 19, y + (h - 8) / 2, 0xFF2A2638, false);
 		}
 	}
 
