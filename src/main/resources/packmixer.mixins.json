@@ -9,7 +9,8 @@
 		"ItemInHandRendererMixin",
 		"LevelMixin",
 		"ClientPacketListenerMixin",
-		"SkyRendererMixin"
+		"SkyRendererMixin",
+		"ExplosionSoundMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0

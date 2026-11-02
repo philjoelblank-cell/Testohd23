@@ -331,5 +331,6 @@
   "packmixer.hat.fx_totem": "Totem-Wirbel",
   "packmixer.hat.fx_lightning": "Blitz",
   "packmixer.hat.fx_void": "Void-Strudel",
-  "packmixer.hat.fx_lightwings": "Lichtflügel"
+  "packmixer.hat.fx_lightwings": "Lichtflügel",
+  "packmixer.settings.crystal_silent": "Kristall-Explosion stumm"
 }

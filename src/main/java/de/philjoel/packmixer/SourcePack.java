@@ -124,6 +124,11 @@ public final class SourcePack {
 		return index.containsKey(normalizedPath);
 	}
 
+	/** All normalized paths in this pack. */
+	public List<String> allPaths() {
+		return new ArrayList<>(index.keySet());
+	}
+
 	public List<String> matching(Category category) {
 		List<String> out = new ArrayList<>();
 		for (String p : index.keySet()) {

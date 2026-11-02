@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 10;
+	public static final int VERSION = 11;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
@@ -370,6 +370,7 @@ public final class BuiltinPacks {
 				PackMixerClient.LOGGER.error("Built-in pack {} failed", theme.name, e);
 			}
 		}
+		PackExtras.clearFields();
 	}
 
 	private static void deleteDir(Path dir) throws java.io.IOException {

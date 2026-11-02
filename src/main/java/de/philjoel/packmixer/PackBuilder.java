@@ -54,6 +54,8 @@ public final class PackBuilder {
 			}
 		}
 
+		copied += crystalSound(out, selection, library);
+
 		if (PackMixerConfig.settings().ancientDebris) {
 			copied += highlightAncientDebris(assets.resolve("textures/block"));
 		}
@@ -68,6 +70,37 @@ public final class PackBuilder {
 				}
 				""".formatted(PACK_FORMAT, PACK_FORMAT), StandardCharsets.UTF_8);
 		return copied;
+	}
+
+	/**
+	 * Explosion sounds of the pack chosen for end crystals go to our own sound event, so only crystals
+	 * sound like that pack (TNT keeps its sound). Also finds sounds in renamed folders like "random1".
+	 */
+	private static int crystalSound(Path out, Map<String, String> selection, PackLibrary library) throws IOException {
+		CrystalSound.packHasSound = false;
+		CrystalSound.markChecked();
+		String name = selection.get("end_crystal");
+		SourcePack pack = name == null ? null : library.get(name);
+		if (pack == null) return 0;
+		List<String> found = new ArrayList<>();
+		for (String p : pack.allPaths()) {
+			String l = p.toLowerCase(java.util.Locale.ROOT);
+			if (l.startsWith("sounds/") && l.contains("explode") && l.endsWith(".ogg")) found.add(p);
+		}
+		if (found.isEmpty()) return 0;
+		found.sort(Comparator.naturalOrder());
+		Path dir = out.resolve("assets").resolve(PackMixerClient.MOD_ID).resolve("sounds/crystal");
+		Files.createDirectories(dir);
+		StringBuilder list = new StringBuilder();
+		for (int i = 0; i < found.size(); i++) {
+			Files.write(dir.resolve("explode" + (i + 1) + ".ogg"), pack.read(found.get(i)));
+			if (i > 0) list.append(", ");
+			list.append("\"").append(PackMixerClient.MOD_ID).append(":crystal/explode").append(i + 1).append("\"");
+		}
+		Files.writeString(out.resolve("assets").resolve(PackMixerClient.MOD_ID).resolve("sounds.json"),
+				"{\n  \"crystal_explode\": {\"sounds\": [" + list + "]}\n}\n", StandardCharsets.UTF_8);
+		CrystalSound.packHasSound = true;
+		return found.size();
 	}
 
 	/** Enables the output pack on top of all other packs and reloads the textures. */

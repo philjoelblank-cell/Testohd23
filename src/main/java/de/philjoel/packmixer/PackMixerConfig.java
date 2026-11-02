@@ -171,6 +171,9 @@ public final class PackMixerConfig {
 		public boolean shareCosmetics = true;      // let other mod users see yours
 		public boolean showOthersCosmetics = true; // see theirs
 
+		// End crystal explosions without sound
+		public boolean crystalSilent = false;
+
 		// Updates from GitHub
 		public boolean autoUpdate = true;
 	}

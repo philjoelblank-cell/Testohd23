@@ -166,7 +166,7 @@ final class PackExtras {
 
 	// ======================================================================= sky box
 
-	static final int FACE = 256;
+	static final int FACE = 512;
 
 	/** Rotation of every cell of the OptiFine 3x2 sky box image (same order as OptiFine draws them). */
 	static double[] faceToBox(int side, double x, double y, double z) {
@@ -198,6 +198,60 @@ final class PackExtras {
 	interface SkyColor {
 		/** @return ARGB for a direction (normalised) */
 		int at(double x, double y, double z);
+	}
+
+	interface SkyColorIdx {
+		int at(int i, double x, double y, double z);
+	}
+
+	interface Field {
+		double at(double x, double y, double z);
+	}
+
+	/** Noise fields are the same for every pack (only the colours differ): computed once, then reused. */
+	private static final java.util.Map<String, float[]> FIELDS = new java.util.HashMap<>();
+
+	static synchronized float[] field(String key, Field f) {
+		float[] cached = FIELDS.get(key);
+		if (cached != null) return cached;
+		float[] v = new float[6 * FACE * FACE];
+		forEachDir((i, x, y, z) -> {
+			v[i] = (float) f.at(x, y, z);
+			return 0;
+		});
+		FIELDS.put(key, v);
+		return v;
+	}
+
+	/** Frees the cached noise after all packs were generated. */
+	static synchronized void clearFields() {
+		FIELDS.clear();
+	}
+
+	private static void forEachDir(SkyColorIdx fn) {
+		java.util.stream.IntStream.range(0, 6 * FACE).parallel().forEach(row -> {
+			int side = row / FACE, py = row % FACE;
+			for (int px = 0; px < FACE; px++) {
+				double lx = -1 + 2 * (px + 0.5) / FACE, lz = -1 + 2 * (py + 0.5) / FACE;
+				double[] d = faceToBox(side, lx, -1, lz);
+				double len = Math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+				fn.at(row * FACE + px, d[0] / len, d[1] / len, d[2] / len);
+			}
+		});
+	}
+
+	static NativeImage skyImageIdx(SkyColorIdx color) {
+		NativeImage img = new NativeImage(FACE * 3, FACE * 2, true);
+		int[] out = new int[6 * FACE * FACE];
+		forEachDir((i, x, y, z) -> {
+			out[i] = color.at(i, x, y, z);
+			return 0;
+		});
+		for (int i = 0; i < out.length; i++) {
+			int row = i / FACE, side = row / FACE, py = row % FACE, px = i % FACE;
+			img.setPixel((side % 3) * FACE + px, (side / 3) * FACE + py, out[i]);
+		}
+		return img;
 	}
 
 	static NativeImage skyImage(SkyColor color) {
@@ -254,8 +308,12 @@ final class PackExtras {
 	}
 
 	static double fbm(double x, double y, double z, int seed) {
+		return fbm(x, y, z, seed, 4);
+	}
+
+	static double fbm(double x, double y, double z, int seed, int octaves) {
 		double sum = 0, amp = 0.5, f = 1;
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < octaves; i++) {
 			sum += amp * noise(x * f + seed * 17.3, y * f - seed * 7.1, z * f + seed * 3.7);
 			f *= 2.1;
 			amp *= 0.5;
@@ -294,7 +352,7 @@ final class PackExtras {
 
 		if (galaxy) { // galaxy: space sky all day, nebula + stars
 			java.util.Random rg = new java.util.Random(seed);
-			NativeImage space = skyImage((x, y, z) -> {
+			NativeImage space = skyImageIdx((i, x, y, z) -> {
 				double n = fbm(x * 2.0, y * 2.0, z * 2.0, seed + 3);
 				double band = Math.exp(-Math.pow((x * 0.5 + y * 0.85) * 2.0, 2));
 				double t = Math.max(0, Math.min(1, (n - 0.3) * 1.6 + band * 0.25));
@@ -305,10 +363,11 @@ final class PackExtras {
 			for (int i = 0; i < 1600; i++) {
 				double x = rg.nextGaussian(), y = rg.nextGaussian(), z = rg.nextGaussian();
 				double len = Math.sqrt(x * x + y * y + z * z);
-				dot(space, x / len, y / len, z / len, rg.nextInt(5) == 0 ? 0xFFCFF6FF : 0xFFFFFFFF, rg.nextInt(14) == 0 ? 2 : 1);
+				dot(space, x / len, y / len, z / len, rg.nextInt(5) == 0 ? 0xFFCFF6FF : 0xFFFFFFFF, 1 + (rg.nextInt(3) == 0 ? 1 : 0) + (rg.nextInt(25) == 0 ? 1 : 0));
 			}
 			BuiltinPacks.current = null;
 			save(space, dir.resolve("sky1.png"));
+		smoothTexture(dir.resolve("sky1.png"));
 			Files.writeString(dir.resolve("sky1.properties"), """
 					# Made by Testohd23 – galaxy sky (day and night)
 					source=./sky1.png
@@ -323,16 +382,19 @@ final class PackExtras {
 
 		// ---- day: deep saturated sky, bright horizon, big soft clouds lit from above (like the big PvP sky packs)
 		int zenith = mix(c[0], c[1], 0.45), mid = c[1], horizon = mix(c[2], 0xFFFFFF, 0.55);
-		NativeImage day = skyImage((x, y, z) -> {
+		int v = seed % 2, sv = 100 + v;
+		float[] dayD = field("day" + v, (x, y, z) -> cloud(x, y, z, sv));
+		float[] dayUp = field("dayUp" + v, (x, y, z) -> cloud(x, y - 0.05, z, sv));
+		NativeImage day = skyImageIdx((i, x, y, z) -> {
 			double e = y;
 			int sky = e >= 0 ? (e < 0.25 ? mix(horizon, mid, e / 0.25) : mix(mid, zenith, Math.min(1, (e - 0.25) / 0.75)))
 					: mix(horizon, mix(c[0], 0x000000, 0.3), Math.min(1, -e * 3));
 			if (e > -0.08) {
-				double d = cloud(x, y, z, seed);
+				double d = dayD[i];
 				double band = Math.max(0, 1 - Math.abs(e - 0.18) * 1.8); // most clouds a bit above the horizon
 				double cover = smooth(0.5 - band * 0.1, 0.66 - band * 0.08, d) * Math.min(1, (e + 0.08) * 8);
 				if (cover > 0) {
-					double lit = Math.max(0, Math.min(1, 0.6 + (d - cloud(x, y - 0.05, z, seed)) * 7)); // light from above
+					double lit = Math.max(0, Math.min(1, 0.6 + (d - dayUp[i]) * 7)); // light from above
 					int shadow = mix(mix(mid, 0x8090A0, 0.4), 0xFFFFFF, 0.25);
 					int cl = mix(shadow, 0xFFFFFF, lit);
 					cl = mix(cl, horizon, Math.max(0, 0.25 - e)); // haze near the horizon
@@ -343,6 +405,7 @@ final class PackExtras {
 		});
 		BuiltinPacks.current = null; // no item post effects on the sky
 		save(day, dir.resolve("sky1.png"));
+		smoothTexture(dir.resolve("sky1.png"));
 		Files.writeString(dir.resolve("sky1.properties"), """
 				# Made by Testohd23 – day sky
 				source=./sky1.png
@@ -357,12 +420,17 @@ final class PackExtras {
 		// ---- night: dark dramatic clouds with a coloured glow behind them, stars and mountains on the horizon
 		int glow = mix(c[2], c[1], 0.35);
 		java.util.Random rnd = new java.util.Random(seed);
-		NativeImage night = skyImage((x, y, z) -> {
-			double e = y;
+		float[] nightD = field("night" + v, (x, y, z) -> cloud(x * 0.9, y * 1.2, z * 0.9, sv + 5));
+		float[] mount = field("mount" + v, (x, y, z) -> {
 			double az = Math.atan2(z, x);
+			return 0.04 + 0.16 * fbm(Math.cos(az) * 3, Math.sin(az) * 3, 0.3, sv + 9) + 0.05 * fbm(Math.cos(az) * 9, Math.sin(az) * 9, 0.7, sv + 2);
+		});
+		float[] aurora = xmas ? field("aurora" + v, (x, y, z) -> fbm(x * 2, 0, z * 2, sv)) : null;
+		NativeImage night = skyImageIdx((i, x, y, z) -> {
+			double e = y;
 			int sky = e >= 0 ? mix(mix(glow, 0x000000, 0.15), mix(c[0], 0x000000, 0.85), Math.min(1, Math.pow(e / 0.6, 0.7)))
 					: mix(glow, 0x000000, Math.min(1, -e * 4));
-			double d = cloud(x * 0.9, y * 1.2, z * 0.9, seed + 5);
+			double d = nightD[i];
 			double cover = smooth(0.46, 0.6, d) * Math.min(1, Math.max(0, (e + 0.05) * 6));
 			if (cover > 0) {
 				double rim = 1 - smooth(0.46, 0.6, d); // bright edges, dark inside
@@ -371,24 +439,25 @@ final class PackExtras {
 				sky = mix(sky, cl, Math.min(1, cover * 1.2));
 			}
 			if (xmas) { // aurora curtains
-				double au = Math.max(0, Math.sin(x * 9 + fbm(x * 2, 0, z * 2, seed) * 6)) * Math.max(0, e - 0.2) * 1.2;
+				double au = Math.max(0, Math.sin(x * 9 + aurora[i] * 6)) * Math.max(0, e - 0.2) * 1.2;
 				sky = mix(sky, 0x2EFF8A, Math.min(0.45, au * 0.5));
 			}
 			// mountains
-			double m = 0.04 + 0.16 * fbm(Math.cos(az) * 3, Math.sin(az) * 3, 0.3, seed + 9) + 0.05 * fbm(Math.cos(az) * 9, Math.sin(az) * 9, 0.7, seed + 2);
+			double m = mount[i];
 			if (e < m - 0.06) sky = mix(0x020104, c[0], 0.1 + Math.max(0, (e - m + 0.12)) * 1.2);
 			return 0xFF000000 | sky;
 		});
-		for (int i = 0; i < 2200; i++) {
+		for (int i = 0; i < 3200; i++) {
 			double x = rnd.nextGaussian(), y = Math.abs(rnd.nextGaussian()) + 0.15, z = rnd.nextGaussian();
 			double len = Math.sqrt(x * x + y * y + z * z);
 			int b = 120 + rnd.nextInt(136);
 			int tint = rnd.nextInt(4) == 0 ? mix(0xFFFFFF, c[2], 0.5) : 0xFFFFFF;
 			int col = 0xFF000000 | mix(0x000000, tint, b / 255.0);
 			double nx = x / len, ny = y / len, nz = z / len;
-			if (cloud(nx * 0.9, ny * 1.2, nz * 0.9, seed + 5) < 0.47) dot(night, nx, ny, nz, col, rnd.nextInt(15) == 0 ? 2 : 1);
+			if (cloud(nx * 0.9, ny * 1.2, nz * 0.9, sv + 5) < 0.47) dot(night, nx, ny, nz, col, 1 + (rnd.nextInt(3) == 0 ? 1 : 0) + (rnd.nextInt(25) == 0 ? 1 : 0));
 		}
 		save(night, dir.resolve("sky2.png"));
+		smoothTexture(dir.resolve("sky2.png"));
 		Files.writeString(dir.resolve("sky2.properties"), """
 				# Made by Testohd23 – night sky
 				source=./sky2.png
@@ -405,11 +474,16 @@ final class PackExtras {
 		save(none, root.resolve("assets/minecraft/textures/environment/clouds.png"));
 	}
 
+	/** Smooth (linear) filtering for the sky boxes instead of hard pixels. */
+	private static void smoothTexture(Path png) throws java.io.IOException {
+		Files.writeString(png.resolveSibling(png.getFileName() + ".mcmeta"), "{\"texture\": {\"blur\": true, \"clamp\": true}}\n", StandardCharsets.UTF_8);
+	}
+
 	/** Billowy cloud density (domain-warped noise). */
 	static double cloud(double x, double y, double z, int seed) {
 		double wx = fbm(x * 1.3 + 4.1, y * 1.3, z * 1.3, seed + 11) - 0.5;
 		double wz = fbm(x * 1.3, y * 1.3 + 2.7, z * 1.3, seed + 12) - 0.5;
-		return fbm(x * 1.5 + wx * 1.3, y * 2.6, z * 1.5 + wz * 1.3, seed);
+		return fbm(x * 1.5 + wx * 1.3, y * 2.6, z * 1.5 + wz * 1.3, seed, 7) * 1.03;
 	}
 
 	static double smooth(double a, double b, double v) {

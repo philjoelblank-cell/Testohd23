@@ -331,5 +331,6 @@
   "packmixer.hat.fx_totem": "Totem Tornado",
   "packmixer.hat.fx_lightning": "Lightning",
   "packmixer.hat.fx_void": "Void Vortex",
-  "packmixer.hat.fx_lightwings": "Light Wings"
+  "packmixer.hat.fx_lightwings": "Light Wings",
+  "packmixer.settings.crystal_silent": "Silent crystal explosions"
 }

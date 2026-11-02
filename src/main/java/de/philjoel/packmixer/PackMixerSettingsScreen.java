@@ -234,6 +234,7 @@ public class PackMixerSettingsScreen extends Screen {
 						v -> s.includeResourcePacksFolder = v)); y += 18;
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.chat", () -> s.chatMessageOnApply, v -> s.chatMessageOnApply = v)); y += 18;
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.snow", () -> s.menuSnow, v -> s.menuSnow = v)); y += 18;
+				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.crystal_silent", () -> s.crystalSilent, v -> s.crystalSilent = v)); y += 18;
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.autoupdate", () -> s.autoUpdate, v -> s.autoUpdate = v)); y += 18;
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.share_cosmetics", () -> s.shareCosmetics, v -> s.shareCosmetics = v)); y += 18;
 				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.show_cosmetics", () -> s.showOthersCosmetics, v -> s.showOthersCosmetics = v)); y += 18;
@@ -309,7 +310,7 @@ public class PackMixerSettingsScreen extends Screen {
 				Features.zoomKey().setKey(Features.zoomKey().getDefaultKey());
 				KeyMapping.resetMapping();
 			}
-			case "packmixer" -> { s.includeResourcePacksFolder = true; s.chatMessageOnApply = true; s.menuSnow = false; s.autoUpdate = true; s.shareCosmetics = true; s.showOthersCosmetics = true; }
+			case "packmixer" -> { s.includeResourcePacksFolder = true; s.chatMessageOnApply = true; s.menuSnow = false; s.autoUpdate = true; s.shareCosmetics = true; s.showOthersCosmetics = true; s.crystalSilent = false; }
 			default -> {
 				if (e.id.startsWith("sound.")) {
 					SoundSource src = SoundSource.values()[soundEntries.indexOf(e)];
