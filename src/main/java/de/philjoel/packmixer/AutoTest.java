@@ -173,10 +173,34 @@ final class AutoTest {
 		command("item replace entity @p weapon.mainhand with netherite_spear[enchantments={sharpness:1}]");
 		command("item replace entity @p weapon.offhand with mace");
 		command("item replace entity @p armor.chest with netherite_chestplate");
-		step("spear", 30, () -> { });
-		shot("world_spear_front");
-		step("spear fp", 20, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
-		shot("world_spear_first");
+		for (String pack : new String[]{"Energie Schwarz", "Energie Tuerkis"}) {
+			step("pack " + pack, 10, () -> {
+				Map<String, String> sel = PackMixerConfig.loadSelection();
+				sel.put("mace", pack);
+				sel.put("spear", pack);
+				sel.put("armor", pack);
+				PackMixerConfig.saveSelection(sel);
+				PackBuilder.rebuildAndApply();
+			});
+			when("reload " + pack, () -> mc.getOverlay() == null, () -> { });
+			String tag = pack.endsWith("Schwarz") ? "schwarz" : "tuerkis";
+			step("close " + pack, 40, () -> {
+				Cosmetics.Slot.HEAD.set("");
+				Cosmetics.Slot.BACK.set("");
+				Cosmetics.Slot.EFFECT.set("");
+				mc.options.fov().set(30);
+				mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+				mc.player.setXRot(5);
+			});
+			shot("sample_" + tag + "_front");
+			step("fp " + pack, 25, () -> {
+				mc.options.fov().set(70);
+				mc.options.setCameraType(CameraType.FIRST_PERSON);
+			});
+			shot("sample_" + tag + "_first");
+			step("fp2 " + pack, 6, () -> { });
+			shot("sample_" + tag + "_first_b");
+		}
 		step("hud", 10, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });

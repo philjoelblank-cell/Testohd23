@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 12;
+	public static final int VERSION = 13;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
@@ -411,6 +411,14 @@ public final class BuiltinPacks {
 			}
 			NativeImage img = vanilla(path);
 			if (img == null) continue;
+			if (item.equals("totem_of_undying")) { // normal totem, only the eyes get the colour of the pack
+				totemEyes(img, eyeColor(th));
+				Theme keep = current;
+				current = null;
+				save(img, a.resolve(path));
+				current = keep;
+				continue;
+			}
 			if (item.startsWith("bow") || item.equals("mace")) recolorTool(img, th, true, 0);
 			else recolor(img, th.ramp, 0);
 			if (item.equals("totem_of_undying") && th.style.christmas() && th.style != Style.FROST) santaHat(img);
@@ -750,6 +758,35 @@ public final class BuiltinPacks {
 				}
 				if (edge) col = PackExtras.mix(0x05030F, col, 0.35);
 				img.setPixel(x, y, (a << 24) | col);
+			}
+	}
+
+	/** Eye colour of a pack's totem: a bright version of its main colour (frost = light blue). */
+	static int eyeColor(Theme th) {
+		if (th.style == Style.FROST) return 0x8FE3FF;
+		if (th.style == Style.CANDY) return 0xFF3B4E;
+		if (th.style == Style.TREE) return th.name.contains("Lebkuchen") ? 0xFFB347 : th.name.contains("Gold") ? 0xFFD24A : 0x3DFF6E;
+		if (th.style == Style.RAINBOW) return 0xFF4FD8;
+		if (th.style == Style.GALAXY) return 0xB46CFF;
+		int[] c = PackExtras.skyColors(th);
+		int col = c[1];
+		float[] hsb = java.awt.Color.RGBtoHSB((col >> 16) & 0xFF, (col >> 8) & 0xFF, col & 0xFF, null);
+		if (hsb[1] < 0.15f) return 0xF2F6FF;                 // grey / white packs: white eyes
+		return java.awt.Color.HSBtoRGB(hsb[0], Math.min(1f, hsb[1] * 1.1f + 0.1f), 1f) & 0xFFFFFF;
+	}
+
+	/** Recolours only the (green) eyes of the vanilla totem. */
+	static void totemEyes(NativeImage img, int eye) {
+		int dark = darker(eye, 0.62);
+		for (int y = 0; y < img.getHeight(); y++)
+			for (int x = 0; x < img.getWidth(); x++) {
+				int p = img.getPixel(x, y);
+				if ((p >>> 24) < 10) continue;
+				int r = (p >> 16) & 0xFF, g = (p >> 8) & 0xFF, b = p & 0xFF;
+				if (g > r + 60 && g > b + 20) { // green eye pixels
+					int c = g > 200 ? eye : dark;
+					img.setPixel(x, y, (p & 0xFF000000) | c);
+				}
 			}
 	}
 
