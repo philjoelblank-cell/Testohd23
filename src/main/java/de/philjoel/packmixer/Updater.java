@@ -67,29 +67,37 @@ public final class Updater {
 
 			HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
 					.followRedirects(HttpClient.Redirect.NORMAL).build();
-			HttpResponse<String> res = http.send(HttpRequest.newBuilder(URI.create("https://api.github.com/repos/" + REPO + "/releases/latest"))
+			// releases list (newest first). Every Minecraft version has its own jar:
+			//   1.21.11 -> testohd-styles-X.jar        other versions -> testohd-styles-X+mc<version>.jar
+			String mc = FabricLoader.getInstance().getModContainer("minecraft")
+					.map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("");
+			HttpResponse<String> res = http.send(HttpRequest.newBuilder(URI.create("https://api.github.com/repos/" + REPO + "/releases?per_page=30"))
 					.header("Accept", "application/vnd.github+json").header("User-Agent", "testohd-styles-updater")
 					.timeout(Duration.ofSeconds(15)).GET().build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 			if (res.statusCode() != 200) {
 				status = "GitHub: " + res.statusCode();
 				return;
 			}
-			JsonObject release = JsonParser.parseString(res.body()).getAsJsonObject();
-			String latest = release.get("tag_name").getAsString().replaceFirst("^[vV]", "");
-			if (compare(latest, current) <= 0) {
+			String latest = null, url = null, fileName = null;
+			String ownCurrent = current.replaceFirst("\\+.*$", "");
+			for (JsonElement r : JsonParser.parseString(res.body()).getAsJsonArray()) {
+				JsonObject release = r.getAsJsonObject();
+				if (release.get("draft").getAsBoolean()) continue;
+				String version = release.get("tag_name").getAsString().replaceFirst("^[vV]", "").replaceFirst("-mc.*$", "");
+				for (JsonElement e : release.getAsJsonArray("assets")) {
+					String name = e.getAsJsonObject().get("name").getAsString();
+					if (!name.endsWith(".jar") || name.contains("sources")) continue;
+					boolean forThis = name.contains("+mc") ? name.endsWith("+mc" + mc + ".jar") : mc.equals("1.21.11");
+					if (forThis && (latest == null || compare(version, latest) > 0)) {
+						latest = version;
+						url = e.getAsJsonObject().get("browser_download_url").getAsString();
+						fileName = name;
+					}
+				}
+			}
+			if (latest == null || compare(latest, ownCurrent) <= 0) {
 				status = "up to date (" + current + ")";
 				return;
-			}
-			String url = null, fileName = null;
-			JsonArray assets = release.getAsJsonArray("assets");
-			for (JsonElement e : assets) {
-				JsonObject a = e.getAsJsonObject();
-				String name = a.get("name").getAsString();
-				if (name.endsWith(".jar") && !name.contains("sources")) {
-					url = a.get("browser_download_url").getAsString();
-					fileName = name;
-					break;
-				}
 			}
 			if (url == null) return;
 
