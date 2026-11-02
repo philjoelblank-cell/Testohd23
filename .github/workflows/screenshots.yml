@@ -5,6 +5,9 @@ on:
   push:
     branches: ["test/**"]
 
+permissions:
+  contents: write
+
 jobs:
   screenshots:
     runs-on: ubuntu-24.04
@@ -31,3 +34,11 @@ jobs:
             run/screenshots/
             run/logs/latest.log
             run/crash-reports/
+      - name: publish screenshots to the ci-screens branch
+        if: always()
+        run: |
+          mkdir -p /tmp/shots && cp -r run/screenshots/* /tmp/shots/ 2>/dev/null || true
+          cp run/logs/latest.log /tmp/shots/ 2>/dev/null || true
+          cd /tmp/shots && git init -q -b ci-screens && git add -A
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "screenshots ${{ github.sha }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci-screens
