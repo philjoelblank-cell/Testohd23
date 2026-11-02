@@ -31,7 +31,7 @@ import java.util.Locale;
  */
 public final class Updater {
 	/** GitHub "owner/repo" the releases come from. */
-	public static final String REPO = "philjoelblank-cell/testohd-styles";
+	public static final String REPO = "philjoelblank-cell/Testohd23";
 
 	private static volatile Component pendingMessage;
 	private static volatile String status = "";
