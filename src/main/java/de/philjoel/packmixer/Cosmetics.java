@@ -182,7 +182,7 @@ public final class Cosmetics {
 				if (slot == Slot.BACK) {
 					model.body.translateAndRotate(pose);
 					// a bit behind the back, so a chestplate never covers the wings
-					pose.translate(0.0F, 0.375F, 0.11F);
+					pose.translate(0.0F, 0.375F, id.endsWith("wings") ? 0.11F : 0.0F);
 					pose.mulPose(Axis.YP.rotationDegrees(180.0F));
 					pose.scale(0.625F, -0.625F, -0.625F);
 					if (id.endsWith("wings")) {
