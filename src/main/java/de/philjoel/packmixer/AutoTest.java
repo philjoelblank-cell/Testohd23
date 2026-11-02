@@ -148,6 +148,24 @@ final class AutoTest {
 		command("time set 6000");
 		step("wait fx", 60, () -> { });
 		shot("world_fx_galaxy");
+		command("item replace entity @p armor.chest with air");
+		command("item replace entity @p armor.head with air");
+		command("setblock ^-1 ^ ^2 chest");
+		step("wings test", 40, () -> {
+			Cosmetics.Slot.BACK.set("angel_wings");
+			Cosmetics.Slot.EFFECT.set("fx_rainbow");
+			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+			mc.player.setXRot(10);
+		});
+		shot("world_wings_back");
+		step("wings front", 40, () -> {
+			Cosmetics.Slot.BACK.set("phoenix_wings");
+			Cosmetics.Slot.EFFECT.set("fx_lightning");
+			mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+		});
+		shot("world_wings_front");
+		step("totem", 40, () -> Cosmetics.Slot.EFFECT.set("fx_totem"));
+		shot("world_fx_totem");
 		step("hud", 10, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });

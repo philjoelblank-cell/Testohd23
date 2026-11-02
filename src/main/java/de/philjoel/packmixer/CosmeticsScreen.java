@@ -170,7 +170,11 @@ public class CosmeticsScreen extends Screen {
 				};
 				Ui.item(g, Cosmetics.hatStack(id), cx - is / 2, iy, is);
 			}
-			String label = font.plainSubstrByWidth(getMessage().getString(), w - 4);
+			String label = getMessage().getString();
+			if (Ui.smallWidth(label) > w - 4) {
+				while (label.length() > 1 && Ui.smallWidth(label + "..") > w - 4) label = label.substring(0, label.length() - 1);
+				label = label + "..";
+			}
 			Ui.small(g, label, cx - Ui.smallWidth(label) / 2, y + h - 9, id.isEmpty() ? (selected ? Ui.TEXT : Ui.DIM)
 					: rarity == Cosmetics.Rarity.COMMON ? (selected ? Ui.TEXT : Ui.DIM) : rarity.color);
 			if (rarity == Cosmetics.Rarity.LEGENDARY && !id.isEmpty()) {
@@ -227,9 +231,26 @@ public class CosmeticsScreen extends Screen {
 			int bottom = y1 - 24;
 			int size = Math.max(30, Math.min(80, (bottom - top) / 2 - 6));
 			InventoryScreen.renderEntityInInventoryFollowsMouse(g, x0 + 6, top, previewX1 - 4, bottom, size, 0.0625f, mouseX, mouseY, this.minecraft.player);
+			String hint = Component.translatable("packmixer.cosmetics.rotate").getString();
+			Ui.small(g, hint, (x0 + previewX1) / 2 - Ui.smallWidth(hint) / 2, y1 - 30, Ui.FAINT);
+		} else {
+			// main menu (no player yet): show what you wear as big items
+			int cx = (x0 + previewX1) / 2, cy = (y0 + 26 + y1 - 24) / 2;
+			int n = 0;
+			for (Cosmetics.Slot sl : new Cosmetics.Slot[]{Cosmetics.Slot.HEAD, Cosmetics.Slot.FACE, Cosmetics.Slot.BACK}) {
+				String id = sl.get();
+				if (id.isEmpty()) continue;
+				int size = n == 0 ? 56 : 30;
+				int iy = n == 0 ? cy - 40 : cy + 22;
+				int ix = n == 0 ? cx - size / 2 : cx - 34 + (n - 1) * 38;
+				float bob = (float) Math.sin(Ui.time() * 2 + n) * 2;
+				g.pose().pushMatrix();
+				g.pose().translate(0, bob);
+				Ui.item(g, Cosmetics.hatStack(id), ix, iy, size);
+				g.pose().popMatrix();
+				n++;
+			}
 		}
-		String hint = Component.translatable("packmixer.cosmetics.rotate").getString();
-		Ui.small(g, hint, (x0 + previewX1) / 2 - Ui.smallWidth(hint) / 2, y1 - 30, Ui.FAINT);
 
 		super.render(g, mouseX, mouseY, delta);
 	}

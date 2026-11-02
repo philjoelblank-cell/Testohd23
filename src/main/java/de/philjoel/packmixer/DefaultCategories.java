@@ -87,7 +87,8 @@ final class DefaultCategories {
 						"textures/gui/sprites/hud/crosshair_attack_indicator_*.png")));
 		// ---- extra categories (not in the video)
 		l.add(new Category("shield", "Schilde",
-				List.of("textures/entity/shield/base.png", "textures/entity/shield_base_nopattern.png"),
+				List.of("textures/entity/shield_base_nopattern.png", "textures/entity/shield/base_nopattern.png",
+						"textures/entity/shield_base.png", "textures/entity/shield/base.png"),
 				List.of("textures/entity/shield/**.png", "textures/entity/shield_base*.png",
 						"models/item/shield*.json", "items/shield.json")));
 		l.add(new Category("crossbow", "Armbrüste",

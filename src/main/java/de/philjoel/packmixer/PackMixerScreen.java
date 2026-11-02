@@ -161,6 +161,9 @@ public class PackMixerScreen extends Screen {
 		int cardW = (gw - (cols - 1) * GAP) / cols;
 		int cardH = cardW + 8;
 		int rows = Math.max(1, (gridY1 - gridY + GAP) / (cardH + GAP));
+		// use the free space: cards grow a little instead of leaving an empty band at the bottom
+		int fill = (gridY1 - gridY - (rows - 1) * GAP) / rows;
+		if (fill > cardH) cardH = Math.min(fill, cardW + 22);
 
 		Category cat = categories.isEmpty() ? null : categories.get(category);
 		List<SourcePack> options = new ArrayList<>();

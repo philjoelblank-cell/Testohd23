@@ -202,7 +202,7 @@ public final class PreviewCache {
 	private static int badness(String p) {
 		int b = 0;
 		if (p.contains("_left") || p.contains("_right")) b += 2;
-		if (p.contains("/shield/") && !p.endsWith("base.png") && !p.contains("nopattern")) b += 3;
+		if (p.contains("shield") && !p.contains("nopattern")) b += p.contains("/shield/") && !p.endsWith("base.png") ? 4 : 2;
 		if (p.contains("pulling") || p.contains("_overlay") || p.contains("_open")) b += 1;
 		return b;
 	}

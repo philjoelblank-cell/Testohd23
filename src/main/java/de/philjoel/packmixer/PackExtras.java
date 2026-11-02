@@ -148,7 +148,7 @@ final class PackExtras {
 
 	// ======================================================================= sky box
 
-	static final int FACE = 128;
+	static final int FACE = 256;
 
 	/** Rotation of every cell of the OptiFine 3x2 sky box image (same order as OptiFine draws them). */
 	static double[] faceToBox(int side, double x, double y, double z) {

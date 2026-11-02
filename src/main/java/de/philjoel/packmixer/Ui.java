@@ -397,12 +397,18 @@ public final class Ui {
 			g.pose().translate(x + (size - l.lw() * fit) / 2f, y + (size - l.lh() * fit) / 2f);
 			g.pose().scale(fit, fit);
 			for (Part q : l.parts()) {
-				g.pose().pushMatrix();
-				g.pose().translate(q.dx() + (q.flipX() ? q.w() : 0), q.dy() + (q.flipY() ? q.h() : 0));
-				g.pose().scale(q.flipX() ? -1f : 1f, q.flipY() ? -1f : 1f);
-				g.blit(RenderPipelines.GUI_TEXTURED, p.id(), 0, 0, q.u() * s, q.v() * s, q.w(), q.h(),
-						Math.max(1, Math.round(q.w() * s)), Math.max(1, Math.round(q.h() * s)), tw, th, color);
-				g.pose().popMatrix();
+				// mirrored parts are flipped through the texture coordinates (a mirrored quad would be culled)
+				int uw = Math.max(1, Math.round(q.w() * s)), vh = Math.max(1, Math.round(q.h() * s));
+				float u = q.u() * s, v = q.v() * s;
+				if (q.flipX()) {
+					u += uw;
+					uw = -uw;
+				}
+				if (q.flipY()) {
+					v += vh;
+					vh = -vh;
+				}
+				g.blit(RenderPipelines.GUI_TEXTURED, p.id(), q.dx(), q.dy(), u, v, q.w(), q.h(), uw, vh, tw, th, color);
 			}
 			g.pose().popMatrix();
 			return;
