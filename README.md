@@ -33,7 +33,9 @@ Minecraft-Texturen umgefärbt): einfarbige Packs, Duo-Packs mit passendem Farbwe
 Galaxie und Weihnachten. Jedes Pack enthält:
 - Items, Blöcke, Herzen, Hungerleiste, Hotbar, Fadenkreuz, Verzauberungsglanz, Feuer
 - was man platziert/trägt/wirft: Endkristall, Schild (mit Emblem), Rüstung am Körper, Elytra-Flügel, Dreizack, Windkugel, Truhen
-- einen eigenen Himmel: Tag-Himmel mit Wolken + Nacht-Himmel mit Sternen und Nebel (OptiFine-Format), eigene Sonne
+- einen eigenen Himmel im Stil der großen PvP-Packs: Tag-Himmel mit großen Wolken, Nacht-Himmel mit leuchtenden
+  Wolkenrändern, Sternen und Bergen am Horizont, Sonne als leuchtender Stern (Galaxie: Weltraum-Himmel)
+- Low Fire (Feuer ist niedriger und verdeckt die Sicht nicht)
 Deine Auswahl, Einstellungen, Favoriten, Profile und eigenen Packs bleiben bei Updates erhalten
 (Sicherungskopie in `.minecraft/testohd-styles/backup/`).
 Neu erzeugen: Einstellungen → Testohd Styles → „Eingebaute Packs neu erzeugen“.

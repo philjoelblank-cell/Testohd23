@@ -1362,8 +1362,8 @@
  "display": {
   "gui": {
    "rotation": [
-    12,
-    20,
+    8,
+    0,
     0
    ],
    "translation": [
