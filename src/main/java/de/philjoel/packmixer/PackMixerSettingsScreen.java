@@ -274,7 +274,9 @@ public class PackMixerSettingsScreen extends Screen {
 							g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, Ui.background(id), x, y, 0f, 0f, w, h, 512, 288, 512, 288);
 							boolean on = id.equals(s.menuBackground);
 							g.fill(x, y + h - 10, x + w, y + h, 0x90000000);
-							Ui.small(g, getMessage().getString(), x + 3, y + h - 8, on ? 0xFFFFD86B : Ui.TEXT);
+							String label = getMessage().getString();
+							while (label.length() > 1 && Ui.smallWidth(label) > w - 5) label = label.substring(0, label.length() - 1);
+							Ui.small(g, label, x + 3, y + h - 8, on ? 0xFFFFD86B : Ui.TEXT);
 							if (on) g.renderOutline(x, y, w, h, 0xFFFFD86B);
 							else if (isHoveredOrFocused()) g.renderOutline(x, y, w, h, 0x90FFFFFF);
 						}
