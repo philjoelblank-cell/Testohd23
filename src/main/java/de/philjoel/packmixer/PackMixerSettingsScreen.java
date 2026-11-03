@@ -62,7 +62,7 @@ public class PackMixerSettingsScreen extends Screen {
 		settingsEntries.add(new Entry("fullbright", "screen", Ui.icon(Items.TORCH), () -> s.fullbright, v -> s.fullbright = v, null));
 		settingsEntries.add(new Entry("weather", "screen", Ui.icon(Items.CLOCK), () -> s.clearWeather, v -> s.clearWeather = v, null));
 		settingsEntries.add(new Entry("particles", "screen", Ui.icon(Items.BLAZE_POWDER), null, null,
-				() -> o.particles().get().caption().getString()));
+				() -> o.particles().get().caption().getString() + (s.particleSize < 0.999 ? " · " + Math.round(s.particleSize * 100) + "%" : "")));
 		settingsEntries.add(new Entry("low_fire", "screen", Ui.icon(Items.FIRE_CHARGE), () -> s.lowFire, v -> s.lowFire = v, null));
 		settingsEntries.add(new Entry("ancient_debris", "screen", Ui.icon(Items.ANCIENT_DEBRIS), () -> s.ancientDebris, v -> {
 			s.ancientDebris = v;
@@ -216,6 +216,8 @@ public class PackMixerSettingsScreen extends Screen {
 					saved();
 					b.setMessage(particlesLabel());
 				}).bounds(x, y, cw, 14).build()); y += 18;
+				addRenderableWidget(slider(x, y, cw, Component.translatable("packmixer.settings.particle_size").getString(), s.particleSize, 0.2, 1,
+						v -> s.particleSize = v, v -> Math.round(v * 100) + "%")); y += 18;
 			}
 			case "low_fire" -> {
 				addRenderableWidget(slider(x, y, cw, tr("packmixer.fire_height"), s.fireOffset, 0, 0.5, v -> s.fireOffset = v,
@@ -341,7 +343,10 @@ public class PackMixerSettingsScreen extends Screen {
 			case "zoom" -> { s.zoomEnabled = true; s.zoomFactor = 4; }
 			case "fullbright" -> s.fullbright = false;
 			case "weather" -> s.clearWeather = false;
-			case "particles" -> o.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
+			case "particles" -> {
+				o.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
+				s.particleSize = 1.0;
+			}
 			case "low_fire" -> { s.lowFire = false; s.fireOffset = 0.3; }
 			case "ancient_debris" -> { s.ancientDebris = false; PackBuilder.rebuildAndApply(); }
 			case "tt" -> { s.totemTracker = true; TotemTracker.reset(); }

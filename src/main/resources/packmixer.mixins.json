@@ -11,7 +11,8 @@
 		"ClientPacketListenerMixin",
 		"SkyRendererMixin",
 		"ExplosionSoundMixin",
-		"ItemStackFoilMixin"
+		"ItemStackFoilMixin",
+		"ParticleSizeMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0
