@@ -617,6 +617,13 @@ public final class BuiltinPacks {
 			else if (current.style == Style.DUO || current.style == Style.V1XMAS) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
 		}
 		Files.createDirectories(out.getParent());
+		if (V1Packs.current != null && path.contains("/entity/equipment/humanoid")) { // worn armor stays normal in V1
+			NativeImage orig = vanilla(path.substring(path.indexOf("/textures/") + 10));
+			if (orig != null) {
+				img.close();
+				img = orig;
+			}
+		}
 		if (V1Packs.current != null && img.getWidth() == img.getHeight() && (path.endsWith("/block/obsidian.png")
 				|| path.endsWith("/block/glowstone.png") || path.endsWith("/block/cobweb.png")
 				|| (path.contains("/block/respawn_anchor_") && !path.endsWith("_top.png")))) {

@@ -33,7 +33,7 @@ final class V1Packs {
 	/** Weapons and tools keep their normal colours in the V1 packs, only the effects are coloured. */
 	static boolean keepsVanilla(String path) {
 		String n = path.substring(path.lastIndexOf('/') + 1);
-		return n.matches(".*_(sword|axe|pickaxe|shovel|hoe)\\.png") || n.startsWith("mace") || n.contains("_spear")
+		return n.matches(".*_(sword|axe|pickaxe|shovel|hoe|helmet|chestplate|leggings|boots)\\.png") || n.startsWith("mace") || n.contains("_spear")
 				|| n.startsWith("bow") || n.startsWith("crossbow") || n.equals("trident.png");
 	}
 
