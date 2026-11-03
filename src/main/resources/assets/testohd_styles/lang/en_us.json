@@ -396,5 +396,17 @@
   "packmixer.preview.you": "You with your cosmetics",
   "packmixer.preview.no_world": "Join a world to see yourself",
   "packmixer.preview.hint": "This is how your choice looks – apply with \"Done\"",
-  "packmixer.changelog.1.7.0": "New\n• My Packs: save your mixes and share them with a code\n• Preview: your character turns around with wings & crown, next to the items of your choice"
+  "packmixer.changelog.1.7.0": "New\n• My Packs: save your mixes and share them with a code\n• Preview: your character turns around with wings & crown, next to the items of your choice\n• Choose the menu background (10 pictures)\n• All shields remade and animated, wings sit right",
+  "packmixer.bg.purple": "Purple Mountains",
+  "packmixer.bg.sunset": "Sunset",
+  "packmixer.bg.sakura": "Sakura",
+  "packmixer.bg.void": "Void",
+  "packmixer.bg.night": "Moon Night",
+  "packmixer.bg.aurora": "Aurora",
+  "packmixer.bg.ocean": "Ocean",
+  "packmixer.bg.frost": "Frost",
+  "packmixer.bg.forest": "Forest",
+  "packmixer.bg.inferno": "Inferno",
+  "packmixer.feature.background": "Background",
+  "packmixer.feature.background.desc": "The picture behind all Testohd menus"
 }

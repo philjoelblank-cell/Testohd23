@@ -396,5 +396,17 @@
   "packmixer.preview.you": "Du mit deinen Cosmetics",
   "packmixer.preview.no_world": "Geh in eine Welt, um dich zu sehen",
   "packmixer.preview.hint": "So sieht deine Auswahl aus – mit „Fertig“ übernehmen",
-  "packmixer.changelog.1.7.0": "Neu\n• Meine Packs: Mischungen speichern und per Code mit Kollegen teilen\n• Vorschau: deine Figur dreht sich mit Flügeln & Krone, daneben die Items deiner Auswahl"
+  "packmixer.changelog.1.7.0": "Neu\n• Meine Packs: Mischungen speichern und per Code mit Kollegen teilen\n• Vorschau: deine Figur dreht sich mit Flügeln & Krone, daneben die Items deiner Auswahl\n• Hintergrund der Menüs wählbar (10 Bilder)\n• Alle Schilder neu und animiert, Flügel sitzen richtig",
+  "packmixer.bg.purple": "Lila Berge",
+  "packmixer.bg.sunset": "Sonnenuntergang",
+  "packmixer.bg.sakura": "Sakura",
+  "packmixer.bg.void": "Void",
+  "packmixer.bg.night": "Mondnacht",
+  "packmixer.bg.aurora": "Polarlicht",
+  "packmixer.bg.ocean": "Ozean",
+  "packmixer.bg.frost": "Frost",
+  "packmixer.bg.forest": "Wald",
+  "packmixer.bg.inferno": "Inferno",
+  "packmixer.feature.background": "Hintergrund",
+  "packmixer.feature.background.desc": "Das Bild hinter allen Testohd-Menüs"
 }

@@ -183,6 +183,8 @@ public final class PackMixerConfig {
 		public boolean autoUpdate = true;
 		/** Version whose changelog was shown last. */
 		public String lastChangelog = "";
+		/** Picture behind the menus (see Ui.BACKGROUNDS). */
+		public String menuBackground = "purple";
 	}
 
 	private static Settings settings;

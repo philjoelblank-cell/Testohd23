@@ -66,12 +66,20 @@ final class AutoTest {
 				shot("menu_s" + scale + "_" + String.format("%02d", i));
 				if (scale != 3) break; // all categories once, the other scales only the first one
 			}
-			for (String entry : new String[]{"item_position", "packmixer", "tt"}) {
+			for (String entry : new String[]{"item_position", "packmixer", "tt", "background"}) {
 				step("settings " + entry, 20, () -> {
 					PackMixerSettingsScreen.lastSelected = entry;
 					mc.setScreen(new PackMixerSettingsScreen(null));
 				});
 				shot("settings_s" + scale + "_" + entry);
+				if (entry.equals("background") && scale == 3) {
+					step("bg sunset", 10, () -> {
+						PackMixerConfig.settings().menuBackground = "aurora";
+						mc.setScreen(new PackMixerScreen(null));
+					});
+					shot("bg_aurora_menu");
+					step("bg back", 2, () -> PackMixerConfig.settings().menuBackground = "purple");
+				}
 				if (scale != 3) break;
 			}
 			if (scale == 3) {
