@@ -256,8 +256,8 @@ public class PackMixerSettingsScreen extends Screen {
 				for (cols = 2; cols <= 5; cols++) {
 					tw = (cw - 4 * (cols - 1)) / cols;
 					th = tw * 9 / 16;
-					int rows = (n + cols - 1) / cols;
-					if (rows * (th + 4) <= avail) break;
+					int rowCount = (n + cols - 1) / cols;
+					if (rowCount * (th + 4) <= avail) break;
 				}
 				final int c = Math.min(cols, 5);
 				for (int i = 0; i < n; i++) {
