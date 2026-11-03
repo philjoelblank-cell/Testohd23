@@ -250,10 +250,19 @@ public class PackMixerSettingsScreen extends Screen {
 				}).bounds(x, y, cw, 14).build()); y += 18;
 			}
 			case "background" -> { // little pictures to click on, two per row
-				int tw = (cw - 4) / 2, th = tw * 9 / 16;
-				for (int i = 0; i < Ui.BACKGROUNDS.size(); i++) {
+				// as big as possible, but always inside the window
+				int n = Ui.BACKGROUNDS.size(), avail = y1 - 22 - y;
+				int cols = 2, tw = 0, th = 0;
+				for (cols = 2; cols <= 5; cols++) {
+					tw = (cw - 4 * (cols - 1)) / cols;
+					th = tw * 9 / 16;
+					int rows = (n + cols - 1) / cols;
+					if (rows * (th + 4) <= avail) break;
+				}
+				final int c = Math.min(cols, 5);
+				for (int i = 0; i < n; i++) {
 					String id = Ui.BACKGROUNDS.get(i);
-					int bx = x + (i % 2) * (tw + 4), by = y + (i / 2) * (th + 4);
+					int bx = x + (i % c) * (tw + 4), by = y + (i / c) * (th + 4);
 					addRenderableWidget(new Ui.FlatButton(bx, by, tw, th, Component.translatable("packmixer.bg." + id), () -> {
 						s.menuBackground = id;
 						saved();
@@ -271,7 +280,7 @@ public class PackMixerSettingsScreen extends Screen {
 						}
 					});
 				}
-				y += ((Ui.BACKGROUNDS.size() + 1) / 2) * (th + 4);
+				y += ((n + c - 1) / c) * (th + 4);
 			}
 			case "profiles" -> {
 				int bw = (cw - 4) / 2;
