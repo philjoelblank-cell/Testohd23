@@ -193,6 +193,9 @@ public class PackMixerScreen extends Screen {
 				Ui.Card card = new Ui.Card(x, y, cardW, cardH, previews, cat, pack, label, sel, pack != null && isFavorite(pack), () -> {
 					if (pack == null) selection.remove(cat.id);
 					else selection.put(cat.id, pack.name);
+					if (pack != null && cat.id.equals(DefaultCategories.FULL_PACK)) { // whole pack: every category it has
+						for (Category c : categories) if (pack.contains(c)) selection.put(c.id, pack.name);
+					}
 					dirty = true;
 					rebuildWidgets();
 				});

@@ -8,8 +8,14 @@ import java.util.List;
  * start so they can be edited; new built-in categories are added to existing files.
  */
 final class DefaultCategories {
+	static final String FULL_PACK = "full_pack";
+
 	static List<Category> create() {
 		List<Category> l = new ArrayList<>();
+		// whole Testohd packs at once (only the V1 packs are listed there)
+		l.add(new Category(FULL_PACK, "Komplette Packs",
+				List.of("textures/item/end_crystal.png", "textures/item/diamond_sword.png"),
+				List.of("textures/item/end_crystal.png")));
 		l.add(block("obsidian", "Obsidian", "obsidian"));
 		l.add(new Category("end_crystal", "Endkristalle",
 				List.of("textures/item/end_crystal.png", "textures/entity/end_crystal/end_crystal.png"),

@@ -205,12 +205,11 @@ final class AutoTest {
 		command("item replace entity @p weapon.mainhand with air");
 		command("item replace entity @p weapon.offhand with end_crystal");
 		command("time set 6000");
-		for (CrystalPacks.Design d : CrystalPacks.DESIGNS) {
-			String tag = d.key();
-			step("crystal " + tag, 10, () -> {
-				Map<String, String> sel = PackMixerConfig.loadSelection();
-				sel.put("end_crystal", d.folder());
-				sel.remove("explosion");
+		for (V1Packs.V1 v : V1Packs.PACKS) {
+			String tag = v.name().replace("Testohd23 V1 ", "v1_").replace("Testohd Christmas V1 ", "xmas_").toLowerCase();
+			step("v1 " + tag, 10, () -> {
+				Map<String, String> sel = new LinkedHashMap<>();
+				for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, v.name());
 				PackMixerConfig.saveSelection(sel);
 				PackBuilder.rebuildAndApply();
 			});
@@ -220,20 +219,20 @@ final class AutoTest {
 			command("fill -12 200 -4 12 214 18 air");
 			command("tp @p 0.5 200 0.5 0 0");
 			command("summon end_crystal 0.5 200 7.5");
+			command("item replace entity @p weapon.mainhand with netherite_sword");
+			command("item replace entity @p weapon.offhand with end_crystal");
 			step("look " + tag, 30, () -> {
 				mc.options.fov().set(50);
 				mc.options.setCameraType(CameraType.FIRST_PERSON);
 				mc.player.setYRot(0);
 				mc.player.setXRot(5);
 			});
-			shot("crystal_" + tag + "_a");
-			step("wait " + tag, 5, () -> { });
-			shot("crystal_" + tag + "_b");
+			shot("v1_" + tag + "_a");
+			step("wait " + tag, 32, () -> { });
+			shot("v1_" + tag + "_b");
 			command("execute at @p run damage @e[type=end_crystal,limit=1,sort=nearest] 1");
-			step("boom " + tag, 2, () -> { });
-			shot("crystal_" + tag + "_boom1");
-			step("boom2 " + tag, 6, () -> { });
-			shot("crystal_" + tag + "_boom2");
+			step("boom " + tag, 3, () -> { });
+			shot("v1_" + tag + "_boom");
 			step("after " + tag, 30, () -> mc.options.fov().set(70));
 		}
 		step("hud", 10, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));

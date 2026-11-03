@@ -1,16 +1,10 @@
 package de.philjoel.packmixer;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.util.RandomSource;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,34 +16,42 @@ public final class CrystalPacks {
 	static final int FRAMES = 16;
 
 	/** One crystal design. */
-	record Design(String folder, String key, int glass, int[] boomRamp, int c1, int c2, ParticleOptions extra) {
+	record Design(String folder, String key, int glass, int[] boomRamp, int c1, int c2) {
 	}
 
 	static final List<Design> DESIGNS = List.of(
-			new Design("Kristall Frost Puls", "c_frost", 0x7FD8FF, new int[]{0x0B3A66, 0x1F8FD6, 0x5FD0FF, 0xD8F6FF},
-					0x8FE8FF, 0xFFFFFF, ParticleTypes.SNOWFLAKE),
+			new Design("Kristall Frost Puls", "c_frost", 0x70F0E4, new int[]{0x0B4A48, 0x1BB5B0, 0x6FF0E6, 0xE0FFFC},
+					0x6FF0E6, 0xFFFFFF),
 			new Design("Kristall Plasma", "c_plasma", 0xC070FF, new int[]{0x2A0050, 0x8A1FE0, 0xFF4FD8, 0xFFB0F0},
-					0xB02CFF, 0xFF6FE0, ParticleTypes.ELECTRIC_SPARK),
+					0xB02CFF, 0xFF6FE0),
 			new Design("Kristall Inferno", "c_inferno", 0xFFA040, new int[]{0x3A0500, 0xD02000, 0xFF7A00, 0xFFD040},
-					0xFF5A00, 0xFFD040, ParticleTypes.FLAME),
+					0xFF5A00, 0xFFD040),
 			new Design("Kristall Void", "c_void", 0x5A2AA0, new int[]{0x050208, 0x2A0F45, 0x7A2BFF, 0xC890FF},
-					0x7A2BFF, 0x1A0830, ParticleTypes.REVERSE_PORTAL),
+					0x7A2BFF, 0x1A0830),
 			new Design("Kristall Tuerkis", "c_teal", 0x40E8D8, new int[]{0x04201E, 0x0E9C92, 0x35F2DD, 0xB8FFF6},
-					0x35F2DD, 0xE6FFFC, ParticleTypes.SOUL_FIRE_FLAME));
+					0x35F2DD, 0xE6FFFC));
+
+	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
+
+	/** Crystal design of a pack (the V1 packs bring one), or null. */
+	static Design design(String packName) {
+		V1Packs.V1 v = V1Packs.of(packName);
+		if (v == null) return null;
+		for (Design d : DESIGNS) if (d.key.equals(v.crystal())) return d;
+		return null;
+	}
 
 	static boolean isCrystalPack(String name) {
 		return design(name) != null;
 	}
 
-	static Design design(String name) {
-		if (name == null) return null;
-		for (Design d : DESIGNS) if (d.folder.equals(name)) return d;
-		return null;
-	}
-
 	/** Design of the pack chosen for end crystals (set by the pack builder). */
 	static volatile Design active;
 	private static boolean activeChecked;
+
+	static boolean activeChecked() {
+		return activeChecked;
+	}
 
 	static void selectionChanged(java.util.Map<String, String> selection) {
 		active = design(selection.get("end_crystal"));
@@ -58,99 +60,70 @@ public final class CrystalPacks {
 
 	// ================================================================= generation
 
-	static void generateAll(Path packsDir) {
-		for (Design d : DESIGNS) {
-			try {
-				generate(d, packsDir.resolve(d.folder));
-			} catch (Exception e) {
-				PackMixerClient.LOGGER.error("Crystal pack {} failed", d.folder, e);
-			}
-		}
-	}
-
-	private static void generate(Design d, Path root) throws Exception {
+	/** Writes the animated crystal (item, placed crystal, explosion) into a pack's textures folder. */
+	static void writeInto(Design d, Path a) throws Exception {
+		BuiltinPacks.Theme keep = BuiltinPacks.current;
+		V1Packs.Element keepEl = V1Packs.current;
 		BuiltinPacks.current = null;
-		Path a = root.resolve("assets/minecraft/textures");
-		Files.createDirectories(a);
-		// ---- item: animated strip
-		NativeImage item = BuiltinPacks.vanilla("item/end_crystal.png");
-		NativeImage firstItem = null;
-		if (item != null) {
-			int w = item.getWidth(), h = item.getHeight();
-			NativeImage strip = new NativeImage(w, h * FRAMES, true);
-			for (int f = 0; f < FRAMES; f++)
-				for (int y = 0; y < h; y++)
-					for (int x = 0; x < w; x++) {
-						int p = item.getPixel(x, y);
-						int al = p >>> 24;
-						if (al < 10) { strip.setPixel(x, f * h + y, 0); continue; }
-						double u = x * 16.0 / w, v = y * 16.0 / h;
-						int rgb = itemColor(d, f, u, v, BuiltinPacks.lum(p) / 255.0);
-						strip.setPixel(x, f * h + y, (al << 24) | rgb);
-					}
-			firstItem = new NativeImage(w, h, true);
-			for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) firstItem.setPixel(x, y, strip.getPixel(x, y));
-			item.close();
-			BuiltinPacks.save(strip, a.resolve("item/end_crystal.png"));
-			Files.writeString(a.resolve("item/end_crystal.png.mcmeta"),
-					"{\"animation\": {\"frametime\": 2, \"interpolate\": true}}\n", StandardCharsets.UTF_8);
-		}
-		// ---- placed crystal: frame 0 as the normal texture + all frames as a strip for CrystalAnim
-		NativeImage ent = BuiltinPacks.vanilla("entity/end_crystal/end_crystal.png");
-		if (ent != null) {
-			int w = ent.getWidth(), h = ent.getHeight();
-			NativeImage strip = new NativeImage(w, h * FRAMES, true);
-			for (int f = 0; f < FRAMES; f++) entityFrame(d, f, ent, strip, f * h);
-			NativeImage first = new NativeImage(w, h, true);
-			for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) first.setPixel(x, y, strip.getPixel(x, y));
-			ent.close();
-			BuiltinPacks.save(first, a.resolve("entity/end_crystal/end_crystal.png"));
-			BuiltinPacks.save(strip, a.resolve("entity/end_crystal/" + CrystalAnim.STRIP_NAME));
-		}
-		// ---- explosion particles in the crystal colours
-		for (int i = 0; i < 16; i++) {
-			String path = "particle/explosion_" + i + ".png";
-			NativeImage img = BuiltinPacks.vanilla(path);
-			if (img == null) continue;
-			double age = i / 15.0;
-			for (int y = 0; y < img.getHeight(); y++)
-				for (int x = 0; x < img.getWidth(); x++) {
-					int p = img.getPixel(x, y);
-					int al = p >>> 24;
-					if (al < 10) continue;
-					double l = BuiltinPacks.lum(p) / 255.0;
-					// young frames glow bright, older ones fade into the dark colour
-					double t = Math.max(0, Math.min(1, 0.2 + l * 0.7 - age * 0.35));
-					img.setPixel(x, y, (al << 24) | BuiltinPacks.gradientAt(d.boomRamp, t));
-				}
-			BuiltinPacks.save(img, a.resolve(path));
-		}
-		// ---- pack.mcmeta + icon
-		Files.writeString(root.resolve("pack.mcmeta"), """
-				{
-				  "pack": {
-				    "description": {"translate": "packmixer.pack.desc.%s", "fallback": "Made by Testohd23"},
-				    "min_format": 75,
-				    "max_format": 75
-				  }
-				}
-				""".formatted(d.key), StandardCharsets.UTF_8);
-		NativeImage icon = new NativeImage(64, 64, true);
-		for (int y = 0; y < 64; y++)
-			for (int x = 0; x < 64; x++) {
-				double r = Math.hypot(x - 31.5, y - 31.5) / 45.0;
-				icon.setPixel(x, y, 0xFF000000 | BuiltinPacks.gradientAt(new int[]{BuiltinPacks.darken(d.c1, 0.55), 0x0A0A12}, r));
+		V1Packs.current = null;
+		boolean keepFrost = BuiltinPacks.frostAnim;
+		BuiltinPacks.frostAnim = false;
+		try {
+			// ---- item: animated strip
+			NativeImage item = BuiltinPacks.vanilla("item/end_crystal.png");
+			if (item != null) {
+				int w = item.getWidth(), h = item.getHeight();
+				NativeImage strip = new NativeImage(w, h * FRAMES, true);
+				for (int f = 0; f < FRAMES; f++)
+					for (int y = 0; y < h; y++)
+						for (int x = 0; x < w; x++) {
+							int p = item.getPixel(x, y);
+							int al = p >>> 24;
+							if (al < 10) { strip.setPixel(x, f * h + y, 0); continue; }
+							double u = x * 16.0 / w, v = y * 16.0 / h;
+							int rgb = itemColor(d, f, u, v, BuiltinPacks.lum(p) / 255.0);
+							strip.setPixel(x, f * h + y, (al << 24) | rgb);
+						}
+				item.close();
+				BuiltinPacks.save(strip, a.resolve("item/end_crystal.png"));
+				Files.writeString(a.resolve("item/end_crystal.png.mcmeta"),
+						"{\"animation\": {\"frametime\": 2, \"interpolate\": true}}\n", StandardCharsets.UTF_8);
 			}
-		if (firstItem != null) {
-			int fw = firstItem.getWidth();
-			for (int y = 0; y < 48; y++)
-				for (int x = 0; x < 48; x++) {
-					int p = firstItem.getPixel(x * fw / 48, y * fw / 48);
-					if ((p >>> 24) >= 10) icon.setPixel(8 + x, 8 + y, p | 0xFF000000);
-				}
-			firstItem.close();
+			// ---- placed crystal: frame 0 as the normal texture + all frames as a strip for CrystalAnim
+			NativeImage ent = BuiltinPacks.vanilla("entity/end_crystal/end_crystal.png");
+			if (ent != null) {
+				int w = ent.getWidth(), h = ent.getHeight();
+				NativeImage strip = new NativeImage(w, h * FRAMES, true);
+				for (int f = 0; f < FRAMES; f++) entityFrame(d, f, ent, strip, f * h);
+				NativeImage first = new NativeImage(w, h, true);
+				for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) first.setPixel(x, y, strip.getPixel(x, y));
+				ent.close();
+				BuiltinPacks.save(first, a.resolve("entity/end_crystal/end_crystal.png"));
+				BuiltinPacks.save(strip, a.resolve("entity/end_crystal/" + STRIP_NAME));
+			}
+			// ---- explosion particles in the crystal colours
+			for (int i = 0; i < 16; i++) {
+				String path = "particle/explosion_" + i + ".png";
+				NativeImage img = BuiltinPacks.vanilla(path);
+				if (img == null) continue;
+				double age = i / 15.0;
+				for (int y = 0; y < img.getHeight(); y++)
+					for (int x = 0; x < img.getWidth(); x++) {
+						int p = img.getPixel(x, y);
+						int al = p >>> 24;
+						if (al < 10) continue;
+						double l = BuiltinPacks.lum(p) / 255.0;
+						// young frames glow bright, older ones fade into the dark colour
+						double t = Math.max(0, Math.min(1, 0.2 + l * 0.7 - age * 0.35));
+						img.setPixel(x, y, (al << 24) | BuiltinPacks.gradientAt(d.boomRamp, t));
+					}
+				BuiltinPacks.save(img, a.resolve(path));
+			}
+		} finally {
+			BuiltinPacks.current = keep;
+			V1Packs.current = keepEl;
+			BuiltinPacks.frostAnim = keepFrost;
 		}
-		BuiltinPacks.save(icon, root.resolve("pack.png"));
 	}
 
 	private static int col(int[] stops, double t) {
@@ -185,7 +158,7 @@ public final class CrystalPacks {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 10, 2) / 2.2)
 						+ 0.6 * Math.exp(-Math.pow(r - ((f + 8) % FRAMES / (double) FRAMES) * 10, 2) / 2.2);
-				int c = col(new int[]{0x06223A, 0x1F8FD6, 0x8FE8FF, 0xFFFFFF}, l * 0.7 + ring * 0.45);
+				int c = col(new int[]{0x06302E, 0x1BB5B0, 0x8FF5EA, 0xFFFFFF}, l * 0.7 + ring * 0.45);
 				double tw = rnd(iu, iv, 3);
 				int phase = (int) (tw * FRAMES);
 				if (tw > 0.82 && (f == phase || f == (phase + 1) % FRAMES)) c = 0xFFFFFF;
@@ -234,7 +207,7 @@ public final class CrystalPacks {
 		switch (d.key) {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 11, 2) / 3);
-				return glyph ? 0xFFFFFF : col(new int[]{0x0B3A66, 0x3FB6FF, 0xDFF8FF}, 0.3 + ring * 0.7);
+				return glyph ? 0xFFFFFF : col(new int[]{0x0B4A48, 0x2FD9C6, 0xDFFFFA}, 0.3 + ring * 0.7);
 			}
 			case "c_plasma" -> {
 				double sw = Math.sin(ang * 3 + ph * 2 - r * 1.4) * 0.5 + 0.5;
@@ -289,41 +262,6 @@ public final class CrystalPacks {
 				}
 				dst.setPixel(x, oy + y, out);
 			}
-	}
-
-	// ================================================================= explosion burst
-
-	/** Extra explosion effect in the crystal colours (only for crystal explosions). */
-	static void burst(ClientLevel level, double x, double y, double z) {
-		if (!activeChecked) selectionChanged(PackMixerConfig.loadSelection());
-		Design d = active;
-		if (d == null) return;
-		RandomSource r = level.getRandom();
-		// shock ring
-		for (int i = 0; i < 64; i++) {
-			double a = i / 64.0 * Math.PI * 2;
-			double s = 0.55 + r.nextDouble() * 0.15;
-			level.addParticle(new DustParticleOptions(i % 2 == 0 ? d.c1 : d.c2, 2.2f), x, y + 0.3, z,
-					Math.cos(a) * s * 8, 0.05, Math.sin(a) * s * 8);
-		}
-		// sphere of sparks
-		for (int i = 0; i < 70; i++) {
-			double th = r.nextDouble() * Math.PI * 2, ph = Math.acos(r.nextDouble() * 2 - 1);
-			double s = 0.25 + r.nextDouble() * 0.35;
-			double vx = Math.sin(ph) * Math.cos(th) * s, vy = Math.cos(ph) * s, vz = Math.sin(ph) * Math.sin(th) * s;
-			if (i % 3 == 0) level.addParticle(d.extra, x, y + 0.5, z, vx, vy, vz);
-			else level.addParticle(new DustParticleOptions(i % 2 == 0 ? d.c2 : d.c1, 1.4f), x, y + 0.5, z, vx * 9, vy * 9, vz * 9);
-		}
-		// column of light
-		for (int i = 0; i < 20; i++)
-			level.addParticle(ParticleTypes.END_ROD, x + (r.nextDouble() - 0.5) * 0.4, y + 0.2, z + (r.nextDouble() - 0.5) * 0.4,
-					0, 0.25 + r.nextDouble() * 0.35, 0);
-	}
-
-	static List<String> names() {
-		List<String> l = new ArrayList<>();
-		for (Design d : DESIGNS) l.add(d.folder);
-		return l;
 	}
 
 	private CrystalPacks() {

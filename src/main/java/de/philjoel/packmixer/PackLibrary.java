@@ -55,8 +55,9 @@ public final class PackLibrary {
 	/** All packs that contain at least one file of the category. */
 	public List<SourcePack> packsFor(Category category) {
 		List<SourcePack> list = new ArrayList<>();
+		boolean full = category.id.equals(DefaultCategories.FULL_PACK);
 		for (SourcePack p : packs.values()) {
-			if (p.contains(category)) list.add(p);
+			if (full ? V1Packs.isV1(p.name) : p.contains(category)) list.add(p);
 		}
 		return list;
 	}

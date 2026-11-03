@@ -21,13 +21,13 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 14;
+	public static final int VERSION = 15;
 
 	enum Style {
-		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
+		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO, V1XMAS;
 
 		boolean christmas() {
-			return this == CANDY || this == FROST || this == TREE;
+			return this == CANDY || this == FROST || this == TREE || this == V1XMAS;
 		}
 	}
 
@@ -61,6 +61,14 @@ public final class BuiltinPacks {
 		return new Theme(name, key, Style.DUO,
 				new int[]{0x202020, 0x505050, 0x909090, 0xC8C8C8, 0xFFFFFF}, new int[]{0x111118, 0x2A2A35, 0x45455A},
 				accent, crosshair, new int[]{0x303030, 0x9A9A9A, 0xFFFFFF});
+	}
+
+	/** Testohd23 V1 packs: clean duo colours + element animation (see V1Packs). */
+	private static Theme v1(String name, String key, String crosshair, Style style, int main, int accent) {
+		GRADIENTS.put(name, new int[]{main, accent});
+		return new Theme(name, key, style,
+				new int[]{0x202020, 0x505050, 0x909090, 0xC8C8C8, 0xFFFFFF}, new int[]{0x111118, 0x2A2A35, 0x45455A},
+				accent, crosshair, new int[]{darken(main, 0.4), main, accent});
 	}
 
 	static void duo(NativeImage img, int main, int accent) {
@@ -277,6 +285,12 @@ public final class BuiltinPacks {
 			// ---- energy: dark / turquoise with a running light on mace and spears
 			duo("Testohd Energie Schwarz", "e_black", "ring_dot", 0x1A1D22, 0x2FD9C6),
 			duo("Testohd Energie Tuerkis", "e_teal", "circle", 0x0E9C92, 0xB8FFF6),
+			// ---- Testohd23 V1: element animations + animated crystals
+			v1("Testohd23 V1 Purple", "v1_purple", "ring_dot", Style.DUO, 0x6A22D0, 0xFF6FE0),
+			v1("Testohd23 V1 Orange", "v1_orange", "circle", Style.DUO, 0xC2360C, 0xFFC23A),
+			v1("Testohd23 V1 Black", "v1_black", "small_plus", Style.DUO, 0x22202A, 0x9B4DFF),
+			v1("Testohd23 V1 Turquoise", "v1_turquoise", "circle", Style.DUO, 0x0E9C92, 0xB8FFF6),
+			v1("Testohd Christmas V1 Turquoise", "v1_xmas", "snowflake", Style.V1XMAS, 0x18A8A4, 0xE6FFFC),
 			// ---- duo: clean colour + matching colour shift in the highlights
 			duo("Testohd Duo Lila Pink", "d_purplepink", "ring_dot", 0x7B2FE0, 0xFF7AD9),
 			duo("Testohd Duo Blau Cyan", "d_bluecyan", "small_plus", 0x1F4FE0, 0x5CF0FF),
@@ -305,7 +319,7 @@ public final class BuiltinPacks {
 	);
 
 	/** Shipped packs: everything clean. The busy pattern packs (stripes, camo, ...) are only listed so old copies get removed. */
-	static final List<Theme> THEMES = ALL_THEMES.stream().filter(t -> t.style() != Style.PATTERN).toList();
+	static final List<Theme> THEMES = ALL_THEMES.stream().filter(t -> t.style() != Style.PATTERN && !t.description().equals("frost")).toList();
 
 	private static final String[] MATERIALS = {"wooden", "stone", "copper", "iron", "golden", "diamond", "netherite"};
 	private static final String[] TOOLS = {"sword", "axe", "pickaxe", "shovel"};
@@ -330,6 +344,7 @@ public final class BuiltinPacks {
 
 	/** Folder / display name of a built-in pack: without the "Testohd" in front. */
 	public static String folder(Theme th) {
+		if (V1Packs.isV1(th.name)) return th.name; // the V1 packs keep their full name
 		return th.name.startsWith("Testohd ") ? th.name.substring(8) : th.name;
 	}
 
@@ -340,7 +355,6 @@ public final class BuiltinPacks {
 		if (builtinNames == null) {
 			java.util.Set<String> n = new java.util.HashSet<>();
 			for (Theme t : THEMES) n.add(folder(t));
-			n.addAll(CrystalPacks.names());
 			builtinNames = n;
 		}
 		return builtinNames.contains(packName);
@@ -352,16 +366,19 @@ public final class BuiltinPacks {
 		List<String> favs = PackMixerConfig.settings().favorites;
 		boolean selChanged = false;
 		for (Theme old : ALL_THEMES) {
-			String newName = old.style() == Style.PATTERN ? null : folder(old);
+			String newName = old.style() == Style.PATTERN ? null
+					: old.description().equals("frost") ? "Testohd Christmas V1 Turquoise" // Frost became the V1 christmas pack
+					: folder(old);
 			if (!old.name().equals(newName)) deleteDir(PackMixerConfig.packsDir().resolve(old.name()));
-			if (newName == null) deleteDir(PackMixerConfig.packsDir().resolve(folder(old)));
+			if (newName == null || !newName.equals(folder(old))) deleteDir(PackMixerConfig.packsDir().resolve(folder(old)));
 			for (Map.Entry<String, String> e : sel.entrySet()) {
-				if (e.getValue().equals(old.name())) {
+				if (e.getValue().equals(old.name()) || (!folder(old).equals(newName) && e.getValue().equals(folder(old)))) {
 					e.setValue(newName);
 					selChanged = true;
 				}
 			}
-			for (int i = 0; i < favs.size(); i++) if (favs.get(i).equals(old.name())) favs.set(i, newName);
+			for (int i = 0; i < favs.size(); i++)
+				if (favs.get(i).equals(old.name()) || favs.get(i).equals(folder(old))) favs.set(i, newName);
 		}
 		sel.values().removeIf(java.util.Objects::isNull);
 		favs.removeIf(java.util.Objects::isNull);
@@ -376,7 +393,7 @@ public final class BuiltinPacks {
 		}
 		PackExtras.clearFields();
 		frostAnim = false;
-		CrystalPacks.generateAll(PackMixerConfig.packsDir());
+		V1Packs.current = null;
 	}
 
 	private static void deleteDir(Path dir) throws java.io.IOException {
@@ -391,6 +408,8 @@ public final class BuiltinPacks {
 	private static void generate(Theme th, Path root) throws Exception {
 		current = th;
 		frostAnim = th.style == Style.FROST;
+		V1Packs.V1 v1 = V1Packs.of(th.name);
+		V1Packs.current = v1 == null ? null : v1.element();
 		Path a = root.resolve("assets/minecraft/textures");
 		Files.createDirectories(a);
 
@@ -409,7 +428,7 @@ public final class BuiltinPacks {
 		for (String item : new String[]{"golden_apple", "totem_of_undying", "end_crystal", "experience_bottle",
 				"snowball", "wind_charge", "mace", "bow", "bow_pulling_0", "bow_pulling_1", "bow_pulling_2", "ender_pearl"}) {
 			String path = "item/" + item + ".png";
-			if (item.equals("ender_pearl") && th.style.christmas()) {
+			if (item.equals("ender_pearl") && th.style.christmas() && th.style != Style.V1XMAS) {
 				save(ornament(th), a.resolve(path)); // christmas bauble
 				continue;
 			}
@@ -436,7 +455,7 @@ public final class BuiltinPacks {
 			if (img == null) continue;
 			recolor(img, block.equals("glowstone") ? brighter(th.ramp) : th.ramp, 0);
 			if (th.style == Style.TREE && block.equals("obsidian")) lights(img);
-			if (th.style == Style.FROST && block.equals("obsidian")) frost(img);
+			if ((th.style == Style.FROST || th.style == Style.V1XMAS) && block.equals("obsidian")) frost(img);
 			save(img, a.resolve(path));
 			copyMeta(path, a); // animated textures (respawn anchor top)
 		}
@@ -452,7 +471,7 @@ public final class BuiltinPacks {
 			}
 		}
 		// ---- cobweb
-		if (th.style == Style.FROST || th.style == Style.CANDY) {
+		if (th.style == Style.FROST || th.style == Style.CANDY || th.style == Style.V1XMAS) {
 			save(draw(SNOWFLAKE_16, Map.of('#', 0xFFFFFFFF, '+', 0xFFB9E3FF)), a.resolve("block/cobweb.png"));
 		} else {
 			NativeImage web = vanilla("block/cobweb.png");
@@ -483,6 +502,13 @@ public final class BuiltinPacks {
 
 		// ---- everything else: placed / worn / thrown things, GUI, sky
 		safe(() -> PackExtras.generate(th, a, root));
+		if (v1 != null) { // the animated end crystal of this pack
+			CrystalPacks.Design d = null;
+			for (CrystalPacks.Design c : CrystalPacks.DESIGNS) if (c.key().equals(v1.crystal())) d = c;
+			CrystalPacks.Design design = d;
+			if (design != null) safe(() -> CrystalPacks.writeInto(design, a));
+		}
+		V1Packs.current = null;
 
 		// ---- pack.mcmeta + icon
 		Files.writeString(root.resolve("pack.mcmeta"), """
@@ -558,9 +584,17 @@ public final class BuiltinPacks {
 		if (current != null && (styled || path.contains("/heart/"))) {
 			if (current.style == Style.GRADIENT) gradient(img, GRADIENTS.get(current.name));
 			else if (current.style == Style.PATTERN) pattern(img, PATTERNS.get(current.name));
-			else if (current.style == Style.DUO) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
+			else if (current.style == Style.DUO || current.style == Style.V1XMAS) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
 		}
 		Files.createDirectories(out.getParent());
+		if (V1Packs.current != null && img.getWidth() == img.getHeight() && path.contains("/textures/item/")) {
+			NativeImage strip = V1Packs.animate(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973));
+			img.close();
+			strip.writeToFile(out);
+			strip.close();
+			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+			return;
+		}
 		if (frostAnim && img.getWidth() == img.getHeight() && (path.contains("/textures/item/")
 				|| path.endsWith("/block/obsidian.png") || path.endsWith("/block/glowstone.png"))) {
 			NativeImage strip = frostStrip(img, path.hashCode());
@@ -804,6 +838,8 @@ public final class BuiltinPacks {
 
 	/** Eye colour of a pack's totem: a bright version of its main colour (frost = light blue). */
 	static int eyeColor(Theme th) {
+		V1Packs.V1 v = V1Packs.of(th.name);
+		if (v != null) return v.eye();
 		if (th.style == Style.FROST) return 0x8FE3FF;
 		if (th.style == Style.CANDY) return 0xFF3B4E;
 		if (th.style == Style.TREE) return th.name.contains("Lebkuchen") ? 0xFFB347 : th.name.contains("Gold") ? 0xFFD24A : 0x3DFF6E;
@@ -945,7 +981,7 @@ public final class BuiltinPacks {
 	private static NativeImage icon(Theme th, Path texturesRoot) throws Exception {
 		NativeImage icon = new NativeImage(64, 64, true);
 		for (int y = 0; y < 64; y++)
-			for (int x = 0; x < 64; x++) icon.setPixel(x, y, 0xFF000000 | (th.style == Style.GRADIENT || th.style == Style.DUO
+			for (int x = 0; x < 64; x++) icon.setPixel(x, y, 0xFF000000 | (th.style == Style.GRADIENT || th.style == Style.DUO || th.style == Style.V1XMAS
 					? darken(gradientAt(GRADIENTS.get(th.name), (x + 63 - y) / 126.0), 0.45)
 					: th.style == Style.PATTERN
 					? darken(gradientAt(PATTERNS.get(th.name).colors().length > 1 ? PATTERNS.get(th.name).colors()

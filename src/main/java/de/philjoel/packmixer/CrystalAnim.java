@@ -13,9 +13,8 @@ import java.io.InputStream;
  * frame uploaded every tick (blended, so it runs smoothly).
  */
 final class CrystalAnim {
-	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
 	private static final Identifier TEX = Identifier.withDefaultNamespace("textures/entity/end_crystal/end_crystal.png");
-	private static final Identifier STRIP = Identifier.withDefaultNamespace("textures/entity/end_crystal/" + STRIP_NAME);
+	private static final Identifier STRIP = Identifier.withDefaultNamespace("textures/entity/end_crystal/" + CrystalPacks.STRIP_NAME);
 	/** Ticks per frame. */
 	private static final int SPEED = 2;
 
