@@ -413,5 +413,7 @@
   "packmixer.pack.desc.v1_white": "§fHoly §7– animated, with crystal – Made by Testohd23",
   "packmixer.changelog.1.8.0": "New pack\n• Testohd23 V1 White: holy light over all items, with its own crystal",
   "packmixer.settings.particle_size": "Particle size",
-  "packmixer.changelog.1.8.1": "New\n• Small particles: Settings → Particles → Particle size"
+  "packmixer.changelog.1.8.1": "New\n• Small particles: Settings → Particles → Particle size",
+  "packmixer.generating": "Creating the Testohd packs …",
+  "packmixer.generated": "Testohd packs are ready"
 }

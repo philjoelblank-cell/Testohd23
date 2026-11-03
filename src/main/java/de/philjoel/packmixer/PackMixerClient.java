@@ -40,7 +40,17 @@ public class PackMixerClient implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> ChangelogScreen.maybeShow(screen));
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> BuiltinPacks.generateIfNeeded(() -> {
 			// new pack versions were written: re-apply your saved choices so nothing you picked gets lost
-			if (!PackMixerConfig.loadSelection().isEmpty() || PackMixerConfig.settings().ancientDebris) PackBuilder.rebuildAndApply();
+			java.util.Map<String, String> sel = PackMixerConfig.loadSelection();
+			String full = sel.get(DefaultCategories.FULL_PACK);
+			if (V1Packs.isV1(full)) { // a whole Testohd pack was chosen: categories it didn't have yet (new crystal, anchor ...) get it too
+				boolean changed = false;
+				for (Category c : PackMixerConfig.loadCategories()) if (!sel.containsKey(c.id)) {
+					sel.put(c.id, full);
+					changed = true;
+				}
+				if (changed) PackMixerConfig.saveSelection(sel);
+			}
+			if (!sel.isEmpty() || PackMixerConfig.settings().ancientDebris) PackBuilder.rebuildAndApply();
 		}));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
