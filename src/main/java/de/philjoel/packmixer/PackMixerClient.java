@@ -50,6 +50,7 @@ public class PackMixerClient implements ClientModInitializer {
 			AutoTest.tick(client);
 			CrystalSound.tick(client);
 			CrystalAnim.tick(client);
+			SkyboxRenderer.tick(client);
 			while (openKey.consumeClick()) {
 				if (client.gui.screen() == null) {
 					client.gui.setScreen(new PackMixerScreen(null));

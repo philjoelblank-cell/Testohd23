@@ -114,6 +114,7 @@ public final class SkyboxRenderer {
 		else tex = Identifier.withDefaultNamespace(source.startsWith("/") ? source.substring(1) : source);
 		if (tex == null || mc.getResourceManager().getResource(tex).isEmpty()) return null;
 		loadedTextures.add(tex);
+		mc.getTextureManager().getTexture(tex); // upload now: 26.x can't upload textures while the sky is being drawn
 		String blend = p.getProperty("blend", "add").trim().toLowerCase(java.util.Locale.ROOT);
 		boolean additive = blend.equals("add") || blend.equals("screen") || blend.equals("dodge");
 		float speed = parseFloat(p.getProperty("speed"), 1f);
@@ -179,14 +180,20 @@ public final class SkyboxRenderer {
 
 	/** The End: on top of the vanilla end sky. */
 	public static void renderEnd(RenderPass pass) {
-		Minecraft mc = Minecraft.getInstance();
-		ensureLoaded(mc);
 		render(pass, end, 0f, 1f);
 	}
 
 	private static List<Layer> overworldLayers() {
-		ensureLoaded(Minecraft.getInstance());
 		return overworld;
+	}
+
+	/** Every client tick (outside of rendering): (re)load the sky layers and their textures. */
+	public static void tick(Minecraft mc) {
+		try {
+			ensureLoaded(mc);
+		} catch (Throwable e) {
+			PackMixerClient.LOGGER.warn("Custom sky could not be loaded", e);
+		}
 	}
 
 	private static void render(RenderPass pass, List<Layer> layers, float sunAngle, float rain) {
@@ -219,7 +226,7 @@ public final class SkyboxRenderer {
 				pass.popDebugGroup();
 			}
 		} catch (Throwable e) {
-			PackMixerClient.LOGGER.warn("Custom sky failed, turning it off: {}", e.toString());
+			PackMixerClient.LOGGER.warn("Custom sky failed, turning it off", e);
 			overworld = List.of();
 			end = List.of();
 		}
