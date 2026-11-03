@@ -126,6 +126,21 @@ final class AutoTest {
 			Cosmetics.Slot.EFFECT.set("fx_lightwings");
 		});
 		step("settle", 200, () -> { });
+		// regression: switching whole packs (White -> Purple crashed for a player)
+		for (String pk : new String[]{"Testohd23 V1 White", "Testohd23 V1 Purple", "Testohd23 V1 White", "Testohd23 V1 Purple"}) {
+			step("switch " + pk, 5, () -> {
+				Map<String, String> sel = new LinkedHashMap<>();
+				for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, pk);
+				PackMixerConfig.saveSelection(sel);
+				mc.setScreen(new PackMixerScreen(null));
+			});
+			step("close " + pk, 10, () -> {
+				if (mc.screen instanceof PackMixerScreen s) s.testApply();
+			});
+			when("reloaded " + pk, () -> mc.getOverlay() == null, () -> { });
+			step("look " + pk, 60, () -> { });
+			shot("switch_" + pk.replace(" ", "_"));
+		}
 		command("gamemode creative @p");
 		command("item replace entity @p weapon.mainhand with diamond_sword[enchantments={sharpness:1}]");
 		command("item replace entity @p weapon.offhand with shield");

@@ -258,6 +258,12 @@ public class PackMixerScreen extends Screen {
 	}
 
 	/** Used by the automatic screenshot test. */
+	/** Autotest: apply like the "Done" button. */
+	void testApply() {
+		dirty = true;
+		onClose();
+	}
+
 	void testSelect(int index) {
 		selectCategory(index);
 	}
