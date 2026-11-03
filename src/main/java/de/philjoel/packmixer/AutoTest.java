@@ -209,7 +209,10 @@ final class AutoTest {
 		command("gamemode creative @p");
 		command("time set 6000");
 		command("weather clear");
-		step("video start", 5, () -> {
+		command("gamerule announceAdvancements false");
+		command("recipe give @p *");
+		command("advancement grant @p everything");
+		step("video start", 40, () -> {
 			try {
 				mc.getToastManager().clear();
 			} catch (Throwable ignored) {
@@ -369,7 +372,7 @@ final class AutoTest {
 
 	static void tick(Minecraft mc) {
 		if (!ENABLED) return;
-		if (video != null && mc.level != null) {
+		if (video != null && mc.level != null && mc.getOverlay() == null) { // loading screens are left out
 			try {
 				captureFrame(mc);
 			} catch (Throwable e) {
