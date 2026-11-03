@@ -29,7 +29,9 @@ public final class CrystalPacks {
 			new Design("Kristall Void", "c_void", 0x5A2AA0, new int[]{0x050208, 0x2A0F45, 0x7A2BFF, 0xC890FF},
 					0x7A2BFF, 0x1A0830),
 			new Design("Kristall Tuerkis", "c_teal", 0x40E8D8, new int[]{0x04201E, 0x0E9C92, 0x35F2DD, 0xB8FFF6},
-					0x35F2DD, 0xE6FFFC));
+					0x35F2DD, 0xE6FFFC),
+			new Design("Kristall Holy", "c_holy", 0xFFF2C8, new int[]{0x8A7A50, 0xE8D8A0, 0xFFF6D8, 0xFFFFFF},
+					0xFFE680, 0xFFFFFF));
 
 	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
 
@@ -190,6 +192,14 @@ public final class CrystalPacks {
 				if (st > 0.86 && l < 0.6 && Math.abs(f - phase) <= 1) c = mix(c, 0xFFFFFF, f == phase ? 0.9 : 0.4);
 				return c;
 			}
+			case "c_holy" -> { // white-gold light: rays turning around the crystal, soft glow
+				double ray = Math.pow(Math.max(0, Math.cos(ang * 4 - ph)), 6);
+				int c = col(new int[]{0x8A7A50, 0xE8D8A0, 0xFFF6D8, 0xFFFFFF}, l * 0.6 + 0.25 + ray * 0.3);
+				double tw = rnd(iu, iv, 51);
+				int phase = (int) (tw * FRAMES);
+				if (tw > 0.88 && Math.abs(f - phase) <= 1) c = 0xFFFFFF;
+				return c;
+			}
 			default -> { // turquoise energy: light running over the crystal
 				double p = f / (double) FRAMES * 2.4 - 0.7, dd = (u + (15 - v)) / 30.0;
 				double band = Math.exp(-Math.pow((dd - p) * 7, 2));
@@ -222,6 +232,10 @@ public final class CrystalPacks {
 				double sw = Math.sin(ang * 2 - ph + r * 1.1) * 0.5 + 0.5;
 				double g = 0.6 + 0.4 * Math.sin(ph * 2);
 				return glyph ? mix(0x8A2BFF, 0xFFFFFF, g * 0.6) : mix(0x030106, 0x2A0F45, sw * 0.6);
+			}
+			case "c_holy" -> {
+				double ray = Math.pow(Math.max(0, Math.cos(ang * 3 + ph)), 4);
+				return glyph ? 0xFFFFFF : col(new int[]{0xC8A850, 0xFFE680, 0xFFFDF0}, 0.3 + ray * 0.7);
 			}
 			default -> {
 				double p = f / (double) FRAMES * 2.4 - 0.7, dd = (u + (15 - v)) / 30.0;

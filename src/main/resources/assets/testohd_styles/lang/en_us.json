@@ -408,5 +408,8 @@
   "packmixer.bg.forest": "Forest",
   "packmixer.bg.inferno": "Inferno",
   "packmixer.feature.background": "Background",
-  "packmixer.feature.background.desc": "The picture behind all Testohd menus"
+  "packmixer.feature.background.desc": "The picture behind all Testohd menus",
+  "packmixer.pack.testohd23_v1_white": "Testohd23 V1 White",
+  "packmixer.pack.desc.v1_white": "§fHoly §7– animated, with crystal – Made by Testohd23",
+  "packmixer.changelog.1.8.0": "New pack\n• Testohd23 V1 White: holy light over all items, with its own crystal"
 }
