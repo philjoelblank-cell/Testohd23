@@ -257,7 +257,7 @@ public final class Cosmetics {
 			pose.pushPose();
 			model.root().translateAndRotate(pose);
 			model.body.translateAndRotate(pose);
-			pose.translate(0.0F, 0.32F, 0.17F);
+			pose.translate(0.0F, 0.6F, 0.17F); // wing roots on the shoulder blades
 			pose.mulPose(Axis.YP.rotationDegrees(180.0F));
 			pose.scale(0.62F, -0.62F, -0.62F);
 			pose.mulPose(Axis.YP.rotationDegrees(side * open));

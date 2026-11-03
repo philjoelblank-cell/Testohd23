@@ -21,7 +21,7 @@ final class PackExtras {
 		// ---- end crystal when placed
 		safe(() -> recolorTo(th, "entity/end_crystal/end_crystal.png", a, brighter(th.ramp())));
 		// ---- shield (entity texture = what you hold and see on screen)
-		for (String p : new String[]{"entity/shield_base_nopattern.png", "entity/shield_base.png", "entity/shield/base.png"}) {
+		for (String p : new String[]{"entity/shield_base_nopattern.png", "entity/shield_base.png", "entity/shield/base.png", "entity/shield/base_nopattern.png"}) {
 			safe(() -> shield(th, p, a));
 		}
 		// ---- armor on the body + armor items
@@ -198,49 +198,93 @@ final class PackExtras {
 
 	// ======================================================================= shield
 
-	/** Wood becomes the theme colour, the iron rim a lighter shade, plus a small emblem in the middle. */
+	/**
+	 * Shield: front in the theme colours with a bright rim, an inner frame and a big emblem; the back and edges
+	 * keep the wood / iron look in theme colours. Shields live in a texture atlas, so they can be animated:
+	 * a shine runs over the front and the emblem glows (V1 packs get their element wave on top instead).
+	 */
 	private static void shield(BuiltinPacks.Theme th, String path, Path a) throws Exception {
 		NativeImage img = vanilla(path);
 		if (img == null) return;
-		int w = img.getWidth(), s = Math.max(1, w / 64);
+		int w = img.getWidth(), h = img.getHeight(), s = Math.max(1, w / 64);
 		int[] rim = brighter(brighter(th.ramp()));
-		for (int y = 0; y < img.getHeight(); y++)
+		int[] stops = BuiltinPacks.GRADIENTS.get(th.name());
+		int light = th.style().christmas() ? 0xFFE8A0 : stops != null ? stops[stops.length - 1] : ramp(rim, 0.95);
+		int deep = stops != null ? BuiltinPacks.darken(stops[0], 0.55) : ramp(th.ramp(), 0.12);
+		int mid = stops != null ? stops[0] : ramp(th.ramp(), 0.55);
+		boolean emblem = !path.endsWith("shield_base.png") && !path.endsWith("shield/base.png");
+		String[] art = th.style().christmas() ? new String[]{
+				"...#...",
+				"..###..",
+				"#######",
+				".#####.",
+				"..###..",
+				".##.##.",
+				"##...##"} : new String[]{
+				"...#...",
+				"..#+#..",
+				".#+++#.",
+				"#++#++#",
+				".#+++#.",
+				"..#+#..",
+				"...#..."};
+		int[] base = new int[w * h];
+		boolean[] front = new boolean[w * h], mark = new boolean[w * h];
+		for (int y = 0; y < h; y++)
 			for (int x = 0; x < w; x++) {
 				int p = img.getPixel(x, y);
 				int al = p >>> 24;
-				if (al < 10) continue;
-				int r = (p >> 16) & 0xFF, g = (p >> 8) & 0xFF, b = p & 0xFF;
-				int sat = Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b));
+				if (al < 10) {
+					base[y * w + x] = p;
+					continue;
+				}
+				int gx = x / s, gy = y / s;
 				double t = lum(p) / 255.0;
-				int c = sat < 28 ? ramp(rim, 0.2 + t * 0.8) : ramp(th.ramp(), 0.15 + t * 0.85);
-				img.setPixel(x, y, (al << 24) | c);
+				int c;
+				if (gx >= 1 && gx < 13 && gy >= 1 && gy < 23) { // front face
+					front[y * w + x] = true;
+					boolean outer = gx == 1 || gx == 12 || gy == 1 || gy == 22;
+					boolean inner = gx == 2 || gx == 11 || gy == 2 || gy == 21;
+					if (outer) c = BuiltinPacks.gradientAt(new int[]{BuiltinPacks.darken(light, 0.7), light}, 0.4 + t * 0.6);
+					else if (inner) c = deep;
+					else c = BuiltinPacks.gradientAt(new int[]{deep, mid, BuiltinPacks.gradientAt(new int[]{mid, light}, 0.45)},
+							0.25 + (1 - (gy - 3) / 18.0) * 0.55 + (t - 0.5) * 0.25);
+					int ex = gx - 3, ey = gy - 8;
+					if (emblem && ex >= 0 && ey >= 0 && ey < art.length && ex < art[ey].length() && art[ey].charAt(ex) != '.') {
+						c = art[ey].charAt(ex) == '#' ? light : BuiltinPacks.darken(light, 0.55);
+						mark[y * w + x] = true;
+					}
+				} else {
+					int r = (p >> 16) & 0xFF, g = (p >> 8) & 0xFF, b = p & 0xFF;
+					int sat = Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b));
+					c = sat < 28 ? ramp(rim, 0.2 + t * 0.8) : ramp(th.ramp(), 0.15 + t * 0.85);
+				}
+				base[y * w + x] = (al << 24) | c;
 			}
-		// emblem on the front face (front face = x 1..13, y 1..23 at 64 px)
-		if (!path.endsWith("shield_base.png") && !path.endsWith("shield/base.png")) {
-			int accent = 0xFF000000 | (th.style().christmas() ? 0xFFD24A : ramp(rim, 0.95));
-			int dark = 0xFF000000 | ramp(th.ramp(), 0.05);
-			String[] emblem = th.style().christmas() ? new String[]{
-					"..#..",
-					".###.",
-					"#####",
-					".###.",
-					".#.#."} : new String[]{
-					"..#..",
-					".#+#.",
-					"#+++#",
-					".#+#.",
-					"..#.."};
-			int ox = 5, oy = 10;
-			for (int ey = 0; ey < emblem.length; ey++)
-				for (int ex = 0; ex < emblem[ey].length(); ex++) {
-					char ch = emblem[ey].charAt(ex);
-					if (ch == '.') continue;
-					int col = ch == '#' ? accent : dark;
-					for (int dx = 0; dx < s; dx++)
-						for (int dy = 0; dy < s; dy++) img.setPixel((ox + ex) * s + dx, (oy + ey) * s + dy, col);
+		img.close();
+		boolean animate = path.contains("entity/shield/") && V1Packs.current == null;
+		int frames = animate ? 16 : 1;
+		NativeImage out = new NativeImage(w, h * frames, true);
+		for (int f = 0; f < frames; f++) {
+			double pos = f / 16.0 * 1.7 - 0.35, glow = 0.5 + 0.5 * Math.sin(f / 16.0 * Math.PI * 2);
+			for (int y = 0; y < h; y++)
+				for (int x = 0; x < w; x++) {
+					int p = base[y * w + x];
+					if (animate && front[y * w + x]) {
+						int gx = x / s, gy = y / s;
+						double d = ((gx - 1) + (gy - 1) * 0.55) / (11 + 21 * 0.55);
+						double band = Math.exp(-Math.pow((d - pos) * 9, 2));
+						int c = p & 0xFFFFFF;
+						if (mark[y * w + x]) c = BuiltinPacks.gradientAt(new int[]{c, 0xFFFFFF}, 0.15 + glow * 0.35);
+						c = BuiltinPacks.gradientAt(new int[]{c, 0xFFFFFF}, band * 0.55);
+						if (BuiltinPacks.hash(gx * 7 + f * 31, gy * 13) % 97 == 0) c = BuiltinPacks.gradientAt(new int[]{c, 0xFFFFFF}, 0.8);
+						p = (p & 0xFF000000) | c;
+					}
+					out.setPixel(x, f * h + y, p);
 				}
 		}
-		save(img, a.resolve(path));
+		save(out, a.resolve(path));
+		if (animate) Files.writeString(a.resolve(path + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
 	}
 
 	// ======================================================================= sky box
