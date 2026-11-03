@@ -250,10 +250,19 @@ public class PackMixerSettingsScreen extends Screen {
 				}).bounds(x, y, cw, 14).build()); y += 18;
 			}
 			case "background" -> { // little pictures to click on, two per row
-				int tw = (cw - 4) / 2, th = tw * 9 / 16;
-				for (int i = 0; i < Ui.BACKGROUNDS.size(); i++) {
+				// as big as possible, but always inside the window
+				int n = Ui.BACKGROUNDS.size(), avail = y1 - 22 - y;
+				int cols = 2, tw = 0, th = 0;
+				for (cols = 2; cols <= 5; cols++) {
+					tw = (cw - 4 * (cols - 1)) / cols;
+					th = tw * 9 / 16;
+					int rowCount = (n + cols - 1) / cols;
+					if (rowCount * (th + 4) <= avail) break;
+				}
+				final int c = Math.min(cols, 5);
+				for (int i = 0; i < n; i++) {
 					String id = Ui.BACKGROUNDS.get(i);
-					int bx = x + (i % 2) * (tw + 4), by = y + (i / 2) * (th + 4);
+					int bx = x + (i % c) * (tw + 4), by = y + (i / c) * (th + 4);
 					addRenderableWidget(new Ui.FlatButton(bx, by, tw, th, Component.translatable("packmixer.bg." + id), () -> {
 						s.menuBackground = id;
 						saved();
@@ -265,13 +274,15 @@ public class PackMixerSettingsScreen extends Screen {
 							g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, Ui.background(id), x, y, 0f, 0f, w, h, 512, 288, 512, 288);
 							boolean on = id.equals(s.menuBackground);
 							g.fill(x, y + h - 10, x + w, y + h, 0x90000000);
-							Ui.small(g, getMessage().getString(), x + 3, y + h - 8, on ? 0xFFFFD86B : Ui.TEXT);
+							String label = getMessage().getString();
+							while (label.length() > 1 && Ui.smallWidth(label) > w - 5) label = label.substring(0, label.length() - 1);
+							Ui.small(g, label, x + 3, y + h - 8, on ? 0xFFFFD86B : Ui.TEXT);
 							if (on) g.outline(x, y, w, h, 0xFFFFD86B);
 							else if (isHoveredOrFocused()) g.outline(x, y, w, h, 0x90FFFFFF);
 						}
 					});
 				}
-				y += ((Ui.BACKGROUNDS.size() + 1) / 2) * (th + 4);
+				y += ((n + c - 1) / c) * (th + 4);
 			}
 			case "profiles" -> {
 				int bw = (cw - 4) / 2;
