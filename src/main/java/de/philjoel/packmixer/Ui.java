@@ -282,6 +282,15 @@ public final class Ui {
 				return;
 			}
 		}
+		if (cat.id.equals("end_crystal") || cat.id.equals(DefaultCategories.FULL_PACK)) {
+			PreviewCache.Preview c = cache.crystal3d(pack);
+			if (c != null) { // placed crystal in 3D: floats and turns like in the world (faster on hover)
+				int n = PreviewCache.CRYSTAL_FRAMES, fw = c.width();
+				int f = animate ? Math.floorMod((int) (t * (hover ? 24 : 14) + phase * 9), n) : 6;
+				g.blit(RenderPipelines.GUI_TEXTURED, c.id(), x, y, 0f, (float) (f * fw), size, size, fw, fw, fw, c.height(), 0xFFFFFFFF);
+				return;
+			}
+		}
 		PreviewCache.Preview p = cache.icon(cat, pack);
 		if (p == null) return; // nothing to show -> leave the card empty instead of a "?"
 		if (!animate) {

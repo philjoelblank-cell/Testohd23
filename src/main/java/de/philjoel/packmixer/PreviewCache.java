@@ -116,6 +116,35 @@ public final class PreviewCache {
 		return png == null ? null : NativeImage.read(new ByteArrayInputStream(png));
 	}
 
+	/** Frames of the turning 3D end crystal preview. */
+	public static final int CRYSTAL_FRAMES = 48;
+
+	/**
+	 * End crystal like when it is placed in the world: the two glass cubes and the core float up and down and turn
+	 * once around themselves (software 3D, one strip with {@link #CRYSTAL_FRAMES} frames).
+	 */
+	public Preview crystal3d(SourcePack pack) {
+		String key = name(pack) + "|crystal3d";
+		Preview cached = cache.get(key);
+		if (cached != null) return cached == MISSING ? null : cached;
+		Preview loaded = null;
+		try {
+			NativeImage tex = readImage(pack, "textures/entity/end_crystal/end_crystal.png");
+			NativeImage anim = pack != null && pack.has("textures/entity/end_crystal/" + CrystalPacks.STRIP_NAME)
+					? readImage(pack, "textures/entity/end_crystal/" + CrystalPacks.STRIP_NAME) : null;
+			if (tex != null) {
+				NativeImage strip = Crystal3D.render(tex, anim, CRYSTAL_FRAMES, 96);
+				tex.close();
+				if (anim != null) anim.close();
+				loaded = register(strip, "crystal3d");
+			}
+		} catch (Exception e) {
+			PackMixerClient.LOGGER.debug("No crystal preview for {}: {}", key, e.toString());
+		}
+		cache.put(key, loaded == null ? MISSING : loaded);
+		return loaded;
+	}
+
 	/** Enchant glint preview: a diamond sword with the pack's glint running over it (16 frame strip). */
 	private Preview glint(SourcePack pack) throws Exception {
 		NativeImage glint = readImage(pack, "textures/misc/enchanted_glint_item.png");
