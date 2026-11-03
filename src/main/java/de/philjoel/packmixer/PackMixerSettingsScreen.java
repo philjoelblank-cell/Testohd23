@@ -75,6 +75,8 @@ public class PackMixerSettingsScreen extends Screen {
 		settingsEntries.add(new Entry("controls", "menu", Ui.icon(Items.COMPASS), null, null,
 				() -> PackMixerClient.openKey().getTranslatedKeyMessage().getString()));
 		settingsEntries.add(new Entry("packmixer", "menu", Ui.icon(Items.PAINTING), null, null, () -> ""));
+		settingsEntries.add(new Entry("background", "menu", Ui.icon(Items.ITEM_FRAME), null, null,
+				() -> Component.translatable("packmixer.bg." + s.menuBackground).getString()));
 		settingsEntries.add(new Entry("profiles", "menu", Ui.icon(Items.CHEST), null, null, () -> {
 			int n = 0;
 			for (int i = 1; i <= Profiles.COUNT; i++) if (Profiles.exists(i)) n++;
@@ -246,6 +248,30 @@ public class PackMixerSettingsScreen extends Screen {
 					s.builtinPacksVersion = 0;
 					BuiltinPacks.generateIfNeeded(() -> { b.active = true; saved(); PackBuilder.rebuildAndApply(); });
 				}).bounds(x, y, cw, 14).build()); y += 18;
+			}
+			case "background" -> { // little pictures to click on, two per row
+				int tw = (cw - 4) / 2, th = tw * 9 / 16;
+				for (int i = 0; i < Ui.BACKGROUNDS.size(); i++) {
+					String id = Ui.BACKGROUNDS.get(i);
+					int bx = x + (i % 2) * (tw + 4), by = y + (i / 2) * (th + 4);
+					addRenderableWidget(new Ui.FlatButton(bx, by, tw, th, Component.translatable("packmixer.bg." + id), () -> {
+						s.menuBackground = id;
+						saved();
+						rebuildWidgets();
+					}) {
+						@Override
+						protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
+							int x = getX(), y = getY(), w = getWidth(), h = getHeight();
+							g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, Ui.background(id), x, y, 0f, 0f, w, h, 512, 288, 512, 288);
+							boolean on = id.equals(s.menuBackground);
+							g.fill(x, y + h - 10, x + w, y + h, 0x90000000);
+							Ui.small(g, getMessage().getString(), x + 3, y + h - 8, on ? 0xFFFFD86B : Ui.TEXT);
+							if (on) g.outline(x, y, w, h, 0xFFFFD86B);
+							else if (isHoveredOrFocused()) g.outline(x, y, w, h, 0x90FFFFFF);
+						}
+					});
+				}
+				y += ((Ui.BACKGROUNDS.size() + 1) / 2) * (th + 4);
 			}
 			case "profiles" -> {
 				int bw = (cw - 4) / 2;

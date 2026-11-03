@@ -31,7 +31,14 @@ public final class Ui {
 	public static final int LINE = 0x33FFFFFF;
 	public static final int CHAMFER = 8;
 
-	private static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "textures/gui/background.png");
+	/** Menu background pictures (settings -> background). */
+	public static final java.util.List<String> BACKGROUNDS = java.util.List.of("purple", "sunset", "sakura", "void", "night", "aurora",
+			"ocean", "frost", "forest", "inferno");
+
+	public static Identifier background(String id) {
+		return Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID,
+				id == null || id.equals("purple") || !BACKGROUNDS.contains(id) ? "textures/gui/background.png" : "textures/gui/background_" + id + ".png");
+	}
 	private static final int BG_W = 512, BG_H = 288;
 
 	public static float time() {
@@ -67,7 +74,7 @@ public final class Ui {
 				rows = end - r;
 			}
 			int rw = w - l - rr;
-			g.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x0 + l, y0 + r, l * sx, r * sy, rw, rows,
+			g.blit(RenderPipelines.GUI_TEXTURED, background(PackMixerConfig.settings().menuBackground), x0 + l, y0 + r, l * sx, r * sy, rw, rows,
 					Math.max(1, (int) (rw * sx)), Math.max(1, (int) (rows * sy)), BG_W, BG_H);
 			g.fill(x0 + l, y0 + r, x0 + l + rw, y0 + r + rows, 0x70080618);
 			r += rows - 1;

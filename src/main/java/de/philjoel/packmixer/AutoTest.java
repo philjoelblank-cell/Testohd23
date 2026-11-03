@@ -66,12 +66,20 @@ final class AutoTest {
 				shot("menu_s" + scale + "_" + String.format("%02d", i));
 				if (scale != 3) break; // all categories once, the other scales only the first one
 			}
-			for (String entry : new String[]{"item_position", "packmixer", "tt"}) {
+			for (String entry : new String[]{"item_position", "packmixer", "tt", "background"}) {
 				step("settings " + entry, 20, () -> {
 					PackMixerSettingsScreen.lastSelected = entry;
 					mc.gui.setScreen(new PackMixerSettingsScreen(null));
 				});
 				shot("settings_s" + scale + "_" + entry);
+				if (entry.equals("background") && scale == 3) {
+					step("bg sunset", 10, () -> {
+						PackMixerConfig.settings().menuBackground = "aurora";
+						mc.gui.setScreen(new PackMixerScreen(null));
+					});
+					shot("bg_aurora_menu");
+					step("bg back", 2, () -> PackMixerConfig.settings().menuBackground = "purple");
+				}
 				if (scale != 3) break;
 			}
 			if (scale == 3) {
@@ -321,6 +329,28 @@ final class AutoTest {
 		command("effect give @p fire_resistance 60");
 		step("menu in world", 30, () -> mc.gui.setScreen(new PackMixerScreen(null)));
 		shot("world_menu");
+		step("my packs", 20, () -> {
+			Map<String, String> sel = PackMixerConfig.loadSelection();
+			Mixes.Mix mix = new Mixes.Mix("Mein PvP Pack", sel);
+			Mixes.Mix back = Mixes.decode(Mixes.code(mix));
+			PackMixerClient.LOGGER.info("autotest: code {} chars, roundtrip ok = {}", Mixes.code(mix).length(),
+					back != null && back.selection.equals(mix.selection));
+			Mixes.add(mix);
+			Mixes.add(new Mixes.Mix("Weihnachten", Map.of("swords", "Testohd Christmas V1 Turquoise", "totem", "Fremdes Pack XY")));
+			mc.gui.setScreen(new MyPacksScreen(new PackMixerScreen(null), sel, PackLibrary.scan()));
+		});
+		shot("mypacks");
+		step("preview", 30, () -> {
+			Cosmetics.Slot.BACK.set("plasma_wings");
+			Cosmetics.Slot.HEAD.set("plasma_crown");
+			Cosmetics.Slot.EFFECT.set("fx_plasma");
+			Map<String, String> sel = new LinkedHashMap<>();
+			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, "Testohd23 V1 Purple");
+			mc.gui.setScreen(new PackPreviewScreen(new PackMixerScreen(null), sel, PackLibrary.scan(), new PreviewCache()));
+		});
+		shot("preview_a");
+		step("preview turn", 25, () -> { });
+		shot("preview_b");
 		step("quit", 40, () -> {
 			mc.gui.setScreen(null);
 			mc.stop();

@@ -63,6 +63,13 @@ public class PackMixerScreen extends Screen {
 		if (category >= categories.size()) category = 0;
 	}
 
+	/** A saved mix was chosen in "Meine Packs": take it over (applied with "Done" like any other choice). */
+	void useSelection(Map<String, String> mix) {
+		selection.clear();
+		for (Map.Entry<String, String> e : mix.entrySet()) if (library.get(e.getValue()) != null) selection.put(e.getKey(), e.getValue());
+		dirty = true;
+	}
+
 	@Override
 	protected void init() {
 		GuiFit.fit(this);
@@ -116,6 +123,15 @@ public class PackMixerScreen extends Screen {
 		addRenderableWidget(new Ui.TextButton(favX - 4 - cosW, y0 + 4, cosW, 12,
 				Component.literal("♟ ").append(Component.translatable("packmixer.cosmetics")), false, Ui.TEXT,
 				() -> this.minecraft.gui.setScreen(new CosmeticsScreen(this))));
+		int prevW = this.font.width("◉ " + Component.translatable("packmixer.preview").getString()) + 10;
+		int prevX = favX - 4 - cosW - 4 - prevW;
+		addRenderableWidget(new Ui.TextButton(prevX, y0 + 4, prevW, 12,
+				Component.literal("◉ ").append(Component.translatable("packmixer.preview")), false, Ui.TEXT,
+				() -> this.minecraft.gui.setScreen(new PackPreviewScreen(this, selection, library, previews))));
+		int myW = this.font.width("☰ " + Component.translatable("packmixer.mypacks").getString()) + 10;
+		addRenderableWidget(new Ui.TextButton(prevX - 4 - myW, y0 + 4, myW, 12,
+				Component.literal("☰ ").append(Component.translatable("packmixer.mypacks")), false, Ui.TEXT,
+				() -> this.minecraft.gui.setScreen(new MyPacksScreen(this, selection, library))));
 
 		// ---------------------------------------------------------------- icon bar + Settings button
 		barY = y0 + 25;
