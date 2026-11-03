@@ -21,6 +21,7 @@ public class CosmeticsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		Ui.preloadCosmetics();
 		GuiFit.fit(this);
 		int w = Math.min(this.width - 16, Math.max(380, (int) (this.width * 0.62)));
 		int h = Math.min(this.height - 26, Math.max(220, (int) (this.height * 0.66)));

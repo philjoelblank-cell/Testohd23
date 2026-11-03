@@ -102,6 +102,8 @@ public class PackMixerSettingsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		for (Entry e : settingsEntries) if (e.icon() != null) e.icon().preload();
+		for (Entry e : soundEntries) if (e.icon() != null) e.icon().preload();
 		GuiFit.fit(this);
 		int w = Math.min(this.width - 16, Math.max(380, (int) (this.width * 0.66)));
 		int h = Math.min(this.height - 26, Math.max(220, (int) (this.height * 0.7)));

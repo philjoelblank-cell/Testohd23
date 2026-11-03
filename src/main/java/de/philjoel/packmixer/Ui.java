@@ -177,25 +177,40 @@ public final class Ui {
 			this.item = item.asItem();
 		}
 
-		void draw(GuiGraphics g, int x, int y, int size) {
+		private PreviewCache.Preview fallback;
+		private boolean resolved;
+
+		/** Call outside of drawing (screen init): newer versions can't create textures while a frame is drawn. */
+		public void preload() {
 			if (stack == null || stack.isEmpty()) stack = stack(item);
-			if (!stack.isEmpty()) {
-				item(g, stack, x, y, size);
-				return;
-			}
+			if (!stack.isEmpty() || resolved) return;
+			resolved = true;
 			String name = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getPath();
 			for (String p : new String[]{"textures/item/" + name + ".png", "textures/block/" + name + ".png",
 					"textures/block/" + name + "_side.png", "textures/block/" + name + "_front.png"}) {
-				PreviewCache.Preview pv = ICONS.texture(null, p);
-				if (pv != null) {
-					drawIcon(g, pv, x, y, size, 0xFFFFFFFF);
-					return;
-				}
+				fallback = ICONS.texture(null, p);
+				if (fallback != null) return;
 			}
+		}
+
+		void draw(GuiGraphics g, int x, int y, int size) {
+			if (stack != null && !stack.isEmpty()) {
+				item(g, stack, x, y, size);
+				return;
+			}
+			if (fallback != null) drawIcon(g, fallback, x, y, size, 0xFFFFFFFF);
 		}
 	}
 
 	private static final PreviewCache ICONS = new PreviewCache();
+
+	private static final java.util.Map<String, PreviewCache.Preview> PRELOADED = new java.util.HashMap<>();
+
+	/** Loads the menu textures of the cosmetics (call in screen init, not while drawing). */
+	public static void preloadCosmetics() {
+		for (String id : Cosmetics.WINGS) PRELOADED.computeIfAbsent("textures/item/wing_" + id.replace("_wings", "") + ".png", ICONS::modTexture);
+		for (String id : Cosmetics.TEXTURED) PRELOADED.computeIfAbsent("textures/item/hat_" + id + ".png", ICONS::modTexture);
+	}
 
 	public static Icon icon(net.minecraft.world.level.ItemLike item) {
 		return new Icon(item);
@@ -209,7 +224,7 @@ public final class Ui {
 		}
 		String tex = Cosmetics.WINGS.contains(id) ? "textures/item/wing_" + id.replace("_wings", "") + ".png"
 				: Cosmetics.TEXTURED.contains(id) ? "textures/item/hat_" + id + ".png" : null;
-		PreviewCache.Preview pv = tex == null ? null : ICONS.modTexture(tex);
+		PreviewCache.Preview pv = tex == null ? null : PRELOADED.get(tex);
 		if (pv == null) return;
 		if (Cosmetics.WINGS.contains(id)) { // both wings side by side
 			int fw = pv.width(), fh = fw * 4 / 3, frames = Math.max(1, pv.height() / fh);
