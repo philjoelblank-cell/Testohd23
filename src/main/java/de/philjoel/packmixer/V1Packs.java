@@ -45,6 +45,12 @@ final class V1Packs {
 		return Mode.FULL;
 	}
 
+	/** Position in the V1 list, -1 if it isn't a V1 pack. */
+	static int index(String name) {
+		for (int i = 0; i < PACKS.size(); i++) if (PACKS.get(i).name().equals(name)) return i;
+		return -1;
+	}
+
 	static boolean isV1(String name) {
 		return of(name) != null;
 	}

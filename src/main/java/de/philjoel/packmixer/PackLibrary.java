@@ -59,6 +59,11 @@ public final class PackLibrary {
 		for (SourcePack p : packs.values()) {
 			if (full ? V1Packs.isV1(p.name) : p.contains(category)) list.add(p);
 		}
+		// the Testohd V1 packs always come first (in their own order), everything else stays alphabetical
+		list.sort(java.util.Comparator.comparingInt(p -> {
+			int i = V1Packs.index(p.name);
+			return i < 0 ? Integer.MAX_VALUE : i;
+		}));
 		return list;
 	}
 }
