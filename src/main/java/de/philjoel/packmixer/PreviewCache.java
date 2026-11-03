@@ -23,7 +23,7 @@ public final class PreviewCache {
 
 	private final Map<String, Preview> cache = new HashMap<>();
 	private final List<Identifier> registered = new ArrayList<>();
-	private int counter;
+	private static int counter; // shared by all caches, so two caches never use the same texture id
 
 	/** Flat icon of a category. @param pack null = vanilla */
 	public Preview icon(Category category, SourcePack pack) {
