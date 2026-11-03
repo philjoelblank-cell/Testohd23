@@ -156,6 +156,18 @@ public final class Ui {
 		return cx - x;
 	}
 
+	/**
+	 * Item for an icon. Newer Minecraft versions can't create items before a world was loaded
+	 * (main menu) - then the icon is simply left empty instead of crashing.
+	 */
+	public static net.minecraft.world.item.ItemStack stack(net.minecraft.world.level.ItemLike item) {
+		try {
+			return new net.minecraft.world.item.ItemStack(item);
+		} catch (Throwable e) {
+			return net.minecraft.world.item.ItemStack.EMPTY;
+		}
+	}
+
 	/** Display name of a pack: built-in packs are translated ("packmixer.pack.<folder name>"). */
 	public static String packDisplay(String name) {
 		if (name == null) return "";
@@ -228,6 +240,7 @@ public final class Ui {
 
 	/** Item icon at any size. */
 	public static void item(GuiGraphics g, ItemStack stack, int x, int y, int size) {
+		if (stack == null || stack.isEmpty()) return;
 		g.pose().pushMatrix();
 		g.pose().translate(x, y);
 		g.pose().scale(size / 16f, size / 16f);

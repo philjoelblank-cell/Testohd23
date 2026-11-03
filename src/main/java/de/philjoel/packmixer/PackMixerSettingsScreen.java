@@ -54,34 +54,34 @@ public class PackMixerSettingsScreen extends Screen {
 		this.parent = parent;
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
 		var o = net.minecraft.client.Minecraft.getInstance().options;
-		settingsEntries.add(new Entry("item_position", "items", new ItemStack(Items.ARMOR_STAND), null, null,
+		settingsEntries.add(new Entry("item_position", "items", Ui.stack(Items.ARMOR_STAND), null, null,
 				() -> tr(s.itemPositionEnabled ? "packmixer.changed" : "packmixer.default")));
-		settingsEntries.add(new Entry("glint", "items", new ItemStack(Items.ENCHANTED_BOOK), null, null,
+		settingsEntries.add(new Entry("glint", "items", Ui.stack(Items.ENCHANTED_BOOK), null, null,
 				() -> Math.round(o.glintStrength().get() * 100) + "%"));
-		settingsEntries.add(new Entry("zoom", "screen", new ItemStack(Items.SPYGLASS), () -> s.zoomEnabled, v -> s.zoomEnabled = v, null));
-		settingsEntries.add(new Entry("fullbright", "screen", new ItemStack(Items.TORCH), () -> s.fullbright, v -> s.fullbright = v, null));
-		settingsEntries.add(new Entry("weather", "screen", new ItemStack(Items.CLOCK), () -> s.clearWeather, v -> s.clearWeather = v, null));
-		settingsEntries.add(new Entry("particles", "screen", new ItemStack(Items.BLAZE_POWDER), null, null,
+		settingsEntries.add(new Entry("zoom", "screen", Ui.stack(Items.SPYGLASS), () -> s.zoomEnabled, v -> s.zoomEnabled = v, null));
+		settingsEntries.add(new Entry("fullbright", "screen", Ui.stack(Items.TORCH), () -> s.fullbright, v -> s.fullbright = v, null));
+		settingsEntries.add(new Entry("weather", "screen", Ui.stack(Items.CLOCK), () -> s.clearWeather, v -> s.clearWeather = v, null));
+		settingsEntries.add(new Entry("particles", "screen", Ui.stack(Items.BLAZE_POWDER), null, null,
 				() -> o.particles().get().caption().getString()));
-		settingsEntries.add(new Entry("low_fire", "screen", new ItemStack(Items.FIRE_CHARGE), () -> s.lowFire, v -> s.lowFire = v, null));
-		settingsEntries.add(new Entry("ancient_debris", "screen", new ItemStack(Items.ANCIENT_DEBRIS), () -> s.ancientDebris, v -> {
+		settingsEntries.add(new Entry("low_fire", "screen", Ui.stack(Items.FIRE_CHARGE), () -> s.lowFire, v -> s.lowFire = v, null));
+		settingsEntries.add(new Entry("ancient_debris", "screen", Ui.stack(Items.ANCIENT_DEBRIS), () -> s.ancientDebris, v -> {
 			s.ancientDebris = v;
 			PackMixerConfig.saveSettings();
 			PackBuilder.rebuildAndApply();
 		}, null));
-		settingsEntries.add(new Entry("tt", "screen", new ItemStack(Items.TOTEM_OF_UNDYING), () -> s.totemTracker, v -> s.totemTracker = v, null));
-		settingsEntries.add(new Entry("language", "menu", new ItemStack(Items.BOOK), null, null,
+		settingsEntries.add(new Entry("tt", "screen", Ui.stack(Items.TOTEM_OF_UNDYING), () -> s.totemTracker, v -> s.totemTracker = v, null));
+		settingsEntries.add(new Entry("language", "menu", Ui.stack(Items.BOOK), null, null,
 				() -> net.minecraft.client.Minecraft.getInstance().getLanguageManager().getSelected()));
-		settingsEntries.add(new Entry("controls", "menu", new ItemStack(Items.COMPASS), null, null,
+		settingsEntries.add(new Entry("controls", "menu", Ui.stack(Items.COMPASS), null, null,
 				() -> PackMixerClient.openKey().getTranslatedKeyMessage().getString()));
-		settingsEntries.add(new Entry("packmixer", "menu", new ItemStack(Items.PAINTING), null, null, () -> ""));
-		settingsEntries.add(new Entry("profiles", "menu", new ItemStack(Items.CHEST), null, null, () -> {
+		settingsEntries.add(new Entry("packmixer", "menu", Ui.stack(Items.PAINTING), null, null, () -> ""));
+		settingsEntries.add(new Entry("profiles", "menu", Ui.stack(Items.CHEST), null, null, () -> {
 			int n = 0;
 			for (int i = 1; i <= Profiles.COUNT; i++) if (Profiles.exists(i)) n++;
 			return n + " / " + Profiles.COUNT;
 		}));
 		for (SoundSource src : SoundSource.values()) {
-			soundEntries.add(new Entry("sound." + src.getName(), "sounds", new ItemStack(Items.NOTE_BLOCK), null, null,
+			soundEntries.add(new Entry("sound." + src.getName(), "sounds", Ui.stack(Items.NOTE_BLOCK), null, null,
 					() -> Math.round(o.getSoundSourceOptionInstance(src).get() * 100) + "%"));
 		}
 		if (entries().stream().noneMatch(e -> e.id.equals(selected))) selected = entries().get(0).id;

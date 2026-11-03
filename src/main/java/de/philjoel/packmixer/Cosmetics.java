@@ -148,7 +148,8 @@ public final class Cosmetics {
 
 	/** Item used to render a cosmetic; legendary ones get the enchantment shimmer. */
 	public static ItemStack hatStack(String id) {
-		ItemStack stack = new ItemStack(Items.PAPER);
+		ItemStack stack = Ui.stack(Items.PAPER);
+		if (stack.isEmpty()) return stack;
 		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "hat_" + id));
 		if (rarity(id) == Rarity.LEGENDARY && !WINGS.contains(id.replace("_l", "").replace("_r", "")))
 			stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
@@ -157,7 +158,8 @@ public final class Cosmetics {
 
 	/** Card preview: the item on a small dark bust (models/item/card_*.json). */
 	public static ItemStack cardStack(String id) {
-		ItemStack stack = new ItemStack(Items.PAPER);
+		ItemStack stack = Ui.stack(Items.PAPER);
+		if (stack.isEmpty()) return stack;
 		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "card_" + id));
 		return stack;
 	}
