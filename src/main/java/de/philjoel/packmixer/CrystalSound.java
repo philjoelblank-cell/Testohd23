@@ -109,6 +109,7 @@ public final class CrystalSound {
 			case "c_plasma" -> net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK;
 			case "c_inferno" -> net.minecraft.core.particles.ParticleTypes.FLAME;
 			case "c_void" -> net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL;
+			case "c_holy" -> net.minecraft.core.particles.ParticleTypes.END_ROD;
 			default -> net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME;
 		};
 	}
