@@ -208,8 +208,19 @@ public final class Ui {
 
 	/** Loads the menu textures of the cosmetics (call in screen init, not while drawing). */
 	public static void preloadCosmetics() {
-		for (String id : Cosmetics.WINGS) PRELOADED.computeIfAbsent("textures/item/wing_" + id.replace("_wings", "") + ".png", ICONS::modTexture);
-		for (String id : Cosmetics.TEXTURED) PRELOADED.computeIfAbsent("textures/item/hat_" + id + ".png", ICONS::modTexture);
+		for (Cosmetics.Slot slot : Cosmetics.Slot.values())
+			for (String id : slot.items) {
+				String tex = cosmeticTexture(id);
+				if (tex != null) PRELOADED.computeIfAbsent(tex, ICONS::modTexture);
+			}
+	}
+
+	/** Picture of a cosmetic for menus without items: wing / V1 hat texture, or a pre-rendered icon. */
+	private static String cosmeticTexture(String id) {
+		if (Cosmetics.WINGS.contains(id)) return "textures/item/wing_" + id.replace("_wings", "") + ".png";
+		if (Cosmetics.TEXTURED.contains(id)) return "textures/item/hat_" + id + ".png";
+		if (id.startsWith("fx_")) return null;
+		return "textures/gui/cosmetic/" + id + ".png";
 	}
 
 	public static Icon icon(net.minecraft.world.level.ItemLike item) {
@@ -222,8 +233,7 @@ public final class Ui {
 			item(g, stack, x, y, size);
 			return;
 		}
-		String tex = Cosmetics.WINGS.contains(id) ? "textures/item/wing_" + id.replace("_wings", "") + ".png"
-				: Cosmetics.TEXTURED.contains(id) ? "textures/item/hat_" + id + ".png" : null;
+		String tex = cosmeticTexture(id);
 		PreviewCache.Preview pv = tex == null ? null : PRELOADED.get(tex);
 		if (pv == null) return;
 		if (Cosmetics.WINGS.contains(id)) { // both wings side by side
@@ -234,7 +244,7 @@ public final class Ui {
 			g.blit(RenderPipelines.GUI_TEXTURED, pv.id(), x + w, yy, (float) fw, (float) (f * fh), w, h, -fw, fh, fw, pv.height(), 0xFFFFFFFF);
 			return;
 		}
-		int fw = pv.width(), fh = id.endsWith("_crown") ? fw / 2 : fw, frames = Math.max(1, pv.height() / fh);
+		int fw = pv.width(), fh = Cosmetics.TEXTURED.contains(id) && id.endsWith("_crown") ? fw / 2 : fw, frames = Math.max(1, pv.height() / fh);
 		int f = (int) (time() * 10) % frames;
 		int h = size * fh / fw;
 		g.blit(RenderPipelines.GUI_TEXTURED, pv.id(), x, y + (size - h) / 2, 0f, (float) (f * fh), size, h, fw, fh, fw, pv.height(), 0xFFFFFFFF);
