@@ -174,6 +174,18 @@ final class AutoTest {
 		shot("world_wings_front");
 		step("totem", 40, () -> Cosmetics.Slot.EFFECT.set("fx_totem"));
 		shot("world_fx_totem");
+		for (String hat : new String[]{"inferno_crown", "plasma_crown", "frost_crown", "void_crown", "energy_halo", "void_halo", "divine_halo"}) {
+			step("hat " + hat, 20, () -> {
+				Cosmetics.Slot.HEAD.set(hat);
+				Cosmetics.Slot.BACK.set("");
+				Cosmetics.Slot.EFFECT.set("");
+				mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+				mc.options.fov().set(30);
+				mc.player.setXRot(20);
+			});
+			shot("hat_" + hat);
+		}
+		step("fov back", 2, () -> mc.options.fov().set(70));
 		for (String w : new String[]{"plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "angel_wings", "devil_wings"}) {
 			step("wing " + w, 30, () -> {
 				Cosmetics.Slot.BACK.set(w);

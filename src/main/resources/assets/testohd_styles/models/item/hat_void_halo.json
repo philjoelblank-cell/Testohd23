@@ -1,0 +1,84 @@
+{
+ "textures": {
+  "c": "testohd_styles:item/hat_void_halo",
+  "particle": "testohd_styles:item/hat_void_halo"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    21.5,
+    0
+   ],
+   "to": [
+    16,
+    21.5,
+    16
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#c"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#c"
+    }
+   },
+   "light_emission": 15
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    -4.5,
+    0
+   ],
+   "scale": [
+    0.42,
+    0.42,
+    0.42
+   ]
+  },
+  "ground": {
+   "translation": [
+    0,
+    -3,
+    0
+   ],
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  },
+  "fixed": {
+   "translation": [
+    0,
+    -5,
+    0
+   ],
+   "scale": [
+    0.5,
+    0.5,
+    0.5
+   ]
+  }
+ }
+}

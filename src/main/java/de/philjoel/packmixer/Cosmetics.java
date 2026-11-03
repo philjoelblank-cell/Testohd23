@@ -59,7 +59,14 @@ public final class Cosmetics {
 			Map.entry("plasma_wings", Rarity.LEGENDARY), Map.entry("inferno_wings", Rarity.LEGENDARY), Map.entry("void_wings", Rarity.LEGENDARY),
 			Map.entry("energy_wings", Rarity.LEGENDARY), Map.entry("frost_wings", Rarity.LEGENDARY),
 			Map.entry("fx_inferno", Rarity.LEGENDARY), Map.entry("fx_plasma", Rarity.LEGENDARY), Map.entry("fx_frost", Rarity.EPIC),
-			Map.entry("fx_energy", Rarity.EPIC));
+			Map.entry("fx_energy", Rarity.EPIC),
+			Map.entry("inferno_crown", Rarity.LEGENDARY), Map.entry("plasma_crown", Rarity.LEGENDARY), Map.entry("frost_crown", Rarity.LEGENDARY),
+			Map.entry("void_crown", Rarity.LEGENDARY), Map.entry("energy_halo", Rarity.LEGENDARY), Map.entry("void_halo", Rarity.LEGENDARY),
+			Map.entry("divine_halo", Rarity.LEGENDARY));
+
+	/** Textured, glowing cosmetics: no enchantment shimmer on top. */
+	static final java.util.Set<String> TEXTURED = java.util.Set.of("inferno_crown", "plasma_crown", "frost_crown", "void_crown",
+			"energy_halo", "void_halo", "divine_halo");
 
 	/** Big textured wings (left + right model, beating for real). */
 	static final java.util.Set<String> WINGS = java.util.Set.of("angel_wings", "devil_wings", "phoenix_wings", "plasma_wings",
@@ -70,7 +77,7 @@ public final class Cosmetics {
 	}
 
 	public enum Slot {
-		HEAD(List.of("crown", "halo", "wizard_hat", "viking_helmet", "top_hat", "santa_hat", "horns", "headphones", "straw_hat", "cat_ears")),
+		HEAD(List.of("inferno_crown", "plasma_crown", "frost_crown", "void_crown", "energy_halo", "void_halo", "divine_halo", "crown", "halo", "wizard_hat", "viking_helmet", "top_hat", "santa_hat", "horns", "headphones", "straw_hat", "cat_ears")),
 		FACE(List.of("sunglasses", "monocle", "mask")),
 		BACK(List.of("plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "phoenix_wings", "angel_wings",
 				"devil_wings", "backpack")),
@@ -151,7 +158,7 @@ public final class Cosmetics {
 		ItemStack stack = Ui.stack(Items.PAPER);
 		if (stack.isEmpty()) return stack;
 		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "hat_" + id));
-		if (rarity(id) == Rarity.LEGENDARY && !WINGS.contains(id.replace("_l", "").replace("_r", "")))
+		if (rarity(id) == Rarity.LEGENDARY && !TEXTURED.contains(id) && !WINGS.contains(id.replace("_l", "").replace("_r", "")))
 			stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
 		return stack;
 	}
@@ -215,7 +222,12 @@ public final class Cosmetics {
 				} else {
 					model.getHead().translateAndRotate(pose);
 					CustomHeadLayer.translateToHead(pose, CustomHeadLayer.Transforms.DEFAULT);
-					if (id.equals("halo")) {
+					if (id.endsWith("_halo")) { // V1 halos: float higher and turn faster
+						pose.translate(0.0F, (float) Math.sin(t * 0.14F) * 0.04F + 0.03F, 0.0F);
+						pose.mulPose(Axis.YP.rotationDegrees(t * 4.5F));
+					} else if (id.endsWith("_crown")) {
+						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.012F, 0.0F);
+					} else if (id.equals("halo")) {
 						// floating, slowly spinning halo
 						pose.translate(0.0F, (float) Math.sin(t * 0.12F) * 0.03F, 0.0F);
 						pose.rotateDegrees(Axis.YP, (t * 3.0F));

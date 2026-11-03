@@ -246,6 +246,32 @@ public final class CosmeticEffects {
 			case "wizard_hat" -> {
 				if (t % 4 == 0) level.addParticle(ParticleTypes.ENCHANT, x, y + h + 0.9, z, (r.nextDouble() - 0.5) * 1.2, 0.3, (r.nextDouble() - 0.5) * 1.2);
 			}
+			case "inferno_crown" -> {
+				if (t % 3 == 0) level.addParticle(r.nextBoolean() ? ParticleTypes.SMALL_FLAME : dust(0xFF2A10, 0.6f),
+						x + (r.nextDouble() - 0.5) * 0.55, y + h + 0.35, z + (r.nextDouble() - 0.5) * 0.55, 0, 0.03, 0);
+			}
+			case "plasma_crown" -> {
+				if (t % 4 == 0) level.addParticle(ParticleTypes.ELECTRIC_SPARK, x + (r.nextDouble() - 0.5) * 0.6, y + h + 0.35,
+						z + (r.nextDouble() - 0.5) * 0.6, 0, 0, 0);
+			}
+			case "frost_crown" -> {
+				if (t % 5 == 0) level.addParticle(ParticleTypes.SNOWFLAKE, x + (r.nextDouble() - 0.5) * 0.7, y + h + 0.45,
+						z + (r.nextDouble() - 0.5) * 0.7, 0, -0.02, 0);
+			}
+			case "void_crown", "void_halo" -> {
+				if (t % 4 == 0) level.addParticle(ParticleTypes.REVERSE_PORTAL, x + (r.nextDouble() - 0.5) * 0.6, y + h + 0.4,
+						z + (r.nextDouble() - 0.5) * 0.6, 0, 0, 0);
+			}
+			case "energy_halo" -> {
+				double a = t * 0.25;
+				level.addParticle(dust(0x35F2DD, 0.6f), x + Math.cos(a) * 0.38, y + h + 0.5, z + Math.sin(a) * 0.38, 0, 0, 0);
+			}
+			case "divine_halo" -> {
+				if (t % 4 == 0) {
+					double a = r.nextDouble() * Math.PI * 2;
+					level.addParticle(ParticleTypes.END_ROD, x + Math.cos(a) * 0.35, y + h + 0.5, z + Math.sin(a) * 0.35, 0, -0.01, 0);
+				}
+			}
 			case "headphones" -> {
 				if (t % 14 == 0) level.addParticle(ParticleTypes.NOTE, x + (r.nextDouble() - 0.5) * 0.6, y + h + 0.3, z + (r.nextDouble() - 0.5) * 0.6, r.nextDouble(), 0, 0);
 			}

@@ -362,5 +362,12 @@
   "packmixer.hat.fx_energy": "Energy Rings",
   "packmixer.changelog.title": "New in version %s",
   "packmixer.changelog.ok": "Nice!",
-  "packmixer.changelog.1.6.0": "Wings\n• 5 new V1 wings: Plasma, Inferno, Void, Energy, Frost\n• All wings remade: big, animated and they really beat\nEffects\n• New: Inferno Tornado, Plasma Orbs, Frost Ring, Energy Rings\n• V1 wings spray particles in their colour\nOther\n• This window shows you what is new after every update"
+  "packmixer.changelog.1.6.0": "Wings\n• 5 new V1 wings: Plasma, Inferno, Void, Energy, Frost\n• All wings remade: big, animated and they really beat\nHats\n• 4 V1 crowns (Inferno, Plasma, Frost, Void) and 3 halos\nEffects\n• New: Inferno Tornado, Plasma Orbs, Frost Ring, Energy Rings\nOther\n• This window shows you what is new after every update",
+  "packmixer.hat.inferno_crown": "V1 Inferno Crown",
+  "packmixer.hat.plasma_crown": "V1 Plasma Crown",
+  "packmixer.hat.frost_crown": "V1 Frost Crown",
+  "packmixer.hat.void_crown": "V1 Void Crown",
+  "packmixer.hat.energy_halo": "V1 Energy Halo",
+  "packmixer.hat.void_halo": "V1 Void Halo",
+  "packmixer.hat.divine_halo": "Divine Halo"
 }
