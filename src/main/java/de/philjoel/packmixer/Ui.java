@@ -712,6 +712,7 @@ public final class Ui {
 			g.disableScissor();
 			if (pack != null) badge(g, BuiltinPacks.isBuiltin(pack.name) ? "TS" : "PACK", x + 3, y + h - 20);
 			if (favorite) g.drawString(font(), "★", x + w - 9, y + 3, GOLD, false);
+			else if (pack != null && hover) g.drawString(font(), "☆", x + w - 9, y + 3, 0xA0FFFFFF, false);
 			packName(g, label, x + w / 2, y + h - 10, w - 6, selected || hover);
 			if (selected) selectedFrame(g, x, y, w, h);
 		}

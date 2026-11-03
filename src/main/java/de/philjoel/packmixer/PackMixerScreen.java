@@ -350,17 +350,23 @@ public class PackMixerScreen extends Screen {
 				return true;
 			}
 		}
-		if (event.button() == 1) { // right-click a card = favourite
-			for (Ui.Card c : cards) {
-				if (c.pack() != null && event.x() >= c.getX() && event.x() < c.getX() + c.getWidth()
-						&& event.y() >= c.getY() && event.y() < c.getY() + c.getHeight()) {
-					List<String> favs = PackMixerConfig.settings().favorites;
-					if (!favs.remove(c.pack().name)) favs.add(c.pack().name);
-					PackMixerConfig.saveSettings();
-					rebuildWidgets();
-					return true;
-				}
+		// Cards are handled here for every mouse button, because some clients (e.g. Lunar) report the buttons
+		// differently: the star in the corner / shift-click = favourite, a normal click = choose the pack.
+		for (Ui.Card c : cards) {
+			if (event.x() < c.getX() || event.x() >= c.getX() + c.getWidth() || event.y() < c.getY() || event.y() >= c.getY() + c.getHeight())
+				continue;
+			boolean onStar = event.x() >= c.getX() + c.getWidth() - 12 && event.y() < c.getY() + 12;
+			boolean shift = (event.modifiers() & org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT) != 0;
+			if (c.pack() != null && (onStar || shift)) {
+				List<String> favs = PackMixerConfig.settings().favorites;
+				if (!favs.remove(c.pack().name)) favs.add(c.pack().name);
+				PackMixerConfig.saveSettings();
+			} else {
+				c.onPress(event);
 			}
+			this.minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			rebuildWidgets();
+			return true;
 		}
 		searchFocused = false;
 		return super.mouseClicked(event, doubleClick);
