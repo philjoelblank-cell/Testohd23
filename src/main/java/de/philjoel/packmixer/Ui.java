@@ -166,6 +166,8 @@ public final class Ui {
 	/** Pack name: built-in packs are drawn in the brand gradient. */
 	public static void packName(GuiGraphics g, String name, int centerX, int y, int maxW, boolean bright) {
 		String shown = packDisplay(name);
+		if (font().width(shown) > maxW && V1Packs.isV1(name)) // small cards: "V1 Purple", "Christmas V1 Turquoise"
+			shown = shown.replace("Testohd23 ", "").replace("Testohd ", "");
 		if (font().width(shown) > maxW) {
 			while (shown.length() > 1 && font().width(shown + "...") > maxW) shown = shown.substring(0, shown.length() - 1);
 			shown = shown + "...";
