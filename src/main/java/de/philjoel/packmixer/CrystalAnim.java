@@ -31,7 +31,7 @@ final class CrystalAnim {
 	static void tick(Minecraft mc) {
 		if (broken) return;
 		try {
-			if (mc.getOverlay() != null) { // resources are being reloaded
+			if (mc.gui.overlay() != null) { // resources are being reloaded
 				needReload = true;
 				return;
 			}

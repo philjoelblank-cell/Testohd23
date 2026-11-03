@@ -182,7 +182,7 @@ final class AutoTest {
 				PackMixerConfig.saveSelection(sel);
 				PackBuilder.rebuildAndApply();
 			});
-			when("reload " + pack, () -> mc.getOverlay() == null, () -> { });
+			when("reload " + pack, () -> mc.gui.overlay() == null, () -> { });
 			String tag = pack.endsWith("Schwarz") ? "schwarz" : "tuerkis";
 			step("close " + pack, 40, () -> {
 				Cosmetics.Slot.HEAD.set("");
@@ -227,7 +227,7 @@ final class AutoTest {
 				PackMixerConfig.saveSelection(sel);
 				PackBuilder.rebuildAndApply();
 			});
-			when("reload " + tag, () -> mc.getOverlay() == null, () -> { });
+			when("reload " + tag, () -> mc.gui.overlay() == null, () -> { });
 			command("kill @e[type=end_crystal]");
 			command("kill @e[type=item]");
 			command("fill -12 199 -4 12 199 18 smooth_quartz");
@@ -306,8 +306,8 @@ final class AutoTest {
 
 	private static void startVideo(Minecraft mc, String name) {
 		try {
-			vw = mc.getMainRenderTarget().width / 2;
-			vh = mc.getMainRenderTarget().height / 2;
+			vw = mc.gameRenderer.mainRenderTarget().width / 2;
+			vh = mc.gameRenderer.mainRenderTarget().height / 2;
 			vw -= vw % 2;
 			vh -= vh % 2;
 			java.nio.file.Path out = mc.gameDirectory.toPath().resolve("screenshots").resolve(name + ".mp4");
@@ -338,7 +338,7 @@ final class AutoTest {
 	}
 
 	private static void captureFrame(Minecraft mc) {
-		Screenshot.takeScreenshot(mc.getMainRenderTarget(), 2, img -> {
+		Screenshot.takeScreenshot(mc.gameRenderer.mainRenderTarget(), 2, img -> {
 			try {
 				if (video == null) return;
 				byte[] buf = new byte[vw * vh * 4];
@@ -372,7 +372,7 @@ final class AutoTest {
 
 	static void tick(Minecraft mc) {
 		if (!ENABLED) return;
-		if (video != null && mc.level != null && mc.getOverlay() == null) { // loading screens are left out
+		if (video != null && mc.level != null && mc.gui.overlay() == null) { // loading screens are left out
 			try {
 				mc.getToastManager().clear(); // no "recipe unlocked" popups in the video
 				captureFrame(mc);
