@@ -162,7 +162,7 @@ public class CosmeticsScreen extends Screen {
 				float bob = (float) Math.sin(t * 2 + id.hashCode() % 7) * 1.2f;
 				g.pose().pushMatrix();
 				g.pose().translate(0, bob);
-				Ui.item(g, Cosmetics.cardStack(id), cx - is / 2, y + 2, is);
+				Ui.cosmetic(g, Cosmetics.cardStack(id), id, cx - is / 2, y + 2, is);
 				g.pose().popMatrix();
 			}
 			String label = getMessage().getString();
@@ -245,7 +245,7 @@ public class CosmeticsScreen extends Screen {
 				float bob = (float) Math.sin(Ui.time() * 2 + n) * 2;
 				g.pose().pushMatrix();
 				g.pose().translate(0, bob);
-				Ui.item(g, Cosmetics.hatStack(id), ix, iy, size);
+				Ui.cosmetic(g, Cosmetics.hatStack(id), id, ix, iy, size);
 				g.pose().popMatrix();
 				n++;
 			}

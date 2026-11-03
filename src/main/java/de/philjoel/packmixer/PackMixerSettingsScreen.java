@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 /** Settings (layout as in the reference video): list on the left, details on the right. */
 public class PackMixerSettingsScreen extends Screen {
 	/** A row in the list. toggle == null -> no switch; value == null -> no value text. */
-	private record Entry(String id, String section, ItemStack icon, BooleanSupplier toggle, Consumer<Boolean> setToggle,
+	private record Entry(String id, String section, Ui.Icon icon, BooleanSupplier toggle, Consumer<Boolean> setToggle,
 			Supplier<String> value) {
 	}
 
@@ -54,34 +54,34 @@ public class PackMixerSettingsScreen extends Screen {
 		this.parent = parent;
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
 		var o = net.minecraft.client.Minecraft.getInstance().options;
-		settingsEntries.add(new Entry("item_position", "items", Ui.stack(Items.ARMOR_STAND), null, null,
+		settingsEntries.add(new Entry("item_position", "items", Ui.icon(Items.ARMOR_STAND), null, null,
 				() -> tr(s.itemPositionEnabled ? "packmixer.changed" : "packmixer.default")));
-		settingsEntries.add(new Entry("glint", "items", Ui.stack(Items.ENCHANTED_BOOK), null, null,
+		settingsEntries.add(new Entry("glint", "items", Ui.icon(Items.ENCHANTED_BOOK), null, null,
 				() -> Math.round(o.glintStrength().get() * 100) + "%"));
-		settingsEntries.add(new Entry("zoom", "screen", Ui.stack(Items.SPYGLASS), () -> s.zoomEnabled, v -> s.zoomEnabled = v, null));
-		settingsEntries.add(new Entry("fullbright", "screen", Ui.stack(Items.TORCH), () -> s.fullbright, v -> s.fullbright = v, null));
-		settingsEntries.add(new Entry("weather", "screen", Ui.stack(Items.CLOCK), () -> s.clearWeather, v -> s.clearWeather = v, null));
-		settingsEntries.add(new Entry("particles", "screen", Ui.stack(Items.BLAZE_POWDER), null, null,
+		settingsEntries.add(new Entry("zoom", "screen", Ui.icon(Items.SPYGLASS), () -> s.zoomEnabled, v -> s.zoomEnabled = v, null));
+		settingsEntries.add(new Entry("fullbright", "screen", Ui.icon(Items.TORCH), () -> s.fullbright, v -> s.fullbright = v, null));
+		settingsEntries.add(new Entry("weather", "screen", Ui.icon(Items.CLOCK), () -> s.clearWeather, v -> s.clearWeather = v, null));
+		settingsEntries.add(new Entry("particles", "screen", Ui.icon(Items.BLAZE_POWDER), null, null,
 				() -> o.particles().get().caption().getString()));
-		settingsEntries.add(new Entry("low_fire", "screen", Ui.stack(Items.FIRE_CHARGE), () -> s.lowFire, v -> s.lowFire = v, null));
-		settingsEntries.add(new Entry("ancient_debris", "screen", Ui.stack(Items.ANCIENT_DEBRIS), () -> s.ancientDebris, v -> {
+		settingsEntries.add(new Entry("low_fire", "screen", Ui.icon(Items.FIRE_CHARGE), () -> s.lowFire, v -> s.lowFire = v, null));
+		settingsEntries.add(new Entry("ancient_debris", "screen", Ui.icon(Items.ANCIENT_DEBRIS), () -> s.ancientDebris, v -> {
 			s.ancientDebris = v;
 			PackMixerConfig.saveSettings();
 			PackBuilder.rebuildAndApply();
 		}, null));
-		settingsEntries.add(new Entry("tt", "screen", Ui.stack(Items.TOTEM_OF_UNDYING), () -> s.totemTracker, v -> s.totemTracker = v, null));
-		settingsEntries.add(new Entry("language", "menu", Ui.stack(Items.BOOK), null, null,
+		settingsEntries.add(new Entry("tt", "screen", Ui.icon(Items.TOTEM_OF_UNDYING), () -> s.totemTracker, v -> s.totemTracker = v, null));
+		settingsEntries.add(new Entry("language", "menu", Ui.icon(Items.BOOK), null, null,
 				() -> net.minecraft.client.Minecraft.getInstance().getLanguageManager().getSelected()));
-		settingsEntries.add(new Entry("controls", "menu", Ui.stack(Items.COMPASS), null, null,
+		settingsEntries.add(new Entry("controls", "menu", Ui.icon(Items.COMPASS), null, null,
 				() -> PackMixerClient.openKey().getTranslatedKeyMessage().getString()));
-		settingsEntries.add(new Entry("packmixer", "menu", Ui.stack(Items.PAINTING), null, null, () -> ""));
-		settingsEntries.add(new Entry("profiles", "menu", Ui.stack(Items.CHEST), null, null, () -> {
+		settingsEntries.add(new Entry("packmixer", "menu", Ui.icon(Items.PAINTING), null, null, () -> ""));
+		settingsEntries.add(new Entry("profiles", "menu", Ui.icon(Items.CHEST), null, null, () -> {
 			int n = 0;
 			for (int i = 1; i <= Profiles.COUNT; i++) if (Profiles.exists(i)) n++;
 			return n + " / " + Profiles.COUNT;
 		}));
 		for (SoundSource src : SoundSource.values()) {
-			soundEntries.add(new Entry("sound." + src.getName(), "sounds", Ui.stack(Items.NOTE_BLOCK), null, null,
+			soundEntries.add(new Entry("sound." + src.getName(), "sounds", Ui.icon(Items.NOTE_BLOCK), null, null,
 					() -> Math.round(o.getSoundSourceOptionInstance(src).get() * 100) + "%"));
 		}
 		if (entries().stream().noneMatch(e -> e.id.equals(selected))) selected = entries().get(0).id;

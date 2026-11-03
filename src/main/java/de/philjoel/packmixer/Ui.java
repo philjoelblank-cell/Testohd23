@@ -168,6 +168,67 @@ public final class Ui {
 		}
 	}
 
+	/** Item icon that also works in the main menu of newer versions: then the item texture is drawn directly. */
+	public static final class Icon {
+		private final net.minecraft.world.item.Item item;
+		private net.minecraft.world.item.ItemStack stack;
+
+		public Icon(net.minecraft.world.level.ItemLike item) {
+			this.item = item.asItem();
+		}
+
+		void draw(GuiGraphics g, int x, int y, int size) {
+			if (stack == null || stack.isEmpty()) stack = stack(item);
+			if (!stack.isEmpty()) {
+				item(g, stack, x, y, size);
+				return;
+			}
+			String name = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getPath();
+			for (String p : new String[]{"textures/item/" + name + ".png", "textures/block/" + name + ".png",
+					"textures/block/" + name + "_side.png", "textures/block/" + name + "_front.png"}) {
+				PreviewCache.Preview pv = ICONS.texture(null, p);
+				if (pv != null) {
+					drawIcon(g, pv, x, y, size, 0xFFFFFFFF);
+					return;
+				}
+			}
+		}
+	}
+
+	private static final PreviewCache ICONS = new PreviewCache();
+
+	public static Icon icon(net.minecraft.world.level.ItemLike item) {
+		return new Icon(item);
+	}
+
+	/** A cosmetic's item; in the main menu of newer versions its texture instead (wings / V1 hats). */
+	public static void cosmetic(GuiGraphics g, net.minecraft.world.item.ItemStack stack, String id, int x, int y, int size) {
+		if (stack != null && !stack.isEmpty()) {
+			item(g, stack, x, y, size);
+			return;
+		}
+		String tex = Cosmetics.WINGS.contains(id) ? "textures/item/wing_" + id.replace("_wings", "") + ".png"
+				: Cosmetics.TEXTURED.contains(id) ? "textures/item/hat_" + id + ".png" : null;
+		PreviewCache.Preview pv = tex == null ? null : ICONS.modTexture(tex);
+		if (pv == null) return;
+		if (Cosmetics.WINGS.contains(id)) { // both wings side by side
+			int fw = pv.width(), fh = fw * 4 / 3, frames = Math.max(1, pv.height() / fh);
+			int f = (int) (time() * 10) % frames;
+			int w = size / 2, h = w * 4 / 3, yy = y + (size - h) / 2;
+			g.blit(RenderPipelines.GUI_TEXTURED, pv.id(), x, yy, 0f, (float) (f * fh), w, h, fw, fh, fw, pv.height(), 0xFFFFFFFF);
+			g.blit(RenderPipelines.GUI_TEXTURED, pv.id(), x + w, yy, (float) fw, (float) (f * fh), w, h, -fw, fh, fw, pv.height(), 0xFFFFFFFF);
+			return;
+		}
+		int fw = pv.width(), fh = id.endsWith("_crown") ? fw / 2 : fw, frames = Math.max(1, pv.height() / fh);
+		int f = (int) (time() * 10) % frames;
+		int h = size * fh / fw;
+		g.blit(RenderPipelines.GUI_TEXTURED, pv.id(), x, y + (size - h) / 2, 0f, (float) (f * fh), size, h, fw, fh, fw, pv.height(), 0xFFFFFFFF);
+	}
+
+	public static void item(GuiGraphics g, Icon icon, int x, int y, int size) {
+		if (icon != null) icon.draw(g, x, y, size);
+	}
+
 	/** Display name of a pack: built-in packs are translated ("packmixer.pack.<folder name>"). */
 	public static String packDisplay(String name) {
 		if (name == null) return "";
