@@ -291,7 +291,7 @@ public final class BuiltinPacks {
 			v1("Testohd23 V1 Black", "v1_black", "small_plus", Style.DUO, 0x22202A, 0x9B4DFF),
 			v1("Testohd23 V1 Turquoise", "v1_turquoise", "circle", Style.DUO, 0x0E9C92, 0xB8FFF6),
 			v1("Testohd Christmas V1 Turquoise", "v1_xmas", "snowflake", Style.V1XMAS, 0x18A8A4, 0xE6FFFC),
-			v1("Testohd23 V1 White", "v1_white", "circle", Style.DUO, 0xC8D0DC, 0xFFF6C8),
+			v1("Testohd23 V1 White", "v1_white", "circle", Style.DUO, 0xE2DCCB, 0xFFE27A),
 			// ---- duo: clean colour + matching colour shift in the highlights
 			duo("Testohd Duo Lila Pink", "d_purplepink", "ring_dot", 0x7B2FE0, 0xFF7AD9),
 			duo("Testohd Duo Blau Cyan", "d_bluecyan", "small_plus", 0x1F4FE0, 0x5CF0FF),
