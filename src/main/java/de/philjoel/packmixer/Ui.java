@@ -177,7 +177,7 @@ public final class Ui {
 			this.item = item.asItem();
 		}
 
-		void draw(GuiGraphics g, int x, int y, int size) {
+		void draw(GuiGraphicsExtractor g, int x, int y, int size) {
 			if (stack == null || stack.isEmpty()) stack = stack(item);
 			if (!stack.isEmpty()) {
 				item(g, stack, x, y, size);
@@ -202,7 +202,7 @@ public final class Ui {
 	}
 
 	/** A cosmetic's item; in the main menu of newer versions its texture instead (wings / V1 hats). */
-	public static void cosmetic(GuiGraphics g, net.minecraft.world.item.ItemStack stack, String id, int x, int y, int size) {
+	public static void cosmetic(GuiGraphicsExtractor g, net.minecraft.world.item.ItemStack stack, String id, int x, int y, int size) {
 		if (stack != null && !stack.isEmpty()) {
 			item(g, stack, x, y, size);
 			return;
@@ -225,7 +225,7 @@ public final class Ui {
 		g.blit(RenderPipelines.GUI_TEXTURED, pv.id(), x, y + (size - h) / 2, 0f, (float) (f * fh), size, h, fw, fh, fw, pv.height(), 0xFFFFFFFF);
 	}
 
-	public static void item(GuiGraphics g, Icon icon, int x, int y, int size) {
+	public static void item(GuiGraphicsExtractor g, Icon icon, int x, int y, int size) {
 		if (icon != null) icon.draw(g, x, y, size);
 	}
 
