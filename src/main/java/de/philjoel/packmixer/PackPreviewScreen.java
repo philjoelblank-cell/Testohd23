@@ -119,7 +119,14 @@ public class PackPreviewScreen extends Screen {
 			int size = (int) Math.min((x1 - x0) * 0.45f, (y1 - y0) * 0.36f);
 			Quaternionf rot = new Quaternionf().rotateZ((float) Math.PI).rotateX((float) Math.toRadians(-8)).rotateY(angle);
 			Vector3f translate = new Vector3f(0, state.boundingBoxHeight / 2.0F + 0.0625F, 0);
-			g.submitEntityRenderState(state, size, translate, rot, null, x0, y0, x1, y1);
+			// the method got renamed in newer versions: find it by its parameters
+			for (java.lang.reflect.Method m : g.getClass().getMethods()) {
+				Class<?>[] p = m.getParameterTypes();
+				if (p.length == 9 && p[0].isAssignableFrom(state.getClass()) && p[2] == Vector3f.class && p[3] == Quaternionf.class) {
+					m.invoke(g, state, (float) size, translate, rot, null, x0, y0, x1, y1);
+					break;
+				}
+			}
 		} catch (Throwable e) {
 			Ui.small(g, Component.translatable("packmixer.preview.no_world").getString(), x0 + 6, (y0 + y1) / 2, Ui.DIM);
 		}
