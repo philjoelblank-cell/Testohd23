@@ -30,6 +30,20 @@ final class V1Packs {
 		return null;
 	}
 
+	/** Weapons and tools keep their normal colours in the V1 packs, only the effects are coloured. */
+	static boolean keepsVanilla(String path) {
+		String n = path.substring(path.lastIndexOf('/') + 1);
+		return n.matches(".*_(sword|axe|pickaxe|shovel|hoe)\\.png") || n.startsWith("mace") || n.contains("_spear")
+				|| n.startsWith("bow") || n.startsWith("crossbow") || n.equals("trident.png");
+	}
+
+	static Mode mode(String path) {
+		if (keepsVanilla(path)) return Mode.TOOL;
+		String n = path.substring(path.lastIndexOf('/') + 1);
+		if (n.startsWith("golden_apple") || n.startsWith("enchanted_golden_apple") || n.startsWith("ender_pearl")) return Mode.INSIDE;
+		return Mode.FULL;
+	}
+
 	static boolean isV1(String name) {
 		return of(name) != null;
 	}
@@ -57,7 +71,16 @@ final class V1Packs {
 	}
 
 	/** Builds the animated strip (FRAMES frames) for one item texture. */
+	/** Full: item taken over by the element. TOOL: original colours, element glow + effects around it. INSIDE: no pixels outside. */
+	enum Mode {
+		FULL, TOOL, INSIDE
+	}
+
 	static NativeImage animate(NativeImage img, Element el, int seed) {
+		return animate(img, el, seed, Mode.FULL);
+	}
+
+	static NativeImage animate(NativeImage img, Element el, int seed, Mode mode) {
 		int w = img.getWidth(), h = img.getHeight();
 		double u = w / 16.0; // pixel size of one "art pixel"
 		boolean[] solid = new boolean[w * h];
@@ -97,8 +120,9 @@ final class V1Packs {
 						if (covered) {
 							double l = BuiltinPacks.lum(p) / 255.0;
 							boolean edge = edge(solid, w, h, x, y, ext);
-							c = material(el, l, gx, gy, f, edge, seed);
-							if (rimIn < 0.07 && in < 1.1) c = mix(c, rim(el), 0.75);
+							int m = material(el, l, gx, gy, f, edge, seed);
+							c = mode == Mode.TOOL ? mix(c, m, edge ? 0.6 : 0.28) : m; // tools keep their own colour
+							if (rimIn < 0.07 && in < 1.1) c = mix(c, rim(el), mode == Mode.TOOL ? 0.6 : 0.75);
 						} else if (rimOut < 0.06 && outF > -0.1 && outF < 1.1) {
 							c = mix(c, rim(el), 0.55); // the element breaking away
 						}
@@ -107,7 +131,7 @@ final class V1Packs {
 					}
 					// ---- empty pixel: crust / flames / sparks around the covered part + particles
 					int c = 0;
-					if (active) {
+					if (active && mode != Mode.INSIDE) {
 						c = around(el, solid, w, h, x, y, gx, gy, f, u, minD, span, in, outF, seed);
 						if (c == 0) c = particle(el, gx, gy, f, (int) Math.ceil(16 * h / (double) w), seed);
 					}
@@ -182,7 +206,7 @@ final class V1Packs {
 			}
 			case FIRE -> {
 				double n = noise(gx * 0.5, gy * 0.5 + f * 0.8, seed) * 0.6 + noise(gx, gy + f * 1.6, seed + 1) * 0.4;
-				int c = col(new int[]{0x5A0A00, 0xD02800, 0xFF8A00, 0xFFE680}, l * 0.45 + n * 0.55);
+				int c = col(new int[]{0x4A0000, 0xB80F0A, 0xFF4A1A, 0xFFB060}, l * 0.45 + n * 0.55);
 				if (edge) c = mix(c, 0xFFD040, 0.4);
 				return c;
 			}
@@ -230,7 +254,7 @@ final class V1Packs {
 					}
 					case FIRE -> {
 						double fl = noise(gx * 0.7, gy * 0.7 + f * 1.3, seed + 7);
-						if (fl > 0.35 + k * 0.12) return 0xFF000000 | col(new int[]{0xD02800, 0xFF8A00, 0xFFE680}, 1 - k / 3.0 + fl * 0.3);
+						if (fl > 0.35 + k * 0.12) return 0xFF000000 | col(new int[]{0xB80F0A, 0xFF4A1A, 0xFFA040}, 1 - k / 3.0 + fl * 0.3);
 					}
 					case PLASMA -> {
 						if (q > 0.72) return 0xFF000000 | (q > 0.9 ? 0xFFFFFF : 0xFF6FE0);
@@ -284,7 +308,7 @@ final class V1Packs {
 			if (px == gx && py == gy) {
 				return 0xFF000000 | switch (el) {
 					case ICE -> i % 2 == 0 ? 0xFFFFFF : 0xB9F7F3;
-					case FIRE -> i % 2 == 0 ? 0xFFD040 : 0xFF7A00;
+					case FIRE -> i % 2 == 0 ? 0xFF6A2A : 0xD0140C;
 					case PLASMA -> i % 2 == 0 ? 0xFFFFFF : 0xFF6FE0;
 					case VOID -> i % 2 == 0 ? 0xB46CFF : 0x5A1FB0;
 					case ENERGY -> i % 2 == 0 ? 0xE6FFFC : 0x35F2DD;

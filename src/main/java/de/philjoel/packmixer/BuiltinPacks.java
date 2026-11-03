@@ -628,7 +628,15 @@ public final class BuiltinPacks {
 			return;
 		}
 		if (V1Packs.current != null && img.getWidth() == img.getHeight() && path.contains("/textures/item/")) {
-			NativeImage strip = V1Packs.animate(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973));
+			V1Packs.Mode mode = V1Packs.mode(path);
+			if (mode == V1Packs.Mode.TOOL) { // weapons / tools: original colours from vanilla
+				NativeImage orig = vanilla(path.substring(path.indexOf("/textures/") + 10));
+				if (orig != null && orig.getWidth() == img.getWidth() && orig.getHeight() == img.getHeight()) {
+					img.close();
+					img = orig;
+				} else if (orig != null) orig.close();
+			}
+			NativeImage strip = V1Packs.animate(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973), mode);
 			img.close();
 			strip.writeToFile(out);
 			strip.close();
