@@ -224,7 +224,7 @@ public final class Cosmetics {
 					CustomHeadLayer.translateToHead(pose, CustomHeadLayer.Transforms.DEFAULT);
 					if (id.endsWith("_halo")) { // V1 halos: float higher and turn faster
 						pose.translate(0.0F, (float) Math.sin(t * 0.14F) * 0.04F + 0.03F, 0.0F);
-						pose.mulPose(Axis.YP.rotationDegrees(t * 4.5F));
+						pose.rotateDegrees(Axis.YP, (t * 4.5F));
 					} else if (id.endsWith("_crown")) {
 						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.012F, 0.0F);
 					} else if (id.equals("halo")) {
@@ -258,9 +258,9 @@ public final class Cosmetics {
 			model.root().translateAndRotate(pose);
 			model.body.translateAndRotate(pose);
 			pose.translate(0.0F, 0.32F, 0.17F);
-			pose.mulPose(Axis.YP.rotationDegrees(180.0F));
+			pose.rotateDegrees(Axis.YP, (180.0F));
 			pose.scale(0.62F, -0.62F, -0.62F);
-			pose.mulPose(Axis.YP.rotationDegrees(side * open));
+			pose.rotateDegrees(Axis.YP, (side * open));
 			item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 			pose.popPose();
 		}

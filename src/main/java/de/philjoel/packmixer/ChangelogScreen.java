@@ -24,7 +24,7 @@ public final class ChangelogScreen extends Screen {
 		this.parent = parent;
 		this.version = version;
 		String key = "packmixer.changelog." + version;
-		if (I18n.exists(key)) for (String l : I18n.get(key).split("\n")) lines.add(l);
+		if (net.minecraft.locale.Language.getInstance().has(key)) for (String l : I18n.get(key).split("\n")) lines.add(l);
 	}
 
 	static String modVersion() {
@@ -43,7 +43,7 @@ public final class ChangelogScreen extends Screen {
 		if (v.isEmpty() || v.equals(s.lastChangelog)) return;
 		s.lastChangelog = v;
 		PackMixerConfig.saveSettings();
-		if (!I18n.exists("packmixer.changelog." + v)) return;
+		if (!net.minecraft.locale.Language.getInstance().has("packmixer.changelog." + v)) return;
 		Minecraft mc = Minecraft.getInstance();
 		mc.execute(() -> mc.gui.setScreen(new ChangelogScreen(screen, v)));
 	}
