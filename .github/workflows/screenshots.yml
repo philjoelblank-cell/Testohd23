@@ -19,16 +19,19 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - name: virtual screen
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb mesa-utils libgl1-mesa-dri ffmpeg > /dev/null
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb mesa-utils libgl1-mesa-dri libglx-mesa0 libegl1 mesa-vulkan-drivers libvulkan1 ffmpeg > /dev/null
       - run: chmod +x ./gradlew
       - name: run the game
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
           MESA_GL_VERSION_OVERRIDE: "4.5"
+          SDL_VIDEODRIVER: x11
         run: |
           mkdir -p run/screenshots
-          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp &
+          Xvfb :99 -screen 0 1920x1080x24 +extension GLX +render -noreset -nolisten tcp &
           sleep 3
+          DISPLAY=:99 glxinfo -B || true
+          DISPLAY=:99 glxinfo -v 2>/dev/null | grep -m 12 -A 12 "GLX Visual" || true
           DISPLAY=:99 timeout 35m ./gradlew runClient --no-configuration-cache -Ptestohd_autotest || true
 
       - uses: actions/upload-artifact@v4
