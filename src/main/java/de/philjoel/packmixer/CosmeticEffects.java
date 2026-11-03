@@ -154,6 +154,42 @@ public final class CosmeticEffects {
 				level.addParticle(dust(0x9B30FF, 0.6f), x + Math.cos(a + Math.PI) * 0.6, y + 0.05, z + Math.sin(a + Math.PI) * 0.6, mx, my, mz);
 			}
 			case "fx_lightwings" -> lightWings(level, p, x, y, z, h, yaw, mx, my, mz, t);
+			case "fx_inferno" -> { // red fire tornado around you
+				for (int i = 0; i < 3; i++) {
+					double a = t * 0.35 + i * Math.PI * 2 / 3;
+					double ry = (t * 0.05 + i / 3.0) % 1.0;
+					double rad = 0.75 - ry * 0.35;
+					level.addParticle(i == 0 ? ParticleTypes.FLAME : dust(i == 1 ? 0xFF2A10 : 0xFF7A20, 0.9f),
+							x + Math.cos(a) * rad, y + ry * h, z + Math.sin(a) * rad, mx, 0.01, mz);
+				}
+				if (t % 5 == 0) level.addParticle(ParticleTypes.LAVA, x + (r.nextDouble() - 0.5) * 0.6, y + 0.1, z + (r.nextDouble() - 0.5) * 0.6, 0, 0, 0);
+			}
+			case "fx_plasma" -> { // pink plasma orbs circling, with sparks jumping between them
+				for (int i = 0; i < 3; i++) {
+					double a = t * 0.22 + i * Math.PI * 2 / 3;
+					double py = y + h * 0.5 + Math.sin(t * 0.15 + i * 2) * 0.4;
+					level.addParticle(dust(i == 1 ? 0xB02CFF : 0xFF4FD8, 1.2f), x + Math.cos(a) * 0.8, py, z + Math.sin(a) * 0.8, mx, my, mz);
+				}
+				if (t % 3 == 0) level.addParticle(ParticleTypes.ELECTRIC_SPARK, x + (r.nextDouble() - 0.5) * 1.4, y + r.nextDouble() * h,
+						z + (r.nextDouble() - 0.5) * 1.4, 0, 0, 0);
+			}
+			case "fx_frost" -> { // icy ring at your feet + snowflakes falling around you
+				for (int i = 0; i < 2; i++) {
+					double a = -t * 0.12 + i * Math.PI;
+					level.addParticle(dust(i == 0 ? 0x8FF5EA : 0xFFFFFF, 0.8f), x + Math.cos(a) * 0.75, y + 0.05, z + Math.sin(a) * 0.75, mx, my, mz);
+				}
+				if (t % 3 == 0) level.addParticle(ParticleTypes.SNOWFLAKE, x + (r.nextDouble() - 0.5) * 1.3, y + h + 0.2,
+						z + (r.nextDouble() - 0.5) * 1.3, 0, -0.04, 0);
+			}
+			case "fx_energy" -> { // two turquoise rings moving up and down around you
+				for (int i = 0; i < 2; i++) {
+					double ry = (Math.sin(t * 0.08 + i * Math.PI) * 0.5 + 0.5) * h;
+					for (int k = 0; k < 3; k++) {
+						double a = t * 0.3 + k * Math.PI * 2 / 3 + i;
+						level.addParticle(dust(k == 0 ? 0xE6FFFC : 0x35F2DD, 0.7f), x + Math.cos(a) * 0.65, y + ry, z + Math.sin(a) * 0.65, mx, my, mz);
+					}
+				}
+			}
 			default -> {
 			}
 		}
@@ -223,6 +259,22 @@ public final class CosmeticEffects {
 			case "devil_wings" -> {
 				if (t % 5 == 0) level.addParticle(r.nextBoolean() ? ParticleTypes.FLAME : ParticleTypes.SMOKE,
 						x + (r.nextDouble() - 0.5) * 1.0, y + h * 0.6, z + (r.nextDouble() - 0.5) * 1.0, 0, 0.02, 0);
+			}
+			case "plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings" -> {
+				if (t % 3 == 0) {
+					double yaw = Math.toRadians(p.yBodyRot);
+					double side = r.nextBoolean() ? 1 : -1, out = 0.3 + r.nextDouble() * 1.0;
+					double px = x + Math.cos(yaw) * out * side + Math.sin(yaw) * 0.45;
+					double pz = z + Math.sin(yaw) * out * side - Math.cos(yaw) * 0.45;
+					double py = y + h * (0.45 + r.nextDouble() * 0.6);
+					switch (l.back()) {
+						case "plasma_wings" -> level.addParticle(r.nextBoolean() ? ParticleTypes.ELECTRIC_SPARK : dust(0xFF4FD8, 0.8f), px, py, pz, 0, 0, 0);
+						case "inferno_wings" -> level.addParticle(r.nextInt(3) == 0 ? ParticleTypes.SMALL_FLAME : dust(0xFF2A10, 0.9f), px, py, pz, 0, 0.02, 0);
+						case "void_wings" -> level.addParticle(ParticleTypes.REVERSE_PORTAL, px, py, pz, 0, 0, 0);
+						case "energy_wings" -> level.addParticle(dust(r.nextBoolean() ? 0x35F2DD : 0xE6FFFC, 0.8f), px, py, pz, 0, 0.01, 0);
+						default -> level.addParticle(ParticleTypes.SNOWFLAKE, px, py, pz, 0, -0.02, 0);
+					}
+				}
 			}
 			case "phoenix_wings" -> {
 				if (t % 2 == 0) {

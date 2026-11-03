@@ -350,5 +350,17 @@
   "packmixer.pack.desc.v1_black": "§5Void §7– animated, with crystal – Made by Testohd23",
   "packmixer.pack.desc.v1_turquoise": "§3Energy §7– animated, with crystal – Made by Testohd23",
   "packmixer.pack.desc.v1_xmas": "§bIce & snow §7– animated, with crystal – Made by Testohd23",
-  "packmixer.category.full_pack": "Full Packs"
+  "packmixer.category.full_pack": "Full Packs",
+  "packmixer.hat.plasma_wings": "V1 Plasma Wings",
+  "packmixer.hat.inferno_wings": "V1 Inferno Wings",
+  "packmixer.hat.void_wings": "V1 Void Wings",
+  "packmixer.hat.energy_wings": "V1 Energy Wings",
+  "packmixer.hat.frost_wings": "V1 Frost Wings",
+  "packmixer.hat.fx_inferno": "Inferno Tornado",
+  "packmixer.hat.fx_plasma": "Plasma Orbs",
+  "packmixer.hat.fx_frost": "Frost Ring",
+  "packmixer.hat.fx_energy": "Energy Rings",
+  "packmixer.changelog.title": "New in version %s",
+  "packmixer.changelog.ok": "Nice!",
+  "packmixer.changelog.1.6.0": "Wings\n• 5 new V1 wings: Plasma, Inferno, Void, Energy, Frost\n• All wings remade: big, animated and they really beat\nEffects\n• New: Inferno Tornado, Plasma Orbs, Frost Ring, Energy Rings\n• V1 wings spray particles in their colour\nOther\n• This window shows you what is new after every update"
 }

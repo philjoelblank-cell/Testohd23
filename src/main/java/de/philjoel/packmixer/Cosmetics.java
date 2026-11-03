@@ -55,7 +55,15 @@ public final class Cosmetics {
 			Map.entry("wizard_hat", Rarity.EPIC), Map.entry("headphones", Rarity.RARE), Map.entry("viking_helmet", Rarity.EPIC),
 			Map.entry("phoenix_wings", Rarity.LEGENDARY),
 			Map.entry("fx_rainbow", Rarity.LEGENDARY), Map.entry("fx_galaxy", Rarity.LEGENDARY), Map.entry("fx_totem", Rarity.LEGENDARY),
-			Map.entry("fx_lightwings", Rarity.LEGENDARY), Map.entry("fx_lightning", Rarity.EPIC), Map.entry("fx_void", Rarity.EPIC));
+			Map.entry("fx_lightwings", Rarity.LEGENDARY), Map.entry("fx_lightning", Rarity.EPIC), Map.entry("fx_void", Rarity.EPIC),
+			Map.entry("plasma_wings", Rarity.LEGENDARY), Map.entry("inferno_wings", Rarity.LEGENDARY), Map.entry("void_wings", Rarity.LEGENDARY),
+			Map.entry("energy_wings", Rarity.LEGENDARY), Map.entry("frost_wings", Rarity.LEGENDARY),
+			Map.entry("fx_inferno", Rarity.LEGENDARY), Map.entry("fx_plasma", Rarity.LEGENDARY), Map.entry("fx_frost", Rarity.EPIC),
+			Map.entry("fx_energy", Rarity.EPIC));
+
+	/** Big textured wings (left + right model, beating for real). */
+	static final java.util.Set<String> WINGS = java.util.Set.of("angel_wings", "devil_wings", "phoenix_wings", "plasma_wings",
+			"inferno_wings", "void_wings", "energy_wings", "frost_wings");
 
 	public static Rarity rarity(String id) {
 		return RARITY.getOrDefault(id, Rarity.COMMON);
@@ -64,8 +72,9 @@ public final class Cosmetics {
 	public enum Slot {
 		HEAD(List.of("crown", "halo", "wizard_hat", "viking_helmet", "top_hat", "santa_hat", "horns", "headphones", "straw_hat", "cat_ears")),
 		FACE(List.of("sunglasses", "monocle", "mask")),
-		BACK(List.of("phoenix_wings", "angel_wings", "devil_wings", "backpack")),
-		EFFECT(List.of("fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
+		BACK(List.of("plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "phoenix_wings", "angel_wings",
+				"devil_wings", "backpack")),
+		EFFECT(List.of("fx_inferno", "fx_plasma", "fx_frost", "fx_energy", "fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
 				"fx_flames", "fx_snow", "fx_cherry", "fx_enchant", "fx_hearts", "fx_notes"));
 
 		public final List<String> items;
@@ -139,15 +148,18 @@ public final class Cosmetics {
 
 	/** Item used to render a cosmetic; legendary ones get the enchantment shimmer. */
 	public static ItemStack hatStack(String id) {
-		ItemStack stack = new ItemStack(Items.PAPER);
+		ItemStack stack = Ui.stack(Items.PAPER);
+		if (stack.isEmpty()) return stack;
 		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "hat_" + id));
-		if (rarity(id) == Rarity.LEGENDARY) stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+		if (rarity(id) == Rarity.LEGENDARY && !WINGS.contains(id.replace("_l", "").replace("_r", "")))
+			stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
 		return stack;
 	}
 
 	/** Card preview: the item on a small dark bust (models/item/card_*.json). */
 	public static ItemStack cardStack(String id) {
-		ItemStack stack = new ItemStack(Items.PAPER);
+		ItemStack stack = Ui.stack(Items.PAPER);
+		if (stack.isEmpty()) return stack;
 		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "card_" + id));
 		return stack;
 	}
@@ -177,9 +189,11 @@ public final class Cosmetics {
 			PlayerModel model = this.getParentModel();
 			float t = state.ageInTicks;
 
+			String back = loadout.back();
+			if (WINGS.contains(back)) wings(pose, collector, light, state, model, mc, back, t);
 			for (Slot slot : new Slot[]{Slot.HEAD, Slot.FACE, Slot.BACK}) {
 				String id = loadout.get(slot);
-				if (id.isEmpty()) continue;
+				if (id.isEmpty() || WINGS.contains(id)) continue;
 				ItemStackRenderState item = new ItemStackRenderState();
 				mc.getItemModelResolver().updateForTopItem(item, hatStack(id), ItemDisplayContext.HEAD, mc.level, null, 0);
 				if (item.isEmpty()) continue;
@@ -214,6 +228,29 @@ public final class Cosmetics {
 				item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 				pose.popPose();
 			}
+		}
+	}
+
+	/** Left and right wing, each turning around the spine: they beat open and closed. */
+	private static void wings(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, PlayerModel model,
+			Minecraft mc, String id, float t) {
+		float speed = id.equals("phoenix_wings") || id.equals("inferno_wings") || id.equals("plasma_wings") ? 0.32F : 0.22F;
+		float beat = (float) Math.sin(t * speed);
+		boolean flying = state.isFallFlying || state.isCrouching;
+		float open = flying ? 8F : 24F + 16F * beat;   // degrees backwards from flat
+		for (int side = -1; side <= 1; side += 2) {
+			ItemStackRenderState item = new ItemStackRenderState();
+			mc.getItemModelResolver().updateForTopItem(item, hatStack(id + (side < 0 ? "_l" : "_r")), ItemDisplayContext.HEAD, mc.level, null, 0);
+			if (item.isEmpty()) continue;
+			pose.pushPose();
+			model.root().translateAndRotate(pose);
+			model.body.translateAndRotate(pose);
+			pose.translate(0.0F, 0.32F, 0.17F);
+			pose.mulPose(Axis.YP.rotationDegrees(180.0F));
+			pose.scale(0.62F, -0.62F, -0.62F);
+			pose.mulPose(Axis.YP.rotationDegrees(side * open));
+			item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
+			pose.popPose();
 		}
 	}
 

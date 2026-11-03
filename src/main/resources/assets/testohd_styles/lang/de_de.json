@@ -350,5 +350,17 @@
   "packmixer.pack.desc.v1_black": "§5Void §7– animiert, mit Kristall – Made by Testohd23",
   "packmixer.pack.desc.v1_turquoise": "§3Energie §7– animiert, mit Kristall – Made by Testohd23",
   "packmixer.pack.desc.v1_xmas": "§bEis & Schnee §7– animiert, mit Kristall – Made by Testohd23",
-  "packmixer.category.full_pack": "Komplette Packs"
+  "packmixer.category.full_pack": "Komplette Packs",
+  "packmixer.hat.plasma_wings": "V1 Plasma-Flügel",
+  "packmixer.hat.inferno_wings": "V1 Inferno-Flügel",
+  "packmixer.hat.void_wings": "V1 Void-Flügel",
+  "packmixer.hat.energy_wings": "V1 Energie-Flügel",
+  "packmixer.hat.frost_wings": "V1 Frost-Flügel",
+  "packmixer.hat.fx_inferno": "Inferno-Tornado",
+  "packmixer.hat.fx_plasma": "Plasma-Kugeln",
+  "packmixer.hat.fx_frost": "Frost-Ring",
+  "packmixer.hat.fx_energy": "Energie-Ringe",
+  "packmixer.changelog.title": "Neu in Version %s",
+  "packmixer.changelog.ok": "Cool!",
+  "packmixer.changelog.1.6.0": "Flügel\n• 5 neue V1-Flügel: Plasma, Inferno, Void, Energie, Frost\n• Alle Flügel neu: groß, animiert und sie schlagen richtig\nEffekte\n• Neu: Inferno-Tornado, Plasma-Kugeln, Frost-Ring, Energie-Ringe\n• V1-Flügel sprühen Partikel in ihrer Farbe\nSonstiges\n• Dieses Fenster zeigt dir nach jedem Update, was neu ist"
 }
