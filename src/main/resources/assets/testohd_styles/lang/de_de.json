@@ -369,5 +369,6 @@
   "packmixer.hat.void_crown": "V1 Void-Krone",
   "packmixer.hat.energy_halo": "V1 Energie-Heiligenschein",
   "packmixer.hat.void_halo": "V1 Void-Heiligenschein",
-  "packmixer.hat.divine_halo": "Göttlicher Heiligenschein"
+  "packmixer.hat.divine_halo": "Göttlicher Heiligenschein",
+  "packmixer.changelog.1.6.2": "Fixes\n• Bilder im Menü verschwinden nicht mehr (Symbole, Kronen, Vorschauen)\n• 26.3: eigene Himmel und Menü-Symbole funktionieren"
 }
