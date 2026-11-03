@@ -256,7 +256,7 @@ final class AutoTest {
 			command("item replace entity @p weapon.mainhand with end_crystal");
 			step("hold crystal " + tag, 18, () -> { });
 			step("place crystal " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
-			command("summon end_crystal 0.5 201 4.5");
+			command("summon end_crystal 0.5 201 4.5 {ShowBottom:0b}");
 			step("look crystal " + tag, 22, () -> { });
 			command("item replace entity @p weapon.mainhand with respawn_anchor");
 			step("hold anchor " + tag, 18, () -> { });
