@@ -258,6 +258,19 @@ public class PackMixerScreen extends Screen {
 	}
 
 	/** Used by the automatic screenshot test. */
+	/** Autotest: click a card like a player would (button 0 = left, 1 = right); returns what is chosen afterwards. */
+	String testClick(int card, int button) {
+		if (card >= cards.size()) return "no card " + card;
+		Ui.Card c = cards.get(card);
+		double x = c.getX() + c.getWidth() / 2.0, y = c.getY() + c.getHeight() / 2.0;
+		var ev = new MouseButtonEvent(x, y, new net.minecraft.client.input.MouseButtonInfo(button, 0));
+		boolean handled = mouseClicked(ev, false);
+		mouseReleased(ev);
+		String cat = categories.get(category).id;
+		return "handled=" + handled + " selected=" + selection.get(cat) + " card=" + (c.pack() == null ? "default" : c.pack().name)
+				+ " favorites=" + PackMixerConfig.settings().favorites;
+	}
+
 	/** Autotest: apply like the "Done" button. */
 	void testApply() {
 		dirty = true;

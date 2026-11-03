@@ -126,6 +126,21 @@ final class AutoTest {
 			Cosmetics.Slot.EFFECT.set("fx_lightwings");
 		});
 		step("settle", 200, () -> { });
+		// regression: left click on a pack card must choose it (a player could only add favourites)
+		step("click test open", 20, () -> {
+			mc.setScreen(new PackMixerScreen(null));
+		});
+		step("click test cat", 20, () -> {
+			if (mc.screen instanceof PackMixerScreen s) s.testSelect(2);
+		});
+		step("click left", 10, () -> {
+			if (mc.screen instanceof PackMixerScreen s) PackMixerClient.LOGGER.info("autotest: LEFT {}", s.testClick(2, 0));
+		});
+		step("click right", 10, () -> {
+			if (mc.screen instanceof PackMixerScreen s) PackMixerClient.LOGGER.info("autotest: RIGHT {}", s.testClick(3, 1));
+		});
+		shot("click_test");
+		step("click close", 5, () -> mc.setScreen(null));
 		// regression: switching whole packs (White -> Purple crashed for a player)
 		for (String pk : new String[]{"Testohd23 V1 White", "Testohd23 V1 Purple", "Testohd23 V1 White", "Testohd23 V1 Purple"}) {
 			step("switch " + pk, 5, () -> {
