@@ -209,8 +209,9 @@ public class PackMixerScreen extends Screen {
 				Ui.Card card = new Ui.Card(x, y, cardW, cardH, previews, cat, pack, label, sel, pack != null && isFavorite(pack), () -> {
 					if (pack == null) selection.remove(cat.id);
 					else selection.put(cat.id, pack.name);
-					if (pack != null && cat.id.equals(DefaultCategories.FULL_PACK)) { // whole pack: every category it has
-						for (Category c : categories) if (pack.contains(c)) selection.put(c.id, pack.name);
+					if (pack != null && cat.id.equals(DefaultCategories.FULL_PACK)) { // whole pack: every category
+						// (the Testohd packs get every category, even if the menu was opened while they were still being created)
+						for (Category c : categories) if (V1Packs.isV1(pack.name) || pack.contains(c)) selection.put(c.id, pack.name);
 					}
 					dirty = true;
 					rebuildWidgets();
@@ -365,7 +366,19 @@ public class PackMixerScreen extends Screen {
 		g.pose().popMatrix();
 	}
 
+	private boolean waitedForPacks;
+
 	private void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
+		// the Testohd packs are still being created (first start after an update): show it, reload them when done
+		if (BuiltinPacks.generating) {
+			waitedForPacks = true;
+			setStatus(Component.translatable("packmixer.generating").getString());
+		} else if (waitedForPacks) {
+			waitedForPacks = false;
+			rescan();
+			setStatus(Component.translatable("packmixer.generated").getString());
+			rebuildWidgets();
+		}
 		Ui.header(g, this.width, null);
 		Ui.window(g, x0, y0, x1, y1);
 		Ui.headerBar(g, x0, y0, x1);

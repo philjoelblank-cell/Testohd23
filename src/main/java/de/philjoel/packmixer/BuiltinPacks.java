@@ -325,10 +325,14 @@ public final class BuiltinPacks {
 	private static final String[] MATERIALS = {"wooden", "stone", "copper", "iron", "golden", "diamond", "netherite"};
 	private static final String[] TOOLS = {"sword", "axe", "pickaxe", "shovel"};
 
+	/** True while the built-in packs are being (re)written - the menu waits and reloads them afterwards. */
+	public static volatile boolean generating;
+
 	/** Generates the packs once per VERSION (in a background thread). */
 	public static void generateIfNeeded(Runnable whenDone) {
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
-		if (s.builtinPacksVersion >= VERSION) return;
+		if (s.builtinPacksVersion >= VERSION || generating) return;
+		generating = true;
 		Thread t = new Thread(() -> {
 			try {
 				generateAll();
@@ -337,6 +341,8 @@ public final class BuiltinPacks {
 				Minecraft.getInstance().execute(whenDone);
 			} catch (Throwable e) {
 				PackMixerClient.LOGGER.error("Could not generate built-in packs", e);
+			} finally {
+				generating = false;
 			}
 		}, "PackMixer pack generator");
 		t.setDaemon(true);
