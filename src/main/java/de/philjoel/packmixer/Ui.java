@@ -166,6 +166,8 @@ public final class Ui {
 	/** Pack name: built-in packs are drawn in the brand gradient. */
 	public static void packName(GuiGraphicsExtractor g, String name, int centerX, int y, int maxW, boolean bright) {
 		String shown = packDisplay(name);
+		if (font().width(shown) > maxW && V1Packs.isV1(name)) // small cards: "V1 Purple", "Christmas V1 Turquoise"
+			shown = shown.replace("Testohd23 ", "").replace("Testohd ", "");
 		if (font().width(shown) > maxW) {
 			while (shown.length() > 1 && font().width(shown + "...") > maxW) shown = shown.substring(0, shown.length() - 1);
 			shown = shown + "...";
@@ -277,6 +279,15 @@ public final class Ui {
 				else if (hover) yaw = 45f + (t * 90f + phase * 30f) % 360f;     // spin while hovered
 				else yaw = 45f + (float) Math.sin(t * 0.9 + phase) * 18f;        // gentle sway
 				drawCube(g, top, side, cat.topTintArgb(), x, y + bob, size, yaw);
+				return;
+			}
+		}
+		if (cat.id.equals("end_crystal") || cat.id.equals(DefaultCategories.FULL_PACK)) {
+			PreviewCache.Preview c = cache.crystal3d(pack);
+			if (c != null) { // placed crystal in 3D: floats and turns like in the world (faster on hover)
+				int n = PreviewCache.CRYSTAL_FRAMES, fw = c.width();
+				int f = animate ? Math.floorMod((int) (t * (hover ? 24 : 14) + phase * 9), n) : 6;
+				g.blit(RenderPipelines.GUI_TEXTURED, c.id(), x, y, 0f, (float) (f * fw), size, size, fw, fw, fw, c.height(), 0xFFFFFFFF);
 				return;
 			}
 		}
@@ -433,7 +444,9 @@ public final class Ui {
 
 	public static void drawFlat(GuiGraphicsExtractor g, PreviewCache.Preview p, int x, int y, int size, int color) {
 		int frameH = Math.min(p.width(), p.height());
-		g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x, y, 0f, 0f, size, size, p.width(), frameH, p.width(), p.height(), color);
+		int frames = Math.max(1, p.height() / Math.max(1, frameH));
+		int f = frames > 1 ? (int) (time() * 10) % frames : 0; // animated block textures play in the 3D preview too
+		g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x, y, 0f, (float) (f * frameH), size, size, p.width(), frameH, p.width(), p.height(), color);
 	}
 
 	/** Static isometric cube (kept for older callers). */

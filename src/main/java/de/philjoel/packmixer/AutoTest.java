@@ -91,7 +91,8 @@ final class AutoTest {
 		});
 		step("select pack", 5, () -> {
 			Map<String, String> sel = new LinkedHashMap<>();
-			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, c.id.equals("sky") ? "Verlauf Sonnenuntergang" : "Galaxie");
+			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, c.id.equals("sky") ? "Verlauf Sonnenuntergang"
+					: c.id.equals("mace") || c.id.equals("spear") || c.id.equals("armor") ? "Energie Schwarz" : "Galaxie");
 			PackMixerConfig.saveSelection(sel);
 			PackBuilder.rebuildAndApply();
 		});
@@ -169,6 +170,117 @@ final class AutoTest {
 		shot("world_wings_front");
 		step("totem", 40, () -> Cosmetics.Slot.EFFECT.set("fx_totem"));
 		shot("world_fx_totem");
+		command("item replace entity @p weapon.mainhand with netherite_spear[enchantments={sharpness:1}]");
+		command("item replace entity @p weapon.offhand with mace");
+		command("item replace entity @p armor.chest with netherite_chestplate");
+		for (String pack : new String[]{"Energie Schwarz", "Energie Tuerkis"}) {
+			step("pack " + pack, 10, () -> {
+				Map<String, String> sel = PackMixerConfig.loadSelection();
+				sel.put("mace", pack);
+				sel.put("spear", pack);
+				sel.put("armor", pack);
+				PackMixerConfig.saveSelection(sel);
+				PackBuilder.rebuildAndApply();
+			});
+			when("reload " + pack, () -> mc.getOverlay() == null, () -> { });
+			String tag = pack.endsWith("Schwarz") ? "schwarz" : "tuerkis";
+			step("close " + pack, 40, () -> {
+				Cosmetics.Slot.HEAD.set("");
+				Cosmetics.Slot.BACK.set("");
+				Cosmetics.Slot.EFFECT.set("");
+				mc.options.fov().set(30);
+				mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+				mc.player.setXRot(5);
+			});
+			shot("sample_" + tag + "_front");
+			step("fp " + pack, 25, () -> {
+				mc.options.fov().set(70);
+				mc.options.setCameraType(CameraType.FIRST_PERSON);
+			});
+			shot("sample_" + tag + "_first");
+			step("fp2 " + pack, 6, () -> { });
+			shot("sample_" + tag + "_first_b");
+		}
+		// ---- animated crystals + their explosion
+		command("item replace entity @p weapon.mainhand with air");
+		command("item replace entity @p weapon.offhand with end_crystal");
+		command("time set 6000");
+		// ---- video: every V1 pack, all items in the hand, then crystal + anchor placed
+		command("gamemode creative @p");
+		command("time set 6000");
+		command("weather clear");
+		command("gamerule announceAdvancements false");
+		command("recipe give @p *");
+		command("advancement grant @p everything");
+		step("video start", 40, () -> {
+			try {
+				mc.getToastManager().clear();
+			} catch (Throwable ignored) {
+			}
+			startVideo(mc, "v1_video");
+		});
+		for (V1Packs.V1 v : V1Packs.PACKS) {
+			String tag = v.name().replace("Testohd23 V1 ", "v1_").replace("Testohd Christmas V1 ", "xmas_").toLowerCase();
+			step("v1 " + tag, 2, () -> {
+				Map<String, String> sel = new LinkedHashMap<>();
+				for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, v.name());
+				PackMixerConfig.saveSelection(sel);
+				PackBuilder.rebuildAndApply();
+			});
+			when("reload " + tag, () -> mc.getOverlay() == null, () -> { });
+			command("kill @e[type=end_crystal]");
+			command("kill @e[type=item]");
+			command("fill -12 199 -4 12 199 18 smooth_quartz");
+			command("fill -12 200 -4 12 214 18 air");
+			command("tp @p 0.5 200 0.5 0 0");
+			command("clear @p");
+			command("item replace entity @p weapon.offhand with shield");
+			step("look " + tag, 10, () -> {
+				mc.options.fov().set(70);
+				mc.options.setCameraType(CameraType.FIRST_PERSON);
+				mc.player.setYRot(0);
+				mc.player.setXRot(18);
+			});
+			for (String item : new String[]{"netherite_sword", "diamond_sword", "netherite_pickaxe", "netherite_axe", "mace",
+					"netherite_spear", "bow", "totem_of_undying", "ender_pearl", "golden_apple", "splash_potion[potion_contents={potion:\"minecraft:strength\"}]",
+					"obsidian"}) {
+				command("item replace entity @p weapon.mainhand with " + item);
+				step("hold " + item, 24, () -> { });
+				if (item.equals("netherite_sword") || item.equals("mace")) {
+					step("swing " + item, 14, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+				}
+			}
+			// place: obsidian + crystal, anchor charged with glowstone
+			step("place obsidian " + tag, 8, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			command("setblock 0 200 4 obsidian");
+			command("item replace entity @p weapon.mainhand with end_crystal");
+			step("hold crystal " + tag, 18, () -> { });
+			step("place crystal " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			command("summon end_crystal 0.5 201 4.5 {ShowBottom:0b}");
+			step("look crystal " + tag, 22, () -> { });
+			command("item replace entity @p weapon.mainhand with respawn_anchor");
+			step("hold anchor " + tag, 18, () -> { });
+			step("place anchor " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			command("setblock 2 200 4 respawn_anchor");
+			command("item replace entity @p weapon.mainhand with glowstone");
+			step("hold glowstone " + tag, 18, () -> { });
+			for (int ch = 1; ch <= 4; ch++) {
+				int charge = ch;
+				step("charge " + ch + " " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+				command("setblock 2 200 4 respawn_anchor[charges=" + charge + "]");
+				step("charged " + ch + " " + tag, 8, () -> { });
+			}
+			step("look both " + tag, 6, () -> mc.player.setYRot(8));
+			shot("v1_" + tag + "_placed");
+			step("admire " + tag, 30, () -> { });
+			command("item replace entity @p weapon.mainhand with netherite_sword");
+			step("hit " + tag, 8, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			command("execute at @p run damage @e[type=end_crystal,limit=1,sort=nearest] 1");
+			step("boom " + tag, 3, () -> { });
+			shot("v1_" + tag + "_boom");
+			step("after " + tag, 40, () -> { });
+		}
+		step("video stop", 5, AutoTest::stopVideo);
 		step("hud", 10, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });
@@ -186,8 +298,89 @@ final class AutoTest {
 		});
 	}
 
+	// ---- video in CI: every tick the picture is read back from the game and piped into ffmpeg
+	private static Process video;
+	private static java.io.OutputStream videoIn;
+	private static final java.util.concurrent.BlockingQueue<byte[]> videoFrames = new java.util.concurrent.ArrayBlockingQueue<>(64);
+	private static int vw, vh;
+
+	private static void startVideo(Minecraft mc, String name) {
+		try {
+			vw = mc.getMainRenderTarget().width / 2;
+			vh = mc.getMainRenderTarget().height / 2;
+			vw -= vw % 2;
+			vh -= vh % 2;
+			java.nio.file.Path out = mc.gameDirectory.toPath().resolve("screenshots").resolve(name + ".mp4");
+			java.nio.file.Files.createDirectories(out.getParent());
+			video = new ProcessBuilder("ffmpeg", "-y", "-loglevel", "warning", "-f", "rawvideo", "-pix_fmt", "rgba",
+					"-s", vw + "x" + vh, "-r", "20", "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+					"-pix_fmt", "yuv420p", out.toString()).redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
+			videoIn = new java.io.BufferedOutputStream(video.getOutputStream(), 1 << 20);
+			Thread t = new Thread(() -> {
+				try {
+					while (true) {
+						byte[] f = videoFrames.take();
+						if (f.length == 0) break;
+						videoIn.write(f);
+					}
+					videoIn.close();
+				} catch (Exception e) {
+					PackMixerClient.LOGGER.error("autotest: video writer", e);
+				}
+			}, "autotest video");
+			t.setDaemon(true);
+			t.start();
+			PackMixerClient.LOGGER.info("autotest: recording {}x{}", vw, vh);
+		} catch (Exception e) {
+			PackMixerClient.LOGGER.error("autotest: video failed", e);
+			video = null;
+		}
+	}
+
+	private static void captureFrame(Minecraft mc) {
+		Screenshot.takeScreenshot(mc.getMainRenderTarget(), 2, img -> {
+			try {
+				if (video == null) return;
+				byte[] buf = new byte[vw * vh * 4];
+				int w = Math.min(vw, img.getWidth()), h = Math.min(vh, img.getHeight());
+				for (int y = 0; y < h; y++)
+					for (int x = 0; x < w; x++) {
+						int p = img.getPixel(x, y), i = (y * vw + x) * 4;
+						buf[i] = (byte) (p >> 16);
+						buf[i + 1] = (byte) (p >> 8);
+						buf[i + 2] = (byte) p;
+						buf[i + 3] = (byte) 255;
+					}
+				videoFrames.offer(buf);
+			} finally {
+				img.close();
+			}
+		});
+	}
+
+	private static void stopVideo() {
+		if (video == null) return;
+		Process p = video;
+		video = null;
+		try {
+			videoFrames.put(new byte[0]);
+			p.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
+		} catch (Exception e) {
+			p.destroy();
+		}
+	}
+
 	static void tick(Minecraft mc) {
 		if (!ENABLED) return;
+		if (video != null && mc.level != null && mc.getOverlay() == null) { // loading screens are left out
+			try {
+				mc.getToastManager().clear(); // no "recipe unlocked" popups in the video
+				captureFrame(mc);
+			} catch (Throwable e) {
+				PackMixerClient.LOGGER.error("autotest: frame", e);
+				video = null;
+			}
+		}
 		if (!started) {
 			started = true;
 			plan(mc);

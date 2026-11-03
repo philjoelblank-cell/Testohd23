@@ -171,8 +171,13 @@ public final class PackMixerConfig {
 		public boolean shareCosmetics = true;      // let other mod users see yours
 		public boolean showOthersCosmetics = true; // see theirs
 
+		// Enchantment glint only on tools / weapons / armor
+		public boolean glintOnlyGear = true;
+
 		// End crystal explosions without sound
 		public boolean crystalSilent = false;
+		/** Last pack that brought crystal explosion sounds (kept when an animated crystal pack is chosen). */
+		public String crystalSoundPack = "";
 
 		// Updates from GitHub
 		public boolean autoUpdate = true;

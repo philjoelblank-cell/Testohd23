@@ -36,8 +36,13 @@ public final class PackBuilder {
 
 		int copied = 0;
 		// Later categories overwrite earlier ones if patterns overlap.
+		CrystalPacks.selectionChanged(selection);
+		CrystalAnim.markDirty();
 		for (Category category : categories) {
 			String packName = selection.get(category.id);
+			// nothing chosen for explosions: they come with the animated crystal pack
+			if (packName == null && category.id.equals("explosion") && CrystalPacks.isCrystalPack(selection.get("end_crystal")))
+				packName = selection.get("end_crystal");
 			if (packName == null) continue;
 			SourcePack pack = library.get(packName);
 			if (pack == null) {
@@ -79,15 +84,24 @@ public final class PackBuilder {
 	private static int crystalSound(Path out, Map<String, String> selection, PackLibrary library) throws IOException {
 		CrystalSound.packHasSound = false;
 		CrystalSound.markChecked();
-		String name = selection.get("end_crystal");
-		SourcePack pack = name == null ? null : library.get(name);
-		if (pack == null) return 0;
+		// sound: explosion pack, then crystal pack, then the last pack that had one
+		SourcePack pack = null;
 		List<String> found = new ArrayList<>();
-		for (String p : pack.allPaths()) {
-			String l = p.toLowerCase(java.util.Locale.ROOT);
-			if (l.startsWith("sounds/") && l.contains("explode") && l.endsWith(".ogg")) found.add(p);
+		PackMixerConfig.Settings settings = PackMixerConfig.settings();
+		for (String name : new String[]{selection.get("explosion"), selection.get("end_crystal"), settings.crystalSoundPack}) {
+			SourcePack p = name == null || name.isEmpty() ? null : library.get(name);
+			if (p == null) continue;
+			found = explodeSounds(p);
+			if (!found.isEmpty()) {
+				pack = p;
+				break;
+			}
 		}
-		if (found.isEmpty()) return 0;
+		if (pack == null) return 0;
+		if (!pack.name.equals(settings.crystalSoundPack)) {
+			settings.crystalSoundPack = pack.name;
+			PackMixerConfig.saveSettings();
+		}
 		found.sort(Comparator.naturalOrder());
 		Path dir = out.resolve("assets").resolve(PackMixerClient.MOD_ID).resolve("sounds/crystal");
 		Files.createDirectories(dir);
@@ -101,6 +115,15 @@ public final class PackBuilder {
 				"{\n  \"crystal_explode\": {\"sounds\": [" + list + "]}\n}\n", StandardCharsets.UTF_8);
 		CrystalSound.packHasSound = true;
 		return found.size();
+	}
+
+	private static List<String> explodeSounds(SourcePack pack) {
+		List<String> found = new ArrayList<>();
+		for (String p : pack.allPaths()) {
+			String l = p.toLowerCase(java.util.Locale.ROOT);
+			if (l.startsWith("sounds/") && l.contains("explode") && l.endsWith(".ogg")) found.add(p);
+		}
+		return found;
 	}
 
 	/** Enables the output pack on top of all other packs and reloads the textures. */

@@ -63,11 +63,54 @@ public final class CrystalSound {
 	/** @return true if the explosion sound was handled here (vanilla sound must not play) */
 	public static boolean handle(ClientLevel level, double x, double y, double z, float volume, float pitch) {
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
+		boolean crystal = isCrystal(x, y, z);
+		if (crystal) {
+			try {
+				burst(level, x, y, z);
+			} catch (Throwable e) {
+				PackMixerClient.LOGGER.warn("Crystal burst failed: {}", e.toString());
+			}
+		}
 		if (!s.crystalSilent && !packSound()) return false;
-		if (!isCrystal(x, y, z)) return false;
+		if (!crystal) return false;
 		if (s.crystalSilent) return true;
 		level.playLocalSound(x, y, z, SOUND, SoundSource.BLOCKS, volume, pitch, false);
 		return true;
+	}
+
+	/** Extra explosion effect in the colours of the chosen animated crystal. */
+	static void burst(ClientLevel level, double x, double y, double z) {
+		if (!CrystalPacks.activeChecked()) CrystalPacks.selectionChanged(PackMixerConfig.loadSelection());
+		CrystalPacks.Design d = CrystalPacks.active;
+		if (d == null) return;
+		net.minecraft.util.RandomSource r = level.getRandom();
+		for (int i = 0; i < 64; i++) { // shock ring
+			double a = i / 64.0 * Math.PI * 2;
+			double s = 0.55 + r.nextDouble() * 0.15;
+			level.addParticle(new net.minecraft.core.particles.DustParticleOptions(i % 2 == 0 ? d.c1() : d.c2(), 2.2f), x, y + 0.3, z,
+					Math.cos(a) * s * 8, 0.05, Math.sin(a) * s * 8);
+		}
+		for (int i = 0; i < 70; i++) { // sphere of sparks
+			double th = r.nextDouble() * Math.PI * 2, ph = Math.acos(r.nextDouble() * 2 - 1);
+			double s = 0.25 + r.nextDouble() * 0.35;
+			double vx = Math.sin(ph) * Math.cos(th) * s, vy = Math.cos(ph) * s, vz = Math.sin(ph) * Math.sin(th) * s;
+			if (i % 3 == 0) level.addParticle(extra(d), x, y + 0.5, z, vx, vy, vz);
+			else level.addParticle(new net.minecraft.core.particles.DustParticleOptions(i % 2 == 0 ? d.c2() : d.c1(), 1.4f),
+					x, y + 0.5, z, vx * 9, vy * 9, vz * 9);
+		}
+		for (int i = 0; i < 20; i++) // column of light
+			level.addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, x + (r.nextDouble() - 0.5) * 0.4, y + 0.2,
+					z + (r.nextDouble() - 0.5) * 0.4, 0, 0.25 + r.nextDouble() * 0.35, 0);
+	}
+
+	private static net.minecraft.core.particles.ParticleOptions extra(CrystalPacks.Design d) {
+		return switch (d.key()) {
+			case "c_frost" -> net.minecraft.core.particles.ParticleTypes.SNOWFLAKE;
+			case "c_plasma" -> net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK;
+			case "c_inferno" -> net.minecraft.core.particles.ParticleTypes.FLAME;
+			case "c_void" -> net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL;
+			default -> net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME;
+		};
 	}
 
 	private CrystalSound() {

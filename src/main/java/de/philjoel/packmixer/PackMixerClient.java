@@ -48,6 +48,7 @@ public class PackMixerClient implements ClientModInitializer {
 			CosmeticSync.tick(client);
 			AutoTest.tick(client);
 			CrystalSound.tick(client);
+			CrystalAnim.tick(client);
 			while (openKey.consumeClick()) {
 				if (client.gui.screen() == null) {
 					client.gui.setScreen(new PackMixerScreen(null));

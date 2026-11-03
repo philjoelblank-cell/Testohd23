@@ -10,7 +10,8 @@
 		"LevelMixin",
 		"ClientPacketListenerMixin",
 		"SkyRendererMixin",
-		"ExplosionSoundMixin"
+		"ExplosionSoundMixin",
+		"ItemStackFoilMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0

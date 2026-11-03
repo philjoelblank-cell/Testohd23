@@ -198,6 +198,7 @@ public class PackMixerSettingsScreen extends Screen {
 						v -> options.glintStrength().set(v), v -> Math.round(v * 100) + "%")); y += 18;
 				addRenderableWidget(slider(x, y, cw, tr("packmixer.glint_speed"), options.glintSpeed().get(), 0, 1,
 						v -> options.glintSpeed().set(v), v -> Math.round(v * 100) + "%")); y += 18;
+				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.settings.glint_gear", () -> s.glintOnlyGear, v -> s.glintOnlyGear = v)); y += 18;
 			}
 			case "zoom" -> {
 				addRenderableWidget(slider(x, y, cw, tr("packmixer.zoom_strength"), s.zoomFactor, 1.5, 10, v -> s.zoomFactor = v,
@@ -297,7 +298,7 @@ public class PackMixerSettingsScreen extends Screen {
 		var o = this.minecraft.options;
 		switch (e.id) {
 			case "item_position" -> { s.itemPositionEnabled = false; s.itemX = 0; s.itemY = 0; s.itemZ = 0; s.itemScale = 1; }
-			case "glint" -> { o.glintStrength().set(0.75); o.glintSpeed().set(0.5); }
+			case "glint" -> { o.glintStrength().set(0.75); o.glintSpeed().set(0.5); s.glintOnlyGear = true; }
 			case "zoom" -> { s.zoomEnabled = true; s.zoomFactor = 4; }
 			case "fullbright" -> s.fullbright = false;
 			case "weather" -> s.clearWeather = false;

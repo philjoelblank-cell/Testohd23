@@ -8,13 +8,22 @@ import java.util.List;
  * start so they can be edited; new built-in categories are added to existing files.
  */
 final class DefaultCategories {
+	static final String FULL_PACK = "full_pack";
+
 	static List<Category> create() {
 		List<Category> l = new ArrayList<>();
+		// whole Testohd packs at once (only the V1 packs are listed there)
+		l.add(new Category(FULL_PACK, "Komplette Packs",
+				List.of("textures/item/end_crystal.png", "textures/item/diamond_sword.png"),
+				List.of("textures/item/end_crystal.png")));
 		l.add(block("obsidian", "Obsidian", "obsidian"));
 		l.add(new Category("end_crystal", "Endkristalle",
 				List.of("textures/item/end_crystal.png", "textures/entity/end_crystal/end_crystal.png"),
 				List.of("textures/item/end_crystal.png", "textures/entity/end_crystal/*.png",
 						"models/item/end_crystal.json", "items/end_crystal.json")));
+		l.add(new Category("explosion", "Explosionen",
+				List.of("textures/particle/explosion_6.png", "textures/particle/explosion_3.png"),
+				List.of("textures/particle/explosion_*.png", "particles/explosion.json")));
 		l.add(new Category("respawn_anchor", "Seelenanker",
 				List.of("textures/block/respawn_anchor_top.png", "textures/block/respawn_anchor_side4.png"),
 				List.of("textures/block/respawn_anchor_*.png", "models/block/respawn_anchor_*.json",
@@ -46,6 +55,10 @@ final class DefaultCategories {
 				List.of("textures/item/mace.png"),
 				List.of("textures/item/mace.png", "models/item/mace.json", "models/item/handheld_mace.json",
 						"items/mace.json")));
+		l.add(new Category("spear", "Speere",
+				List.of("textures/item/netherite_spear.png", "textures/item/diamond_spear.png"),
+				List.of("textures/item/*_spear.png", "textures/item/*_spear_in_hand.png", "models/item/*_spear*.json",
+						"items/*_spear.json")));
 		l.add(new Category("bow", "Bögen",
 				List.of("textures/item/bow.png"),
 				List.of("textures/item/bow.png", "textures/item/bow_pulling_*.png",

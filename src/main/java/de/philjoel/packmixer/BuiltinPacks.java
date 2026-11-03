@@ -21,13 +21,13 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 11;
+	public static final int VERSION = 15;
 
 	enum Style {
-		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO;
+		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO, V1XMAS;
 
 		boolean christmas() {
-			return this == CANDY || this == FROST || this == TREE;
+			return this == CANDY || this == FROST || this == TREE || this == V1XMAS;
 		}
 	}
 
@@ -61,6 +61,14 @@ public final class BuiltinPacks {
 		return new Theme(name, key, Style.DUO,
 				new int[]{0x202020, 0x505050, 0x909090, 0xC8C8C8, 0xFFFFFF}, new int[]{0x111118, 0x2A2A35, 0x45455A},
 				accent, crosshair, new int[]{0x303030, 0x9A9A9A, 0xFFFFFF});
+	}
+
+	/** Testohd23 V1 packs: clean duo colours + element animation (see V1Packs). */
+	private static Theme v1(String name, String key, String crosshair, Style style, int main, int accent) {
+		GRADIENTS.put(name, new int[]{main, accent});
+		return new Theme(name, key, style,
+				new int[]{0x202020, 0x505050, 0x909090, 0xC8C8C8, 0xFFFFFF}, new int[]{0x111118, 0x2A2A35, 0x45455A},
+				accent, crosshair, new int[]{darken(main, 0.4), main, accent});
 	}
 
 	static void duo(NativeImage img, int main, int accent) {
@@ -274,6 +282,15 @@ public final class BuiltinPacks {
 			gradient("Testohd Verlauf Lila Gold", "g_purplegold", "ring_dot", 0x5B0FB5, 0xB34BE0, 0xFFD700),
 			gradient("Testohd Verlauf Smaragd Gold", "g_emeraldgold", "small_plus", 0x0B6E4F, 0x3CCB7F, 0xF7D046),
 			gradient("Testohd Verlauf Weihnachten", "g_xmas", "tree", 0xE0102A, 0xFFD24A, 0x1EB846),
+			// ---- energy: dark / turquoise with a running light on mace and spears
+			duo("Testohd Energie Schwarz", "e_black", "ring_dot", 0x1A1D22, 0x2FD9C6),
+			duo("Testohd Energie Tuerkis", "e_teal", "circle", 0x0E9C92, 0xB8FFF6),
+			// ---- Testohd23 V1: element animations + animated crystals
+			v1("Testohd23 V1 Purple", "v1_purple", "ring_dot", Style.DUO, 0x6A22D0, 0xFF6FE0),
+			v1("Testohd23 V1 Orange", "v1_orange", "circle", Style.DUO, 0xC2360C, 0xFFC23A),
+			v1("Testohd23 V1 Black", "v1_black", "small_plus", Style.DUO, 0x22202A, 0x9B4DFF),
+			v1("Testohd23 V1 Turquoise", "v1_turquoise", "circle", Style.DUO, 0x0E9C92, 0xB8FFF6),
+			v1("Testohd Christmas V1 Turquoise", "v1_xmas", "snowflake", Style.V1XMAS, 0x18A8A4, 0xE6FFFC),
 			// ---- duo: clean colour + matching colour shift in the highlights
 			duo("Testohd Duo Lila Pink", "d_purplepink", "ring_dot", 0x7B2FE0, 0xFF7AD9),
 			duo("Testohd Duo Blau Cyan", "d_bluecyan", "small_plus", 0x1F4FE0, 0x5CF0FF),
@@ -302,7 +319,7 @@ public final class BuiltinPacks {
 	);
 
 	/** Shipped packs: everything clean. The busy pattern packs (stripes, camo, ...) are only listed so old copies get removed. */
-	static final List<Theme> THEMES = ALL_THEMES.stream().filter(t -> t.style() != Style.PATTERN).toList();
+	static final List<Theme> THEMES = ALL_THEMES.stream().filter(t -> t.style() != Style.PATTERN && !t.description().equals("frost")).toList();
 
 	private static final String[] MATERIALS = {"wooden", "stone", "copper", "iron", "golden", "diamond", "netherite"};
 	private static final String[] TOOLS = {"sword", "axe", "pickaxe", "shovel"};
@@ -327,6 +344,7 @@ public final class BuiltinPacks {
 
 	/** Folder / display name of a built-in pack: without the "Testohd" in front. */
 	public static String folder(Theme th) {
+		if (V1Packs.isV1(th.name)) return th.name; // the V1 packs keep their full name
 		return th.name.startsWith("Testohd ") ? th.name.substring(8) : th.name;
 	}
 
@@ -348,16 +366,19 @@ public final class BuiltinPacks {
 		List<String> favs = PackMixerConfig.settings().favorites;
 		boolean selChanged = false;
 		for (Theme old : ALL_THEMES) {
-			String newName = old.style() == Style.PATTERN ? null : folder(old);
+			String newName = old.style() == Style.PATTERN ? null
+					: old.description().equals("frost") ? "Testohd Christmas V1 Turquoise" // Frost became the V1 christmas pack
+					: folder(old);
 			if (!old.name().equals(newName)) deleteDir(PackMixerConfig.packsDir().resolve(old.name()));
-			if (newName == null) deleteDir(PackMixerConfig.packsDir().resolve(folder(old)));
+			if (newName == null || !newName.equals(folder(old))) deleteDir(PackMixerConfig.packsDir().resolve(folder(old)));
 			for (Map.Entry<String, String> e : sel.entrySet()) {
-				if (e.getValue().equals(old.name())) {
+				if (e.getValue().equals(old.name()) || (!folder(old).equals(newName) && e.getValue().equals(folder(old)))) {
 					e.setValue(newName);
 					selChanged = true;
 				}
 			}
-			for (int i = 0; i < favs.size(); i++) if (favs.get(i).equals(old.name())) favs.set(i, newName);
+			for (int i = 0; i < favs.size(); i++)
+				if (favs.get(i).equals(old.name()) || favs.get(i).equals(folder(old))) favs.set(i, newName);
 		}
 		sel.values().removeIf(java.util.Objects::isNull);
 		favs.removeIf(java.util.Objects::isNull);
@@ -371,6 +392,8 @@ public final class BuiltinPacks {
 			}
 		}
 		PackExtras.clearFields();
+		frostAnim = false;
+		V1Packs.current = null;
 	}
 
 	private static void deleteDir(Path dir) throws java.io.IOException {
@@ -384,6 +407,9 @@ public final class BuiltinPacks {
 
 	private static void generate(Theme th, Path root) throws Exception {
 		current = th;
+		frostAnim = th.style == Style.FROST;
+		V1Packs.V1 v1 = V1Packs.of(th.name);
+		V1Packs.current = v1 == null ? null : v1.element();
 		Path a = root.resolve("assets/minecraft/textures");
 		Files.createDirectories(a);
 
@@ -402,12 +428,20 @@ public final class BuiltinPacks {
 		for (String item : new String[]{"golden_apple", "totem_of_undying", "end_crystal", "experience_bottle",
 				"snowball", "wind_charge", "mace", "bow", "bow_pulling_0", "bow_pulling_1", "bow_pulling_2", "ender_pearl"}) {
 			String path = "item/" + item + ".png";
-			if (item.equals("ender_pearl") && th.style.christmas()) {
+			if (item.equals("ender_pearl") && th.style.christmas() && th.style != Style.V1XMAS) {
 				save(ornament(th), a.resolve(path)); // christmas bauble
 				continue;
 			}
 			NativeImage img = vanilla(path);
 			if (img == null) continue;
+			if (item.equals("totem_of_undying")) { // normal totem, only the eyes get the colour of the pack
+				totemEyes(img, eyeColor(th));
+				Theme keep = current;
+				current = null;
+				save(img, a.resolve(path));
+				current = keep;
+				continue;
+			}
 			if (item.startsWith("bow") || item.equals("mace")) recolorTool(img, th, true, 0);
 			else recolor(img, th.ramp, 0);
 			if (item.equals("totem_of_undying") && th.style.christmas() && th.style != Style.FROST) santaHat(img);
@@ -421,7 +455,7 @@ public final class BuiltinPacks {
 			if (img == null) continue;
 			recolor(img, block.equals("glowstone") ? brighter(th.ramp) : th.ramp, 0);
 			if (th.style == Style.TREE && block.equals("obsidian")) lights(img);
-			if (th.style == Style.FROST && block.equals("obsidian")) frost(img);
+			if ((th.style == Style.FROST || th.style == Style.V1XMAS) && block.equals("obsidian")) frost(img);
 			save(img, a.resolve(path));
 			copyMeta(path, a); // animated textures (respawn anchor top)
 		}
@@ -437,7 +471,7 @@ public final class BuiltinPacks {
 			}
 		}
 		// ---- cobweb
-		if (th.style == Style.FROST || th.style == Style.CANDY) {
+		if (th.style == Style.FROST || th.style == Style.CANDY || th.style == Style.V1XMAS) {
 			save(draw(SNOWFLAKE_16, Map.of('#', 0xFFFFFFFF, '+', 0xFFB9E3FF)), a.resolve("block/cobweb.png"));
 		} else {
 			NativeImage web = vanilla("block/cobweb.png");
@@ -468,6 +502,43 @@ public final class BuiltinPacks {
 
 		// ---- everything else: placed / worn / thrown things, GUI, sky
 		safe(() -> PackExtras.generate(th, a, root));
+		if (v1 != null) { // potions (bottle in the pack colour, animated) + animated shield
+			for (String pot : new String[]{"potion", "splash_potion", "lingering_potion"}) {
+				safe(() -> {
+					NativeImage img = vanilla("item/" + pot + ".png");
+					if (img == null) return;
+					recolor(img, th.ramp, 0);
+					save(img, a.resolve("item/" + pot + ".png"));
+				});
+			}
+			V1Packs.Element el = v1.element();
+			// shields live in a texture atlas, so a normal .mcmeta animation works there
+			for (String[] sh : new String[][]{{"entity/shield/base.png", "entity/shield_base.png"},
+					{"entity/shield/base_nopattern.png", "entity/shield_base_nopattern.png"}}) {
+				Path file = a.resolve(sh[0]);
+				Path src = Files.exists(file) ? file : a.resolve(sh[1]);
+				if (!Files.exists(src)) continue;
+				safe(() -> {
+					NativeImage img;
+					try (InputStream in = Files.newInputStream(src)) {
+						img = NativeImage.read(in);
+					}
+					NativeImage strip = V1Packs.animateBlock(img, el, Math.floorMod(sh[0].hashCode(), 9973), 64);
+					img.close();
+					Files.createDirectories(file.getParent());
+					strip.writeToFile(file);
+					strip.close();
+					Files.writeString(file.resolveSibling(file.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+				});
+			}
+		}
+		if (v1 != null) { // the animated end crystal of this pack
+			CrystalPacks.Design d = null;
+			for (CrystalPacks.Design c : CrystalPacks.DESIGNS) if (c.key().equals(v1.crystal())) d = c;
+			CrystalPacks.Design design = d;
+			if (design != null) safe(() -> CrystalPacks.writeInto(design, a));
+		}
+		V1Packs.current = null;
 
 		// ---- pack.mcmeta + icon
 		Files.writeString(root.resolve("pack.mcmeta"), """
@@ -546,11 +617,81 @@ public final class BuiltinPacks {
 		if (current != null && (styled || path.contains("/heart/"))) {
 			if (current.style == Style.GRADIENT) gradient(img, GRADIENTS.get(current.name));
 			else if (current.style == Style.PATTERN) pattern(img, PATTERNS.get(current.name));
-			else if (current.style == Style.DUO) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
+			else if (current.style == Style.DUO || current.style == Style.V1XMAS) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
 		}
 		Files.createDirectories(out.getParent());
+		if (V1Packs.current != null && path.contains("/entity/equipment/humanoid")) { // worn armor stays normal in V1
+			NativeImage orig = vanilla(path.substring(path.indexOf("/textures/") + 10));
+			if (orig != null) {
+				img.close();
+				img = orig;
+			}
+		}
+		if (V1Packs.current != null && img.getWidth() == img.getHeight() && (path.endsWith("/block/obsidian.png")
+				|| path.endsWith("/block/glowstone.png") || path.endsWith("/block/cobweb.png")
+				|| (path.contains("/block/respawn_anchor_") && !path.endsWith("_top.png")))) {
+			NativeImage strip = V1Packs.animateBlock(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973), 16);
+			img.close();
+			strip.writeToFile(out);
+			strip.close();
+			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+			return;
+		}
+		if (V1Packs.current != null && img.getWidth() == img.getHeight() && path.contains("/textures/item/")) {
+			V1Packs.Mode mode = V1Packs.mode(path);
+			if (mode == V1Packs.Mode.TOOL) { // weapons / tools: original colours from vanilla
+				NativeImage orig = vanilla(path.substring(path.indexOf("/textures/") + 10));
+				if (orig != null && orig.getWidth() == img.getWidth() && orig.getHeight() == img.getHeight()) {
+					img.close();
+					img = orig;
+				} else if (orig != null) orig.close();
+			}
+			NativeImage strip = V1Packs.animate(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973), mode);
+			img.close();
+			strip.writeToFile(out);
+			strip.close();
+			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+			return;
+		}
+		if (frostAnim && img.getWidth() == img.getHeight() && (path.contains("/textures/item/")
+				|| path.endsWith("/block/obsidian.png") || path.endsWith("/block/glowstone.png"))) {
+			NativeImage strip = frostStrip(img, path.hashCode());
+			img.close();
+			strip.writeToFile(out);
+			strip.close();
+			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+			return;
+		}
 		img.writeToFile(out);
 		img.close();
+	}
+
+	/** Frost pack is animated: an icy shine runs over every item, with small twinkles. */
+	static boolean frostAnim;
+
+	static NativeImage frostStrip(NativeImage img, int seed) {
+		int w = img.getWidth(), h = img.getHeight(), n = 16;
+		int u = Math.max(1, w / 16);
+		NativeImage out = new NativeImage(w, h * n, true);
+		for (int f = 0; f < n; f++) {
+			double pos = f / (double) n * 2.2 - 0.6;
+			for (int y = 0; y < h; y++)
+				for (int x = 0; x < w; x++) {
+					int p = img.getPixel(x, y);
+					int a = p >>> 24;
+					if (a < 10) {
+						out.setPixel(x, f * h + y, p);
+						continue;
+					}
+					double d = (x + (h - 1 - y)) / (double) (w + h - 2);
+					double band = Math.exp(-Math.pow((d - pos) * 8, 2)) * 0.7;
+					int c = gradientAt(new int[]{p & 0xFFFFFF, 0xEBFAFF}, band);
+					int tw = Math.floorMod(hash(x / u * 7 + seed, y / u * 13 + f * 101), 1000);
+					if (tw < 25) c = 0xFFFFFF;
+					out.setPixel(x, f * h + y, (a << 24) | c);
+				}
+		}
+		return out;
 	}
 
 	static int darken(int rgb, double k) {
@@ -713,6 +854,10 @@ public final class BuiltinPacks {
 			}
 	}
 
+	/** Energy packs: theme name -> colour of the running light on mace and spears. */
+	static final java.util.Map<String, Integer> ENERGY = java.util.Map.of(
+			"Testohd Energie Schwarz", 0x35F2DD, "Testohd Energie Tuerkis", 0xE6FFFC);
+
 	/** Galaxy colours: deep space -> indigo -> purple -> pink nebula -> cyan glow. */
 	static final int[] GALAXY = {0x070720, 0x1A1260, 0x4B1FA8, 0x9B3BD6, 0xF062C8, 0x7FE8FF};
 
@@ -746,6 +891,37 @@ public final class BuiltinPacks {
 				}
 				if (edge) col = PackExtras.mix(0x05030F, col, 0.35);
 				img.setPixel(x, y, (a << 24) | col);
+			}
+	}
+
+	/** Eye colour of a pack's totem: a bright version of its main colour (frost = light blue). */
+	static int eyeColor(Theme th) {
+		V1Packs.V1 v = V1Packs.of(th.name);
+		if (v != null) return v.eye();
+		if (th.style == Style.FROST) return 0x8FE3FF;
+		if (th.style == Style.CANDY) return 0xFF3B4E;
+		if (th.style == Style.TREE) return th.name.contains("Lebkuchen") ? 0xFFB347 : th.name.contains("Gold") ? 0xFFD24A : 0x3DFF6E;
+		if (th.style == Style.RAINBOW) return 0xFF4FD8;
+		if (th.style == Style.GALAXY) return 0xB46CFF;
+		int[] c = PackExtras.skyColors(th);
+		int col = c[1];
+		float[] hsb = java.awt.Color.RGBtoHSB((col >> 16) & 0xFF, (col >> 8) & 0xFF, col & 0xFF, null);
+		if (hsb[1] < 0.15f) return 0xF2F6FF;                 // grey / white packs: white eyes
+		return java.awt.Color.HSBtoRGB(hsb[0], Math.min(1f, hsb[1] * 1.1f + 0.1f), 1f) & 0xFFFFFF;
+	}
+
+	/** Recolours only the (green) eyes of the vanilla totem. */
+	static void totemEyes(NativeImage img, int eye) {
+		int dark = darker(eye, 0.62);
+		for (int y = 0; y < img.getHeight(); y++)
+			for (int x = 0; x < img.getWidth(); x++) {
+				int p = img.getPixel(x, y);
+				if ((p >>> 24) < 10) continue;
+				int r = (p >> 16) & 0xFF, g = (p >> 8) & 0xFF, b = p & 0xFF;
+				if (g > r + 60 && g > b + 20) { // green eye pixels
+					int c = g > 200 ? eye : dark;
+					img.setPixel(x, y, (p & 0xFF000000) | c);
+				}
 			}
 	}
 
@@ -863,7 +1039,7 @@ public final class BuiltinPacks {
 	private static NativeImage icon(Theme th, Path texturesRoot) throws Exception {
 		NativeImage icon = new NativeImage(64, 64, true);
 		for (int y = 0; y < 64; y++)
-			for (int x = 0; x < 64; x++) icon.setPixel(x, y, 0xFF000000 | (th.style == Style.GRADIENT || th.style == Style.DUO
+			for (int x = 0; x < 64; x++) icon.setPixel(x, y, 0xFF000000 | (th.style == Style.GRADIENT || th.style == Style.DUO || th.style == Style.V1XMAS
 					? darken(gradientAt(GRADIENTS.get(th.name), (x + 63 - y) / 126.0), 0.45)
 					: th.style == Style.PATTERN
 					? darken(gradientAt(PATTERNS.get(th.name).colors().length > 1 ? PATTERNS.get(th.name).colors()
@@ -873,7 +1049,7 @@ public final class BuiltinPacks {
 		if (Files.exists(sword)) {
 			try (InputStream in = Files.newInputStream(sword); NativeImage s = NativeImage.read(in)) {
 				int f = 48 / s.getWidth();
-				for (int y = 0; y < s.getHeight(); y++)
+				for (int y = 0; y < Math.min(s.getHeight(), s.getWidth()); y++)
 					for (int x = 0; x < s.getWidth(); x++) {
 						int p = s.getPixel(x, y);
 						if ((p >>> 24) < 10) continue;
