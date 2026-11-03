@@ -362,5 +362,12 @@
   "packmixer.hat.fx_energy": "Energie-Ringe",
   "packmixer.changelog.title": "Neu in Version %s",
   "packmixer.changelog.ok": "Cool!",
-  "packmixer.changelog.1.6.0": "Flügel\n• 5 neue V1-Flügel: Plasma, Inferno, Void, Energie, Frost\n• Alle Flügel neu: groß, animiert und sie schlagen richtig\nEffekte\n• Neu: Inferno-Tornado, Plasma-Kugeln, Frost-Ring, Energie-Ringe\n• V1-Flügel sprühen Partikel in ihrer Farbe\nSonstiges\n• Dieses Fenster zeigt dir nach jedem Update, was neu ist"
+  "packmixer.changelog.1.6.0": "Flügel\n• 5 neue V1-Flügel: Plasma, Inferno, Void, Energie, Frost\n• Alle Flügel neu: groß, animiert und sie schlagen richtig\nHüte\n• 4 V1-Kronen (Inferno, Plasma, Frost, Void) und 3 Heiligenscheine\nEffekte\n• Neu: Inferno-Tornado, Plasma-Kugeln, Frost-Ring, Energie-Ringe\nSonstiges\n• Dieses Fenster zeigt dir nach jedem Update, was neu ist",
+  "packmixer.hat.inferno_crown": "V1 Inferno-Krone",
+  "packmixer.hat.plasma_crown": "V1 Plasma-Krone",
+  "packmixer.hat.frost_crown": "V1 Frost-Krone",
+  "packmixer.hat.void_crown": "V1 Void-Krone",
+  "packmixer.hat.energy_halo": "V1 Energie-Heiligenschein",
+  "packmixer.hat.void_halo": "V1 Void-Heiligenschein",
+  "packmixer.hat.divine_halo": "Göttlicher Heiligenschein"
 }
