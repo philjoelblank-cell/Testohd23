@@ -295,27 +295,88 @@ final class AutoTest {
 		});
 	}
 
-	/** Video in CI: the workflow films the screen between these two marker files. */
+	// ---- video in CI: every tick the picture is read back from the game and piped into ffmpeg
+	private static Process video;
+	private static java.io.OutputStream videoIn;
+	private static final java.util.concurrent.BlockingQueue<byte[]> videoFrames = new java.util.concurrent.ArrayBlockingQueue<>(64);
+	private static int vw, vh;
+
 	private static void startVideo(Minecraft mc, String name) {
-		marker(mc, "video.start");
+		try {
+			vw = mc.getMainRenderTarget().width / 2;
+			vh = mc.getMainRenderTarget().height / 2;
+			vw -= vw % 2;
+			vh -= vh % 2;
+			java.nio.file.Path out = mc.gameDirectory.toPath().resolve("screenshots").resolve(name + ".mp4");
+			java.nio.file.Files.createDirectories(out.getParent());
+			video = new ProcessBuilder("ffmpeg", "-y", "-loglevel", "warning", "-f", "rawvideo", "-pix_fmt", "rgba",
+					"-s", vw + "x" + vh, "-r", "20", "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+					"-pix_fmt", "yuv420p", out.toString()).redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
+			videoIn = new java.io.BufferedOutputStream(video.getOutputStream(), 1 << 20);
+			Thread t = new Thread(() -> {
+				try {
+					while (true) {
+						byte[] f = videoFrames.take();
+						if (f.length == 0) break;
+						videoIn.write(f);
+					}
+					videoIn.close();
+				} catch (Exception e) {
+					PackMixerClient.LOGGER.error("autotest: video writer", e);
+				}
+			}, "autotest video");
+			t.setDaemon(true);
+			t.start();
+			PackMixerClient.LOGGER.info("autotest: recording {}x{}", vw, vh);
+		} catch (Exception e) {
+			PackMixerClient.LOGGER.error("autotest: video failed", e);
+			video = null;
+		}
+	}
+
+	private static void captureFrame(Minecraft mc) {
+		Screenshot.takeScreenshot(mc.getMainRenderTarget(), 2, img -> {
+			try {
+				if (video == null) return;
+				byte[] buf = new byte[vw * vh * 4];
+				int w = Math.min(vw, img.getWidth()), h = Math.min(vh, img.getHeight());
+				for (int y = 0; y < h; y++)
+					for (int x = 0; x < w; x++) {
+						int p = img.getPixel(x, y), i = (y * vw + x) * 4;
+						buf[i] = (byte) (p >> 16);
+						buf[i + 1] = (byte) (p >> 8);
+						buf[i + 2] = (byte) p;
+						buf[i + 3] = (byte) 255;
+					}
+				videoFrames.offer(buf);
+			} finally {
+				img.close();
+			}
+		});
 	}
 
 	private static void stopVideo() {
-		marker(Minecraft.getInstance(), "video.stop");
-	}
-
-	private static void marker(Minecraft mc, String file) {
+		if (video == null) return;
+		Process p = video;
+		video = null;
 		try {
-			java.nio.file.Path p = mc.gameDirectory.toPath().resolve("screenshots").resolve(file);
-			java.nio.file.Files.createDirectories(p.getParent());
-			java.nio.file.Files.writeString(p, "x");
+			videoFrames.put(new byte[0]);
+			p.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
 		} catch (Exception e) {
-			PackMixerClient.LOGGER.error("autotest: marker failed", e);
+			p.destroy();
 		}
 	}
 
 	static void tick(Minecraft mc) {
 		if (!ENABLED) return;
+		if (video != null && mc.level != null) {
+			try {
+				captureFrame(mc);
+			} catch (Throwable e) {
+				PackMixerClient.LOGGER.error("autotest: frame", e);
+				video = null;
+			}
+		}
 		if (!started) {
 			started = true;
 			plan(mc);
