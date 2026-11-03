@@ -356,7 +356,7 @@ public class PackMixerScreen extends Screen {
 			if (event.x() < c.getX() || event.x() >= c.getX() + c.getWidth() || event.y() < c.getY() || event.y() >= c.getY() + c.getHeight())
 				continue;
 			boolean onStar = event.x() >= c.getX() + c.getWidth() - 12 && event.y() < c.getY() + 12;
-			boolean shift = (event.modifiers() & org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT) != 0;
+			boolean shift = (event.modifiers() & 0x1) != 0;
 			if (c.pack() != null && (onStar || shift)) {
 				List<String> favs = PackMixerConfig.settings().favorites;
 				if (!favs.remove(c.pack().name)) favs.add(c.pack().name);
