@@ -25,7 +25,19 @@ jobs:
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
           MESA_GL_VERSION_OVERRIDE: "4.5"
-        run: timeout 35m xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew runClient --no-configuration-cache -Ptestohd_autotest || true
+        run: |
+          mkdir -p run/screenshots
+          # video: the test writes video.start / video.stop, ffmpeg films the virtual screen in between
+          ( while [ ! -f run/screenshots/video.start ]; do sleep 1; done
+            ffmpeg -y -loglevel warning -f x11grab -framerate 20 -video_size 1920x1080 -i :99 -vf scale=1280:-2 \
+              -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p /tmp/v1_video.mp4 &
+            FF=$!
+            while [ ! -f run/screenshots/video.stop ]; do sleep 1; done
+            kill -INT $FF; wait $FF ) &
+          timeout 35m xvfb-run -n 99 -s "-screen 0 1920x1080x24" ./gradlew runClient --no-configuration-cache -Ptestohd_autotest || true
+          sleep 8
+          rm -f run/screenshots/video.start run/screenshots/video.stop
+          cp /tmp/v1_video.mp4 run/screenshots/ 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:

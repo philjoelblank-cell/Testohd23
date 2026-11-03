@@ -295,34 +295,23 @@ final class AutoTest {
 		});
 	}
 
-	private static Process video;
-
-	/** Records the virtual screen with ffmpeg (CI only). */
+	/** Video in CI: the workflow films the screen between these two marker files. */
 	private static void startVideo(Minecraft mc, String name) {
-		try {
-			String display = System.getenv("DISPLAY");
-			if (display == null) return;
-			java.nio.file.Path out = mc.gameDirectory.toPath().resolve("screenshots").resolve(name + ".mp4");
-			java.nio.file.Files.createDirectories(out.getParent());
-			video = new ProcessBuilder("ffmpeg", "-y", "-loglevel", "error", "-f", "x11grab", "-framerate", "20",
-					"-video_size", "1920x1080", "-i", display,
-					"-vf", "scale=1280:-2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "26", "-pix_fmt", "yuv420p",
-					out.toString()).redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
-		} catch (Exception e) {
-			PackMixerClient.LOGGER.error("autotest: video failed", e);
-		}
+		marker(mc, "video.start");
 	}
 
 	private static void stopVideo() {
-		if (video == null) return;
+		marker(Minecraft.getInstance(), "video.stop");
+	}
+
+	private static void marker(Minecraft mc, String file) {
 		try {
-			video.getOutputStream().write('q');
-			video.getOutputStream().flush();
-			video.waitFor(20, java.util.concurrent.TimeUnit.SECONDS);
+			java.nio.file.Path p = mc.gameDirectory.toPath().resolve("screenshots").resolve(file);
+			java.nio.file.Files.createDirectories(p.getParent());
+			java.nio.file.Files.writeString(p, "x");
 		} catch (Exception e) {
-			video.destroy();
+			PackMixerClient.LOGGER.error("autotest: marker failed", e);
 		}
-		video = null;
 	}
 
 	static void tick(Minecraft mc) {
