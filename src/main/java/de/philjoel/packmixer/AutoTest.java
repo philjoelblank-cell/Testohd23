@@ -214,7 +214,7 @@ final class AutoTest {
 		command("advancement grant @p everything");
 		step("video start", 40, () -> {
 			try {
-				mc.getToastManager().clear();
+				clearToasts(mc);
 			} catch (Throwable ignored) {
 			}
 			startVideo(mc, "v1_video");
@@ -247,26 +247,26 @@ final class AutoTest {
 				command("item replace entity @p weapon.mainhand with " + item);
 				step("hold " + item, 24, () -> { });
 				if (item.equals("netherite_sword") || item.equals("mace")) {
-					step("swing " + item, 14, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+					step("swing " + item, 14, () -> swing(mc));
 				}
 			}
 			// place: obsidian + crystal, anchor charged with glowstone
-			step("place obsidian " + tag, 8, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			step("place obsidian " + tag, 8, () -> swing(mc));
 			command("setblock 0 200 4 obsidian");
 			command("item replace entity @p weapon.mainhand with end_crystal");
 			step("hold crystal " + tag, 18, () -> { });
-			step("place crystal " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			step("place crystal " + tag, 2, () -> swing(mc));
 			command("summon end_crystal 0.5 201 4.5 {ShowBottom:0b}");
 			step("look crystal " + tag, 22, () -> { });
 			command("item replace entity @p weapon.mainhand with respawn_anchor");
 			step("hold anchor " + tag, 18, () -> { });
-			step("place anchor " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			step("place anchor " + tag, 2, () -> swing(mc));
 			command("setblock 2 200 4 respawn_anchor");
 			command("item replace entity @p weapon.mainhand with glowstone");
 			step("hold glowstone " + tag, 18, () -> { });
 			for (int ch = 1; ch <= 4; ch++) {
 				int charge = ch;
-				step("charge " + ch + " " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+				step("charge " + ch + " " + tag, 2, () -> swing(mc));
 				command("setblock 2 200 4 respawn_anchor[charges=" + charge + "]");
 				step("charged " + ch + " " + tag, 8, () -> { });
 			}
@@ -274,7 +274,7 @@ final class AutoTest {
 			shot("v1_" + tag + "_placed");
 			step("admire " + tag, 30, () -> { });
 			command("item replace entity @p weapon.mainhand with netherite_sword");
-			step("hit " + tag, 8, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			step("hit " + tag, 8, () -> swing(mc));
 			command("execute at @p run damage @e[type=end_crystal,limit=1,sort=nearest] 1");
 			step("boom " + tag, 3, () -> { });
 			shot("v1_" + tag + "_boom");
@@ -370,11 +370,35 @@ final class AutoTest {
 		}
 	}
 
+	/** Arm swing (the method changed between versions, so it is looked up). */
+	private static void swing(Minecraft mc) {
+		for (java.lang.reflect.Method m : mc.player.getClass().getMethods()) {
+			if (!m.getName().equals("swing") || m.getParameterCount() == 0
+					|| m.getParameterTypes()[0] != net.minecraft.world.InteractionHand.class) continue;
+			try {
+				if (m.getParameterCount() == 1) m.invoke(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+				else if (m.getParameterCount() == 2 && m.getParameterTypes()[1] == boolean.class)
+					m.invoke(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, false);
+				else continue;
+				return;
+			} catch (Exception ignored) {
+			}
+		}
+	}
+
+	private static void clearToasts(Minecraft mc) {
+		try {
+			Object tm = mc.getClass().getMethod("getToastManager").invoke(mc);
+			tm.getClass().getMethod("clear").invoke(tm);
+		} catch (Throwable ignored) {
+		}
+	}
+
 	static void tick(Minecraft mc) {
 		if (!ENABLED) return;
 		if (video != null && mc.level != null && mc.gui.overlay() == null) { // loading screens are left out
 			try {
-				mc.getToastManager().clear(); // no "recipe unlocked" popups in the video
+				clearToasts(mc); // no "recipe unlocked" popups in the video
 				captureFrame(mc);
 			} catch (Throwable e) {
 				PackMixerClient.LOGGER.error("autotest: frame", e);
