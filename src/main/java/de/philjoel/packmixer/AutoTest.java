@@ -322,6 +322,16 @@ final class AutoTest {
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });
 		shot("world_hud");
+		step("small particles", 5, () -> PackMixerConfig.settings().particleSize = 0.4);
+		command("particle minecraft:crit ~ ~1 ~2 0.5 0.5 0.5 0.1 80");
+		command("particle minecraft:explosion ~1 ~1 ~3 0 0 0 0 1");
+		step("wait particles", 3, () -> { });
+		shot("particles_small");
+		step("big particles", 5, () -> PackMixerConfig.settings().particleSize = 1.0);
+		command("particle minecraft:crit ~ ~1 ~2 0.5 0.5 0.5 0.1 80");
+		command("particle minecraft:explosion ~1 ~1 ~3 0 0 0 0 1");
+		step("wait particles 2", 3, () -> { });
+		shot("particles_normal");
 		command("setblock ~ ~ ~ fire");
 		step("burn", 25, () -> { });
 		shot("world_fire");

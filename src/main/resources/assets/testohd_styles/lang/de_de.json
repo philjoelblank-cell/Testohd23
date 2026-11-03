@@ -411,5 +411,7 @@
   "packmixer.feature.background.desc": "Das Bild hinter allen Testohd-Menüs",
   "packmixer.pack.testohd23_v1_white": "Testohd23 V1 White",
   "packmixer.pack.desc.v1_white": "§fHoly §7– animiert, mit Kristall – Made by Testohd23",
-  "packmixer.changelog.1.8.0": "Neues Pack\n• Testohd23 V1 White: Holy-Licht über allen Items, mit eigenem Kristall"
+  "packmixer.changelog.1.8.0": "Neues Pack\n• Testohd23 V1 White: Holy-Licht über allen Items, mit eigenem Kristall",
+  "packmixer.settings.particle_size": "Partikel-Größe",
+  "packmixer.changelog.1.8.1": "Neu\n• Kleine Partikel: Einstellungen → Partikel → Partikel-Größe"
 }

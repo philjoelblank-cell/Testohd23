@@ -185,6 +185,8 @@ public final class PackMixerConfig {
 		public String lastChangelog = "";
 		/** Picture behind the menus (see Ui.BACKGROUNDS). */
 		public String menuBackground = "purple";
+		/** Size of all particles, 0.2 .. 1 (small particles for PvP). */
+		public double particleSize = 1.0;
 	}
 
 	private static Settings settings;
