@@ -1,0 +1,41 @@
+{
+ "textures": {
+  "w": "testohd_styles:item/wing_devil",
+  "particle": "testohd_styles:item/wing_devil"
+ },
+ "elements": [
+  {
+   "from": [
+    8,
+    -2,
+    8
+   ],
+   "to": [
+    32,
+    30,
+    8
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      16,
+      0,
+      0,
+      16
+     ],
+     "texture": "#w"
+    },
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    }
+   },
+   "light_emission": 6
+  }
+ ]
+}

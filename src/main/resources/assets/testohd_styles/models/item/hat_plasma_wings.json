@@ -1,0 +1,111 @@
+{
+ "textures": {
+  "w": "testohd_styles:item/wing_plasma",
+  "particle": "testohd_styles:item/wing_plasma"
+ },
+ "elements": [
+  {
+   "from": [
+    -16,
+    -2,
+    8
+   ],
+   "to": [
+    8,
+    30,
+    8
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    },
+    "north": {
+     "uv": [
+      16,
+      0,
+      0,
+      16
+     ],
+     "texture": "#w"
+    }
+   },
+   "light_emission": 15,
+   "rotation": {
+    "origin": [
+     8,
+     14,
+     8
+    ],
+    "axis": "y",
+    "angle": 22.5
+   }
+  },
+  {
+   "from": [
+    8,
+    -2,
+    8
+   ],
+   "to": [
+    32,
+    30,
+    8
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      16,
+      0,
+      0,
+      16
+     ],
+     "texture": "#w"
+    },
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    }
+   },
+   "light_emission": 15,
+   "rotation": {
+    "origin": [
+     8,
+     14,
+     8
+    ],
+    "axis": "y",
+    "angle": -22.5
+   }
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    10,
+    180,
+    0
+   ],
+   "translation": [
+    0,
+    -1,
+    0
+   ],
+   "scale": [
+    0.36,
+    0.36,
+    0.36
+   ]
+  }
+ }
+}

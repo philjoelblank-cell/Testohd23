@@ -74,6 +74,10 @@ final class AutoTest {
 				shot("settings_s" + scale + "_" + entry);
 				if (scale != 3) break;
 			}
+			if (scale == 3) {
+				step("changelog", 20, () -> mc.setScreen(new ChangelogScreen(null, "1.6.0")));
+				shot("changelog_s3");
+			}
 			for (Cosmetics.Slot slot : Cosmetics.Slot.values()) {
 				step("cosmetics " + slot, 20, () -> {
 					CosmeticsScreen.lastSlot = slot;
@@ -170,6 +174,19 @@ final class AutoTest {
 		shot("world_wings_front");
 		step("totem", 40, () -> Cosmetics.Slot.EFFECT.set("fx_totem"));
 		shot("world_fx_totem");
+		for (String w : new String[]{"plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "angel_wings", "devil_wings"}) {
+			step("wing " + w, 30, () -> {
+				Cosmetics.Slot.BACK.set(w);
+				Cosmetics.Slot.EFFECT.set("");
+				Cosmetics.Slot.HEAD.set("");
+				mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+				mc.player.setXRot(12);
+			});
+			shot("wing_" + w + "_back");
+			step("wing side " + w, 12, () -> mc.player.setYRot(mc.player.getYRot() + 60));
+			shot("wing_" + w + "_side");
+			step("wing back " + w, 2, () -> mc.player.setYRot(mc.player.getYRot() - 60));
+		}
 		command("item replace entity @p weapon.mainhand with netherite_spear[enchantments={sharpness:1}]");
 		command("item replace entity @p weapon.offhand with mace");
 		command("item replace entity @p armor.chest with netherite_chestplate");

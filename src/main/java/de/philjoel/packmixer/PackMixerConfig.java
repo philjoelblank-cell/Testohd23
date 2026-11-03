@@ -181,6 +181,8 @@ public final class PackMixerConfig {
 
 		// Updates from GitHub
 		public boolean autoUpdate = true;
+		/** Version whose changelog was shown last. */
+		public String lastChangelog = "";
 	}
 
 	private static Settings settings;

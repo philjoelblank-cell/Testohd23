@@ -195,13 +195,17 @@ public class CosmeticsScreen extends Screen {
 			java.util.Map.entry("fx_snow", "❄"), java.util.Map.entry("fx_cherry", "✿"), java.util.Map.entry("fx_enchant", "✧"),
 			java.util.Map.entry("fx_hearts", "♥"), java.util.Map.entry("fx_notes", "♪"), java.util.Map.entry("fx_rainbow", "◎"),
 			java.util.Map.entry("fx_galaxy", "✪"), java.util.Map.entry("fx_totem", "✵"), java.util.Map.entry("fx_lightning", "⚡"),
-			java.util.Map.entry("fx_void", "●"), java.util.Map.entry("fx_lightwings", "❦"));
+			java.util.Map.entry("fx_void", "●"), java.util.Map.entry("fx_lightwings", "❦"),
+			java.util.Map.entry("fx_inferno", "✹"), java.util.Map.entry("fx_plasma", "✺"), java.util.Map.entry("fx_frost", "❄"),
+			java.util.Map.entry("fx_energy", "◎"));
 	private static final java.util.Map<String, Integer> EFFECT_COLOR = java.util.Map.ofEntries(
 			java.util.Map.entry("fx_sparkle", 0xFFFFF4C0), java.util.Map.entry("fx_souls", 0xFF5FE6FF), java.util.Map.entry("fx_flames", 0xFFFF8A2A),
 			java.util.Map.entry("fx_snow", 0xFFDFF4FF), java.util.Map.entry("fx_cherry", 0xFFFFA8D8), java.util.Map.entry("fx_enchant", 0xFFB38CFF),
 			java.util.Map.entry("fx_hearts", 0xFFFF4D6A), java.util.Map.entry("fx_notes", 0xFF6BFF8F), java.util.Map.entry("fx_rainbow", 0xFFFF7AD9),
 			java.util.Map.entry("fx_galaxy", 0xFF8A6CFF), java.util.Map.entry("fx_totem", 0xFFB6FF4A), java.util.Map.entry("fx_lightning", 0xFF7DF9FF),
-			java.util.Map.entry("fx_void", 0xFF9B30FF), java.util.Map.entry("fx_lightwings", 0xFFFFF6D0));
+			java.util.Map.entry("fx_void", 0xFF9B30FF), java.util.Map.entry("fx_lightwings", 0xFFFFF6D0),
+			java.util.Map.entry("fx_inferno", 0xFFFF3A1A), java.util.Map.entry("fx_plasma", 0xFFFF4FD8), java.util.Map.entry("fx_frost", 0xFF8FF5EA),
+			java.util.Map.entry("fx_energy", 0xFF35F2DD));
 
 	@Override
 	public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
