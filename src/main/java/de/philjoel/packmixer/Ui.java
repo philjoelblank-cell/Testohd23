@@ -444,7 +444,9 @@ public final class Ui {
 
 	public static void drawFlat(GuiGraphics g, PreviewCache.Preview p, int x, int y, int size, int color) {
 		int frameH = Math.min(p.width(), p.height());
-		g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x, y, 0f, 0f, size, size, p.width(), frameH, p.width(), p.height(), color);
+		int frames = Math.max(1, p.height() / Math.max(1, frameH));
+		int f = frames > 1 ? (int) (time() * 10) % frames : 0; // animated block textures play in the 3D preview too
+		g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x, y, 0f, (float) (f * frameH), size, size, p.width(), frameH, p.width(), p.height(), color);
 	}
 
 	/** Static isometric cube (kept for older callers). */

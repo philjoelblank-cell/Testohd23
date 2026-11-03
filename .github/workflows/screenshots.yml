@@ -19,7 +19,7 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - name: virtual screen
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb mesa-utils libgl1-mesa-dri > /dev/null
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb mesa-utils libgl1-mesa-dri ffmpeg > /dev/null
       - run: chmod +x ./gradlew
       - name: run the game
         env:

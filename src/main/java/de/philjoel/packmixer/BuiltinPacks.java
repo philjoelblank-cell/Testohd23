@@ -502,6 +502,36 @@ public final class BuiltinPacks {
 
 		// ---- everything else: placed / worn / thrown things, GUI, sky
 		safe(() -> PackExtras.generate(th, a, root));
+		if (v1 != null) { // potions (bottle in the pack colour, animated) + animated shield
+			for (String pot : new String[]{"potion", "splash_potion", "lingering_potion"}) {
+				safe(() -> {
+					NativeImage img = vanilla("item/" + pot + ".png");
+					if (img == null) return;
+					recolor(img, th.ramp, 0);
+					save(img, a.resolve("item/" + pot + ".png"));
+				});
+			}
+			V1Packs.Element el = v1.element();
+			// shields live in a texture atlas, so a normal .mcmeta animation works there
+			for (String[] sh : new String[][]{{"entity/shield/base.png", "entity/shield_base.png"},
+					{"entity/shield/base_nopattern.png", "entity/shield_base_nopattern.png"}}) {
+				Path file = a.resolve(sh[0]);
+				Path src = Files.exists(file) ? file : a.resolve(sh[1]);
+				if (!Files.exists(src)) continue;
+				safe(() -> {
+					NativeImage img;
+					try (InputStream in = Files.newInputStream(src)) {
+						img = NativeImage.read(in);
+					}
+					NativeImage strip = V1Packs.animateBlock(img, el, Math.floorMod(sh[0].hashCode(), 9973), 64);
+					img.close();
+					Files.createDirectories(file.getParent());
+					strip.writeToFile(file);
+					strip.close();
+					Files.writeString(file.resolveSibling(file.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+				});
+			}
+		}
 		if (v1 != null) { // the animated end crystal of this pack
 			CrystalPacks.Design d = null;
 			for (CrystalPacks.Design c : CrystalPacks.DESIGNS) if (c.key().equals(v1.crystal())) d = c;
@@ -587,6 +617,16 @@ public final class BuiltinPacks {
 			else if (current.style == Style.DUO || current.style == Style.V1XMAS) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
 		}
 		Files.createDirectories(out.getParent());
+		if (V1Packs.current != null && img.getWidth() == img.getHeight() && (path.endsWith("/block/obsidian.png")
+				|| path.endsWith("/block/glowstone.png") || path.endsWith("/block/cobweb.png")
+				|| (path.contains("/block/respawn_anchor_") && !path.endsWith("_top.png")))) {
+			NativeImage strip = V1Packs.animateBlock(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973), 16);
+			img.close();
+			strip.writeToFile(out);
+			strip.close();
+			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
+			return;
+		}
 		if (V1Packs.current != null && img.getWidth() == img.getHeight() && path.contains("/textures/item/")) {
 			NativeImage strip = V1Packs.animate(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973));
 			img.close();

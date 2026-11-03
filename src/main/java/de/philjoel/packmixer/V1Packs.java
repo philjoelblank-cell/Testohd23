@@ -117,6 +117,40 @@ final class V1Packs {
 		return out;
 	}
 
+	/**
+	 * Blocks and big entity textures (anchor, glowstone, obsidian, shield): a soft wave of the element runs
+	 * diagonally over the texture with a bright edge and sparkles, then the texture rests for a moment.
+	 * @param grid art pixels per row (16 for blocks, 64 for entity textures)
+	 */
+	static NativeImage animateBlock(NativeImage img, Element el, int seed, int grid) {
+		int w = img.getWidth(), h = img.getHeight();
+		double u = Math.max(1, w / (double) grid);
+		int gw = (int) Math.round(w / u), gh = (int) Math.round(h / u);
+		NativeImage out = new NativeImage(w, h * FRAMES, true);
+		for (int f = 0; f < FRAMES; f++) {
+			double pos = -0.35 + 1.75 * f / (FRAMES - 1.0);
+			for (int y = 0; y < h; y++)
+				for (int x = 0; x < w; x++) {
+					int p = img.getPixel(x, y);
+					int a = p >>> 24;
+					if (a < 10) {
+						out.setPixel(x, f * h + y, p);
+						continue;
+					}
+					int gx = (int) (x / u), gy = (int) (y / u);
+					double d = (gx + (gh - 1 - gy)) / (double) Math.max(1, gw + gh - 2) + (rnd(gx, gy, seed) - 0.5) * 0.08;
+					double band = Math.exp(-Math.pow((d - pos) * 4.5, 2));
+					double l = BuiltinPacks.lum(p) / 255.0;
+					int c = p & 0xFFFFFF;
+					if (band > 0.02) c = mix(c, material(el, l, gx, gy, f, false, seed), band * 0.85);
+					if (Math.abs(d - pos) < 0.035) c = mix(c, rim(el), 0.6);
+					if (band > 0.25 && rnd(gx, gy, seed + f * 13) > 0.975) c = rim(el);
+					out.setPixel(x, f * h + y, (a << 24) | c);
+				}
+		}
+		return out;
+	}
+
 	private static boolean edge(boolean[] solid, int w, int h, int x, int y, int r) {
 		for (int[] dd : new int[][]{{r, 0}, {-r, 0}, {0, r}, {0, -r}}) {
 			int nx = x + dd[0], ny = y + dd[1];

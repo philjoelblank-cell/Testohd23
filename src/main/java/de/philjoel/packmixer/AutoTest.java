@@ -205,9 +205,20 @@ final class AutoTest {
 		command("item replace entity @p weapon.mainhand with air");
 		command("item replace entity @p weapon.offhand with end_crystal");
 		command("time set 6000");
+		// ---- video: every V1 pack, all items in the hand, then crystal + anchor placed
+		command("gamemode creative @p");
+		command("time set 6000");
+		command("weather clear");
+		step("video start", 5, () -> {
+			try {
+				mc.getToastManager().clear();
+			} catch (Throwable ignored) {
+			}
+			startVideo(mc, "v1_video");
+		});
 		for (V1Packs.V1 v : V1Packs.PACKS) {
 			String tag = v.name().replace("Testohd23 V1 ", "v1_").replace("Testohd Christmas V1 ", "xmas_").toLowerCase();
-			step("v1 " + tag, 10, () -> {
+			step("v1 " + tag, 2, () -> {
 				Map<String, String> sel = new LinkedHashMap<>();
 				for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, v.name());
 				PackMixerConfig.saveSelection(sel);
@@ -215,26 +226,58 @@ final class AutoTest {
 			});
 			when("reload " + tag, () -> mc.getOverlay() == null, () -> { });
 			command("kill @e[type=end_crystal]");
+			command("kill @e[type=item]");
 			command("fill -12 199 -4 12 199 18 smooth_quartz");
 			command("fill -12 200 -4 12 214 18 air");
 			command("tp @p 0.5 200 0.5 0 0");
-			command("summon end_crystal 0.5 200 7.5");
-			command("item replace entity @p weapon.mainhand with netherite_sword");
-			command("item replace entity @p weapon.offhand with end_crystal");
-			step("look " + tag, 30, () -> {
-				mc.options.fov().set(50);
+			command("clear @p");
+			command("item replace entity @p weapon.offhand with shield");
+			step("look " + tag, 10, () -> {
+				mc.options.fov().set(70);
 				mc.options.setCameraType(CameraType.FIRST_PERSON);
 				mc.player.setYRot(0);
-				mc.player.setXRot(5);
+				mc.player.setXRot(18);
 			});
-			shot("v1_" + tag + "_a");
-			step("wait " + tag, 32, () -> { });
-			shot("v1_" + tag + "_b");
+			for (String item : new String[]{"netherite_sword", "diamond_sword", "netherite_pickaxe", "netherite_axe", "mace",
+					"netherite_spear", "bow", "totem_of_undying", "ender_pearl", "golden_apple", "splash_potion[potion_contents={potion:\"minecraft:strength\"}]",
+					"obsidian"}) {
+				command("item replace entity @p weapon.mainhand with " + item);
+				step("hold " + item, 24, () -> { });
+				if (item.equals("netherite_sword") || item.equals("mace")) {
+					step("swing " + item, 14, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+				}
+			}
+			// place: obsidian + crystal, anchor charged with glowstone
+			step("place obsidian " + tag, 8, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			command("setblock 0 200 4 obsidian");
+			command("item replace entity @p weapon.mainhand with end_crystal");
+			step("hold crystal " + tag, 18, () -> { });
+			step("place crystal " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			command("summon end_crystal 0.5 201 4.5");
+			step("look crystal " + tag, 22, () -> { });
+			command("item replace entity @p weapon.mainhand with respawn_anchor");
+			step("hold anchor " + tag, 18, () -> { });
+			step("place anchor " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+			command("setblock 2 200 4 respawn_anchor");
+			command("item replace entity @p weapon.mainhand with glowstone");
+			step("hold glowstone " + tag, 18, () -> { });
+			for (int ch = 1; ch <= 4; ch++) {
+				int charge = ch;
+				step("charge " + ch + " " + tag, 2, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
+				command("setblock 2 200 4 respawn_anchor[charges=" + charge + "]");
+				step("charged " + ch + " " + tag, 8, () -> { });
+			}
+			step("look both " + tag, 6, () -> mc.player.setYRot(8));
+			shot("v1_" + tag + "_placed");
+			step("admire " + tag, 30, () -> { });
+			command("item replace entity @p weapon.mainhand with netherite_sword");
+			step("hit " + tag, 8, () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND));
 			command("execute at @p run damage @e[type=end_crystal,limit=1,sort=nearest] 1");
 			step("boom " + tag, 3, () -> { });
 			shot("v1_" + tag + "_boom");
-			step("after " + tag, 30, () -> mc.options.fov().set(70));
+			step("after " + tag, 40, () -> { });
 		}
+		step("video stop", 5, AutoTest::stopVideo);
 		step("hud", 10, () -> mc.options.setCameraType(CameraType.FIRST_PERSON));
 		command("gamemode survival @p");
 		step("wait hud", 30, () -> { });
@@ -250,6 +293,36 @@ final class AutoTest {
 			mc.setScreen(null);
 			mc.stop();
 		});
+	}
+
+	private static Process video;
+
+	/** Records the virtual screen with ffmpeg (CI only). */
+	private static void startVideo(Minecraft mc, String name) {
+		try {
+			String display = System.getenv("DISPLAY");
+			if (display == null) return;
+			java.nio.file.Path out = mc.gameDirectory.toPath().resolve("screenshots").resolve(name + ".mp4");
+			java.nio.file.Files.createDirectories(out.getParent());
+			video = new ProcessBuilder("ffmpeg", "-y", "-loglevel", "error", "-f", "x11grab", "-framerate", "20",
+					"-video_size", "1920x1080", "-i", display,
+					"-vf", "scale=1280:-2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "26", "-pix_fmt", "yuv420p",
+					out.toString()).redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
+		} catch (Exception e) {
+			PackMixerClient.LOGGER.error("autotest: video failed", e);
+		}
+	}
+
+	private static void stopVideo() {
+		if (video == null) return;
+		try {
+			video.getOutputStream().write('q');
+			video.getOutputStream().flush();
+			video.waitFor(20, java.util.concurrent.TimeUnit.SECONDS);
+		} catch (Exception e) {
+			video.destroy();
+		}
+		video = null;
 	}
 
 	static void tick(Minecraft mc) {
