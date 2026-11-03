@@ -128,31 +128,31 @@ final class AutoTest {
 		step("settle", 200, () -> { });
 		// regression: left click on a pack card must choose it (a player could only add favourites)
 		step("click test open", 20, () -> {
-			mc.setScreen(new PackMixerScreen(null));
+			mc.gui.setScreen(new PackMixerScreen(null));
 		});
 		step("click test cat", 20, () -> {
-			if (mc.screen instanceof PackMixerScreen s) s.testSelect(2);
+			if (mc.gui.screen() instanceof PackMixerScreen s) s.testSelect(2);
 		});
 		step("click left", 10, () -> {
-			if (mc.screen instanceof PackMixerScreen s) PackMixerClient.LOGGER.info("autotest: LEFT {}", s.testClick(2, 0));
+			if (mc.gui.screen() instanceof PackMixerScreen s) PackMixerClient.LOGGER.info("autotest: LEFT {}", s.testClick(2, 0));
 		});
 		step("click right", 10, () -> {
-			if (mc.screen instanceof PackMixerScreen s) PackMixerClient.LOGGER.info("autotest: RIGHT {}", s.testClick(3, 1));
+			if (mc.gui.screen() instanceof PackMixerScreen s) PackMixerClient.LOGGER.info("autotest: RIGHT {}", s.testClick(3, 1));
 		});
 		shot("click_test");
-		step("click close", 5, () -> mc.setScreen(null));
+		step("click close", 5, () -> mc.gui.setScreen(null));
 		// regression: switching whole packs (White -> Purple crashed for a player)
 		for (String pk : new String[]{"Testohd23 V1 White", "Testohd23 V1 Purple", "Testohd23 V1 White", "Testohd23 V1 Purple"}) {
 			step("switch " + pk, 5, () -> {
 				Map<String, String> sel = new LinkedHashMap<>();
 				for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, pk);
 				PackMixerConfig.saveSelection(sel);
-				mc.setScreen(new PackMixerScreen(null));
+				mc.gui.setScreen(new PackMixerScreen(null));
 			});
 			step("close " + pk, 10, () -> {
-				if (mc.screen instanceof PackMixerScreen s) s.testApply();
+				if (mc.gui.screen() instanceof PackMixerScreen s) s.testApply();
 			});
-			when("reloaded " + pk, () -> mc.getOverlay() == null, () -> { });
+			when("reloaded " + pk, () -> mc.gui.overlay() == null, () -> { });
 			step("look " + pk, 60, () -> { });
 			shot("switch_" + pk.replace(" ", "_"));
 		}
