@@ -374,6 +374,7 @@ final class AutoTest {
 		if (!ENABLED) return;
 		if (video != null && mc.level != null && mc.getOverlay() == null) { // loading screens are left out
 			try {
+				mc.getToastManager().clear(); // no "recipe unlocked" popups in the video
 				captureFrame(mc);
 			} catch (Throwable e) {
 				PackMixerClient.LOGGER.error("autotest: frame", e);
