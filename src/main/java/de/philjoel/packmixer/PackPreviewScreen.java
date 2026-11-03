@@ -84,7 +84,8 @@ public class PackPreviewScreen extends Screen {
 			String packName = selection.get(c.id);
 			SourcePack pack = packName == null ? null : library.get(packName);
 			Ui.drawPreview(g, cache, c, pack, cx + (cw - size) / 2, cy + 3, size, i * 0.7f, false, true);
-			String label = pack == null ? Component.translatable("packmixer.default").getString() : Ui.packDisplay(pack.name);
+			String label = pack == null ? Component.translatable("packmixer.default").getString()
+					: Ui.packDisplay(pack.name).replace("Testohd23 ", "").replace("Testohd ", "");
 			int lw = Ui.smallWidth(label);
 			if (lw > cw - 6) {
 				while (label.length() > 1 && Ui.smallWidth(label + "..") > cw - 6) label = label.substring(0, label.length() - 1);

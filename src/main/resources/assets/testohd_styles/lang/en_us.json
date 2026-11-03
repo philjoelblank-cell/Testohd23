@@ -395,5 +395,6 @@
   "packmixer.preview": "Preview",
   "packmixer.preview.you": "You with your cosmetics",
   "packmixer.preview.no_world": "Join a world to see yourself",
-  "packmixer.preview.hint": "This is how your choice looks – apply with \"Done\""
+  "packmixer.preview.hint": "This is how your choice looks – apply with \"Done\"",
+  "packmixer.changelog.1.7.0": "New\n• My Packs: save your mixes and share them with a code\n• Preview: your character turns around with wings & crown, next to the items of your choice"
 }

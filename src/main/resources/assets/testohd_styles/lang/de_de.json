@@ -395,5 +395,6 @@
   "packmixer.preview": "Vorschau",
   "packmixer.preview.you": "Du mit deinen Cosmetics",
   "packmixer.preview.no_world": "Geh in eine Welt, um dich zu sehen",
-  "packmixer.preview.hint": "So sieht deine Auswahl aus – mit „Fertig“ übernehmen"
+  "packmixer.preview.hint": "So sieht deine Auswahl aus – mit „Fertig“ übernehmen",
+  "packmixer.changelog.1.7.0": "Neu\n• Meine Packs: Mischungen speichern und per Code mit Kollegen teilen\n• Vorschau: deine Figur dreht sich mit Flügeln & Krone, daneben die Items deiner Auswahl"
 }
