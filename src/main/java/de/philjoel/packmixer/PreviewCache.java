@@ -33,7 +33,7 @@ public final class PreviewCache {
 		Preview loaded = null;
 		try {
 			if (category.id.equals("enchant_glint") || category.id.equals(DefaultCategories.ENCHANTED_APPLE)) {
-				loaded = category.id.equals("enchant_glint") ? glint(pack, null) : glint(null, pack);
+				loaded = category.id.equals("enchant_glint") ? glint(pack, null, false) : glint(null, pack, true);
 				cache.put(key, loaded == null ? MISSING : loaded);
 				return loaded;
 			}
@@ -149,19 +149,19 @@ public final class PreviewCache {
 	 * Enchant glint preview (16 frame strip): a diamond sword with the pack's glint running over it, or – for OP gaps –
 	 * the apple of {@code applePack} with the normal glint.
 	 */
-	private Preview glint(SourcePack pack, SourcePack applePack) throws Exception {
+	private Preview glint(SourcePack pack, SourcePack applePack, boolean apple) throws Exception {
 		NativeImage glint = readImage(pack, "textures/misc/enchanted_glint_item.png");
 		NativeImage sword;
-		if (applePack == null) sword = readImage(null, "textures/item/diamond_sword.png");
+		if (!apple) sword = readImage(null, "textures/item/diamond_sword.png");
 		else {
-			NativeImage apple = applePack.has("textures/item/enchanted_golden_apple.png")
+			NativeImage img = applePack != null && applePack.has("textures/item/enchanted_golden_apple.png")
 					? readImage(applePack, "textures/item/enchanted_golden_apple.png") : readImage(applePack, "textures/item/golden_apple.png");
-			sword = apple;
-			if (apple != null && apple.getHeight() != apple.getWidth()) { // animated strip: first frame
-				sword = new NativeImage(apple.getWidth(), apple.getWidth(), true);
-				for (int y = 0; y < apple.getWidth(); y++)
-					for (int x = 0; x < apple.getWidth(); x++) sword.setPixel(x, y, apple.getPixel(x, y));
-				apple.close();
+			sword = img;
+			if (img != null && img.getHeight() != img.getWidth()) { // animated strip: first frame
+				sword = new NativeImage(img.getWidth(), img.getWidth(), true);
+				for (int y = 0; y < img.getWidth(); y++)
+					for (int x = 0; x < img.getWidth(); x++) sword.setPixel(x, y, img.getPixel(x, y));
+				img.close();
 			}
 		}
 		if (glint == null || sword == null) {
