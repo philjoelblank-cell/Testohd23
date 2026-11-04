@@ -107,7 +107,20 @@ public final class PackMixerConfig {
 		if (Files.exists(file)) {
 			try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
 				Map<String, String> map = GSON.fromJson(r, new TypeToken<LinkedHashMap<String, String>>() {}.getType());
-				if (map != null) return map;
+				if (map != null) {
+					// 1.8.4: OP gaps got their own category – keep what you had (same pack as the normal gaps)
+					Settings st = settings();
+					if (!st.opGapSplit) {
+						st.opGapSplit = true;
+						saveSettings();
+						if (map.containsKey("golden_apple") && !map.containsKey(DefaultCategories.ENCHANTED_APPLE)) {
+							map.put(DefaultCategories.ENCHANTED_APPLE, map.get("golden_apple"));
+							r.close();
+							saveSelection(map);
+						}
+					}
+					return map;
+				}
 			} catch (Exception e) {
 				PackMixerClient.LOGGER.error("selection.json is broken, starting empty", e);
 			}
@@ -183,6 +196,8 @@ public final class PackMixerConfig {
 		public boolean autoUpdate = true;
 		/** Version whose changelog was shown last. */
 		public String lastChangelog = "";
+		/** Old selections were moved to separate OP gaps already. */
+		public boolean opGapSplit = false;
 		/** Picture behind the menus (see Ui.BACKGROUNDS). */
 		public String menuBackground = "purple";
 		/** Size of all particles, 0.2 .. 1 (small particles for PvP). */

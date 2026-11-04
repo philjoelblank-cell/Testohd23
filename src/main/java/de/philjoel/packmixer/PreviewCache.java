@@ -32,8 +32,8 @@ public final class PreviewCache {
 		if (cached != null) return cached == MISSING ? null : cached;
 		Preview loaded = null;
 		try {
-			if (category.id.equals("enchant_glint")) {
-				loaded = glint(pack);
+			if (category.id.equals("enchant_glint") || category.id.equals(DefaultCategories.ENCHANTED_APPLE)) {
+				loaded = category.id.equals("enchant_glint") ? glint(pack, null) : glint(null, pack);
 				cache.put(key, loaded == null ? MISSING : loaded);
 				return loaded;
 			}
@@ -145,10 +145,25 @@ public final class PreviewCache {
 		return loaded;
 	}
 
-	/** Enchant glint preview: a diamond sword with the pack's glint running over it (16 frame strip). */
-	private Preview glint(SourcePack pack) throws Exception {
+	/**
+	 * Enchant glint preview (16 frame strip): a diamond sword with the pack's glint running over it, or – for OP gaps –
+	 * the apple of {@code applePack} with the normal glint.
+	 */
+	private Preview glint(SourcePack pack, SourcePack applePack) throws Exception {
 		NativeImage glint = readImage(pack, "textures/misc/enchanted_glint_item.png");
-		NativeImage sword = readImage(null, "textures/item/diamond_sword.png");
+		NativeImage sword;
+		if (applePack == null) sword = readImage(null, "textures/item/diamond_sword.png");
+		else {
+			NativeImage apple = applePack.has("textures/item/enchanted_golden_apple.png")
+					? readImage(applePack, "textures/item/enchanted_golden_apple.png") : readImage(applePack, "textures/item/golden_apple.png");
+			sword = apple;
+			if (apple != null && apple.getHeight() != apple.getWidth()) { // animated strip: first frame
+				sword = new NativeImage(apple.getWidth(), apple.getWidth(), true);
+				for (int y = 0; y < apple.getWidth(); y++)
+					for (int x = 0; x < apple.getWidth(); x++) sword.setPixel(x, y, apple.getPixel(x, y));
+				apple.close();
+			}
+		}
 		if (glint == null || sword == null) {
 			if (glint != null) glint.close();
 			if (sword != null) sword.close();
@@ -240,7 +255,7 @@ public final class PreviewCache {
 		return pack == null ? "<vanilla>" : pack.name;
 	}
 
-	private static byte[] readVanilla(String path) throws Exception {
+	static byte[] readVanilla(String path) throws Exception {
 		var vanilla = Minecraft.getInstance().getVanillaPackResources();
 		IoSupplier<InputStream> res = vanilla.getResource(PackType.CLIENT_RESOURCES,
 				Identifier.fromNamespaceAndPath("minecraft", path));

@@ -43,7 +43,7 @@ public final class PackBuilder {
 			// nothing chosen for explosions: they come with the animated crystal pack
 			if (packName == null && category.id.equals("explosion") && CrystalPacks.isCrystalPack(selection.get("end_crystal")))
 				packName = selection.get("end_crystal");
-			if (packName == null) continue;
+			if (packName == null || category.id.equals(DefaultCategories.ENCHANTED_APPLE)) continue; // OP gaps: see below
 			SourcePack pack = library.get(packName);
 			if (pack == null) {
 				PackMixerClient.LOGGER.warn("Pack '{}' for category '{}' not found anymore", packName, category.id);
@@ -59,6 +59,7 @@ public final class PackBuilder {
 			}
 		}
 
+		copied += enchantedApple(assets, selection, library);
 		copied += crystalSound(out, selection, library);
 
 		if (PackMixerConfig.settings().ancientDebris) {
@@ -192,6 +193,73 @@ public final class PackBuilder {
 		if (before.equals(mc.options.resourcePacks)) {
 			mc.reloadResourcePacks(); // list unchanged, but the files inside changed
 		}
+	}
+
+	private static final String OP_TEXTURE = "textures/item/enchanted_golden_apple.png";
+	private static final Pattern LAYER0 = Pattern.compile("\"layer0\"\\s*:\\s*\"(?:minecraft:)?([a-z0-9_./-]+)\"");
+
+	/**
+	 * In vanilla the OP gap uses the normal golden apple texture. So both can come from different packs, the OP gap
+	 * gets its own texture ("item/enchanted_golden_apple") and model: from the pack chosen for OP gaps, or the
+	 * vanilla apple when only normal gaps were changed.
+	 */
+	private static int enchantedApple(Path assets, Map<String, String> selection, PackLibrary library) throws IOException {
+		String opName = selection.get(DefaultCategories.ENCHANTED_APPLE);
+		SourcePack op = opName == null ? null : library.get(opName);
+		if (op == null && selection.get("golden_apple") == null) return 0; // both vanilla: nothing to do
+		Map<String, byte[]> files = new LinkedHashMap<>();
+		byte[] png = null, meta = null;
+		if (op != null) {
+			// the pack has its own OP gap model with its own texture (not the normal apple): take it as it is
+			if (op.has("models/item/enchanted_golden_apple.json")) {
+				String model = new String(op.read("models/item/enchanted_golden_apple.json"), StandardCharsets.UTF_8);
+				Matcher m = LAYER0.matcher(model);
+				String tex = m.find() ? m.group(1) : null;
+				if (tex != null && !tex.equals("item/golden_apple")) {
+					List<String> own = new ArrayList<>(List.of("models/item/enchanted_golden_apple.json"));
+					if (op.has("items/enchanted_golden_apple.json")) own.add("items/enchanted_golden_apple.json");
+					Map<String, byte[]> deps = withDependencies(op, own);
+					if (!deps.containsKey("textures/item/golden_apple.png")) {
+						files.putAll(deps);
+						return write(assets, files);
+					}
+				}
+			}
+			String src = op.has(OP_TEXTURE) ? OP_TEXTURE : op.has("textures/item/golden_apple.png") ? "textures/item/golden_apple.png" : null;
+			if (src != null) {
+				png = op.read(src);
+				if (op.has(src + ".mcmeta")) meta = op.read(src + ".mcmeta");
+			}
+		}
+		if (png == null) {
+			try {
+				png = PreviewCache.readVanilla("textures/item/golden_apple.png");
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.warn("No vanilla golden apple texture", e);
+			}
+			if (png == null) return 0;
+		}
+		files.put(OP_TEXTURE, png);
+		if (meta != null) files.put(OP_TEXTURE + ".mcmeta", meta);
+		files.put("models/item/enchanted_golden_apple.json", """
+				{"parent": "minecraft:item/generated", "textures": {"layer0": "minecraft:item/enchanted_golden_apple"}}
+				""".getBytes(StandardCharsets.UTF_8));
+		files.put("items/enchanted_golden_apple.json", """
+				{"model": {"type": "minecraft:model", "model": "minecraft:item/enchanted_golden_apple"}}
+				""".getBytes(StandardCharsets.UTF_8));
+		return write(assets, files);
+	}
+
+	private static int write(Path assets, Map<String, byte[]> files) throws IOException {
+		int n = 0;
+		for (Map.Entry<String, byte[]> e : files.entrySet()) {
+			Path target = assets.resolve(e.getKey()).normalize();
+			if (!target.startsWith(assets)) continue;
+			Files.createDirectories(target.getParent());
+			Files.write(target, e.getValue());
+			n++;
+		}
+		return n;
 	}
 
 	private static final Pattern REFERENCE = Pattern.compile("\"(?:minecraft:)?((?:item|block|entity|custom|models?|textures?)/[a-z0-9_./-]+)\"");

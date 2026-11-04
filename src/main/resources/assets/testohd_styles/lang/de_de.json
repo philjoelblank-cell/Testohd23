@@ -166,6 +166,7 @@
   "packmixer.category.ender_pearl": "Enderperlen",
   "packmixer.category.potions": "Tränke",
   "packmixer.category.golden_apple": "Goldene Äpfel",
+  "packmixer.category.enchanted_golden_apple": "OP Gaps",
   "packmixer.category.swords": "Schwerter",
   "packmixer.category.axes": "Äxte",
   "packmixer.category.pickaxes": "Spitzhacken",
@@ -415,5 +416,6 @@
   "packmixer.settings.particle_size": "Partikel-Größe",
   "packmixer.changelog.1.8.1": "Neu\n• Kleine Partikel: Einstellungen → Partikel → Partikel-Größe",
   "packmixer.generating": "Testohd-Packs werden gerade erstellt …",
-  "packmixer.generated": "Testohd-Packs sind fertig"
+  "packmixer.generated": "Testohd-Packs sind fertig",
+  "packmixer.changelog.1.8.4": "Neu in 1.8.4\n• OP Gaps (verzauberte goldene Äpfel) haben jetzt eine eigene Kategorie\n• Gaps und OP Gaps kannst du aus verschiedenen Packs auswählen\n• Die Vorschau zeigt OP Gaps mit Glanz"
 }
