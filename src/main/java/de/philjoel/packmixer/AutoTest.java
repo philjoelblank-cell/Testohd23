@@ -156,6 +156,41 @@ final class AutoTest {
 			step("look " + pk, 60, () -> { });
 			shot("switch_" + pk.replace(" ", "_"));
 		}
+		// OP gaps and normal gaps from different packs
+		step("opgap select", 5, () -> {
+			Map<String, String> sel = new LinkedHashMap<>();
+			sel.put("golden_apple", "Testohd23 V1 Purple");
+			sel.put(DefaultCategories.ENCHANTED_APPLE, "Testohd23 V1 Orange");
+			PackMixerConfig.saveSelection(sel);
+			mc.gui.setScreen(new PackMixerScreen(null));
+		});
+		step("opgap tab", 20, () -> {
+			if (mc.gui.screen() instanceof PackMixerScreen s) {
+				java.util.List<Category> cats = PackMixerConfig.loadCategories();
+				for (int i = 0; i < cats.size(); i++) if (cats.get(i).id.equals(DefaultCategories.ENCHANTED_APPLE)) s.testSelect(i);
+			}
+		});
+		shot("opgap_menu");
+		step("opgap apply", 10, () -> {
+			if (mc.gui.screen() instanceof PackMixerScreen s) s.testApply();
+		});
+		when("opgap reloaded", () -> mc.gui.overlay() == null, () -> {
+			java.nio.file.Path a = mc.getResourcePackDirectory().resolve(PackMixerConfig.OUTPUT_PACK_NAME).resolve("assets/minecraft");
+			PackMixerClient.LOGGER.info("autotest: OPGAP texture={} model={} gap={}",
+					java.nio.file.Files.exists(a.resolve("textures/item/enchanted_golden_apple.png")),
+					java.nio.file.Files.exists(a.resolve("models/item/enchanted_golden_apple.json")),
+					java.nio.file.Files.exists(a.resolve("textures/item/golden_apple.png")));
+		});
+		command("item replace entity @p weapon.mainhand with enchanted_golden_apple");
+		command("item replace entity @p weapon.offhand with golden_apple");
+		step("opgap look", 40, () -> {
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+			mc.player.setXRot(10);
+		});
+		shot("opgap_ingame");
+		step("opgap inv", 20, () -> mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)));
+		shot("opgap_inventory");
+		step("opgap inv close", 5, () -> mc.gui.setScreen(null));
 		command("gamemode creative @p");
 		command("item replace entity @p weapon.mainhand with diamond_sword[enchantments={sharpness:1}]");
 		command("item replace entity @p weapon.offhand with shield");

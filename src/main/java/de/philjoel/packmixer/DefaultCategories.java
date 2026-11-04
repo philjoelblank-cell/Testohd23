@@ -9,6 +9,7 @@ import java.util.List;
  */
 final class DefaultCategories {
 	static final String FULL_PACK = "full_pack";
+	static final String ENCHANTED_APPLE = "enchanted_golden_apple";
 
 	static List<Category> create() {
 		List<Category> l = new ArrayList<>();
@@ -44,9 +45,12 @@ final class DefaultCategories {
 						"textures/item/splash_potion.png", "textures/item/lingering_potion.png")));
 		l.add(new Category("golden_apple", "Goldene Äpfel",
 				List.of("textures/item/golden_apple.png"),
-				List.of("textures/item/golden_apple.png",
-						"models/item/golden_apple.json", "models/item/enchanted_golden_apple.json",
-						"items/golden_apple.json", "items/enchanted_golden_apple.json")));
+				List.of("textures/item/golden_apple.png", "models/item/golden_apple.json", "items/golden_apple.json")));
+		// OP gaps can come from another pack than normal gaps (PackBuilder gives them their own texture)
+		l.add(new Category(ENCHANTED_APPLE, "OP Gaps",
+				List.of("textures/item/enchanted_golden_apple.png", "textures/item/golden_apple.png"),
+				List.of("textures/item/enchanted_golden_apple.png", "textures/item/golden_apple.png",
+						"models/item/enchanted_golden_apple.json", "items/enchanted_golden_apple.json")));
 		l.add(tool("swords", "Schwerter", "sword"));
 		l.add(tool("axes", "Äxte", "axe"));
 		l.add(tool("pickaxes", "Spitzhacken", "pickaxe"));

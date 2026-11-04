@@ -18,8 +18,8 @@ import java.util.Map;
  * important items of the chosen mix, already in the new textures.
  */
 public class PackPreviewScreen extends Screen {
-	private static final String[] SHOW = {"swords", "end_crystal", "totem", "ender_pearl", "golden_apple", "mace", "pickaxes",
-			"respawn_anchor", "spear", "shield", "potions", "bow"};
+	private static final String[] SHOW = {"swords", "end_crystal", "totem", "ender_pearl", "golden_apple", "enchanted_golden_apple", "mace",
+			"pickaxes", "respawn_anchor", "spear", "shield", "potions"};
 
 	private final Screen parent;
 	private final Map<String, String> selection;
