@@ -201,31 +201,24 @@ public final class PackBuilder {
 	/**
 	 * In vanilla the OP gap uses the normal golden apple texture. So both can come from different packs, the OP gap
 	 * gets its own texture ("item/enchanted_golden_apple") and model: from the pack chosen for OP gaps, or the
-	 * vanilla apple when only normal gaps were changed.
+	 * vanilla apple when only normal gaps were changed. A purple glint shine is drawn into that texture, so OP gaps
+	 * are always easy to tell apart (even with a very weak glint from a pack) – normal gaps stay without.
 	 */
 	private static int enchantedApple(Path assets, Map<String, String> selection, PackLibrary library) throws IOException {
 		String opName = selection.get(DefaultCategories.ENCHANTED_APPLE);
 		SourcePack op = opName == null ? null : library.get(opName);
 		if (op == null && selection.get("golden_apple") == null) return 0; // both vanilla: nothing to do
-		Map<String, byte[]> files = new LinkedHashMap<>();
 		byte[] png = null, meta = null;
 		if (op != null) {
-			// the pack has its own OP gap model with its own texture (not the normal apple): take it as it is
+			String src = null;
+			// the pack's own OP gap texture (from its model, or under the vanilla-like name)
 			if (op.has("models/item/enchanted_golden_apple.json")) {
-				String model = new String(op.read("models/item/enchanted_golden_apple.json"), StandardCharsets.UTF_8);
-				Matcher m = LAYER0.matcher(model);
-				String tex = m.find() ? m.group(1) : null;
-				if (tex != null && !tex.equals("item/golden_apple")) {
-					List<String> own = new ArrayList<>(List.of("models/item/enchanted_golden_apple.json"));
-					if (op.has("items/enchanted_golden_apple.json")) own.add("items/enchanted_golden_apple.json");
-					Map<String, byte[]> deps = withDependencies(op, own);
-					if (!deps.containsKey("textures/item/golden_apple.png")) {
-						files.putAll(deps);
-						return write(assets, files);
-					}
-				}
+				Matcher m = LAYER0.matcher(new String(op.read("models/item/enchanted_golden_apple.json"), StandardCharsets.UTF_8));
+				if (m.find() && !m.group(1).equals("item/golden_apple") && op.has("textures/" + m.group(1) + ".png"))
+					src = "textures/" + m.group(1) + ".png";
 			}
-			String src = op.has(OP_TEXTURE) ? OP_TEXTURE : op.has("textures/item/golden_apple.png") ? "textures/item/golden_apple.png" : null;
+			if (src == null && op.has(OP_TEXTURE)) src = OP_TEXTURE;
+			if (src == null && op.has("textures/item/golden_apple.png")) src = "textures/item/golden_apple.png";
 			if (src != null) {
 				png = op.read(src);
 				if (op.has(src + ".mcmeta")) meta = op.read(src + ".mcmeta");
@@ -239,15 +232,63 @@ public final class PackBuilder {
 			}
 			if (png == null) return 0;
 		}
-		files.put(OP_TEXTURE, png);
-		if (meta != null) files.put(OP_TEXTURE + ".mcmeta", meta);
+		Path texture = assets.resolve(OP_TEXTURE);
+		Files.createDirectories(texture.getParent());
+		int frametime = 1;
+		if (meta != null) {
+			Matcher ft = Pattern.compile("\"frametime\"\\s*:\\s*(\\d+)").matcher(new String(meta, StandardCharsets.UTF_8));
+			if (ft.find()) frametime = Math.max(1, Integer.parseInt(ft.group(1)));
+		}
+		try (com.mojang.blaze3d.platform.NativeImage img = com.mojang.blaze3d.platform.NativeImage.read(new java.io.ByteArrayInputStream(png))) {
+			int w = img.getWidth();
+			int srcFrames = meta != null && img.getHeight() >= 2 * w && img.getHeight() % w == 0 ? img.getHeight() / w : 1;
+			int h = srcFrames > 1 ? w : img.getHeight();
+			// one shine sweep about every 1.6 s; long enough to also play the pack's own animation once
+			int ticks = Math.max(32, srcFrames > 1 ? srcFrames * frametime : 32);
+			if (w > 128) ticks = Math.min(ticks, 16);
+			int sweeps = Math.max(1, Math.round(ticks / 32f));
+			try (com.mojang.blaze3d.platform.NativeImage strip = new com.mojang.blaze3d.platform.NativeImage(w, h * ticks, true)) {
+				for (int f = 0; f < ticks; f++) {
+					int sf = srcFrames > 1 ? (f / frametime) % srcFrames : 0;
+					float phase = (f * (float) sweeps / ticks) % 1f;
+					for (int y = 0; y < h; y++)
+						for (int x = 0; x < w; x++) {
+							int p = img.getPixel(x, sf * h + y);
+							if ((p >>> 24) < 8) {
+								strip.setPixel(x, f * h + y, 0);
+								continue;
+							}
+							float pos = (x + y) / (float) (w + h); // diagonal 0..1
+							float band = 0;
+							for (float off : new float[]{0f, 0.5f}) {
+								float d = pos - (phase + off) * 1.4f + 0.2f;
+								d -= Math.round(d / 1.4f) * 1.4f;
+								band = Math.max(band, (1 - Math.abs(d) / 0.16f) * (off == 0 ? 1f : 0.55f));
+							}
+							float k = 0.22f + 0.8f * Math.max(0, band);
+							int r = Math.min(255, ((p >> 16) & 0xFF) + (int) (170 * k));
+							int g = Math.min(255, ((p >> 8) & 0xFF) + (int) (95 * k));
+							int b = Math.min(255, (p & 0xFF) + (int) (255 * k));
+							strip.setPixel(x, f * h + y, (p & 0xFF000000) | (r << 16) | (g << 8) | b);
+						}
+				}
+				strip.writeToFile(texture);
+			}
+			Files.writeString(assets.resolve(OP_TEXTURE + ".mcmeta"), ticks > 1
+					? "{\"animation\": {\"frametime\": 1, \"width\": " + w + ", \"height\": " + h + "}}\n" : "{}\n", StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			PackMixerClient.LOGGER.warn("OP gap texture failed, using it without shine", e);
+			Files.write(texture, png);
+			if (meta != null) Files.write(assets.resolve(OP_TEXTURE + ".mcmeta"), meta);
+		}
+		Map<String, byte[]> files = new LinkedHashMap<>();
 		files.put("models/item/enchanted_golden_apple.json", """
 				{"parent": "minecraft:item/generated", "textures": {"layer0": "minecraft:item/enchanted_golden_apple"}}
 				""".getBytes(StandardCharsets.UTF_8));
 		files.put("items/enchanted_golden_apple.json", """
 				{"model": {"type": "minecraft:model", "model": "minecraft:item/enchanted_golden_apple"}}
 				""".getBytes(StandardCharsets.UTF_8));
-		return write(assets, files);
+		return write(assets, files) + 2;
 	}
 
 	private static int write(Path assets, Map<String, byte[]> files) throws IOException {

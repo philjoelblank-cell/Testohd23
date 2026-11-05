@@ -417,5 +417,6 @@
   "packmixer.changelog.1.8.1": "Neu\n• Kleine Partikel: Einstellungen → Partikel → Partikel-Größe",
   "packmixer.generating": "Testohd-Packs werden gerade erstellt …",
   "packmixer.generated": "Testohd-Packs sind fertig",
-  "packmixer.changelog.1.8.4": "Neu in 1.8.4\n• OP Gaps (verzauberte goldene Äpfel) haben jetzt eine eigene Kategorie\n• Gaps und OP Gaps kannst du aus verschiedenen Packs auswählen\n• Die Vorschau zeigt OP Gaps mit Glanz"
+  "packmixer.changelog.1.8.4": "Neu in 1.8.4\n• OP Gaps (verzauberte goldene Äpfel) haben jetzt eine eigene Kategorie\n• Gaps und OP Gaps kannst du aus verschiedenen Packs auswählen\n• Die Vorschau zeigt OP Gaps mit Glanz",
+  "packmixer.changelog.1.8.5": "Neu in 1.8.5\n• OP Gaps haben jetzt einen gut sichtbaren lila Glanz\n• Normale Gaps bleiben ohne Glanz"
 }

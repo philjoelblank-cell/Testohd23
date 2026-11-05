@@ -417,5 +417,6 @@
   "packmixer.changelog.1.8.1": "New\n• Small particles: Settings → Particles → Particle size",
   "packmixer.generating": "Creating the Testohd packs …",
   "packmixer.generated": "Testohd packs are ready",
-  "packmixer.changelog.1.8.4": "New in 1.8.4\n• OP gaps (enchanted golden apples) now have their own category\n• Gaps and OP gaps can come from different packs\n• The preview shows OP gaps with their glint"
+  "packmixer.changelog.1.8.4": "New in 1.8.4\n• OP gaps (enchanted golden apples) now have their own category\n• Gaps and OP gaps can come from different packs\n• The preview shows OP gaps with their glint",
+  "packmixer.changelog.1.8.5": "New in 1.8.5\n• OP gaps now have a clearly visible purple shine\n• Normal gaps stay without it"
 }
