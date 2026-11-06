@@ -153,7 +153,7 @@
   "packmixer.language.open": "Change language...",
   "packmixer.feature.ancient_debris": "Ancient Debris",
   "packmixer.feature.ancient_debris.desc": "Ancient debris gets a glowing frame (texture only)",
-  "packmixer.feature.crystal_fx": "Coloured crystal explosion",
+  "packmixer.feature.crystal_fx": "Colour explosion",
   "packmixer.feature.crystal_fx.desc": "V1 crystals explode in their colour with extra effects. Off = normal explosion",
   "packmixer.feature.tt": "TT (Totem Tracker)",
   "packmixer.feature.tt.desc": "Shows how many totems players near you have used",
