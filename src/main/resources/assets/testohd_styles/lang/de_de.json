@@ -153,6 +153,8 @@
   "packmixer.language.open": "Sprache ändern...",
   "packmixer.feature.ancient_debris": "Ancient Debris",
   "packmixer.feature.ancient_debris.desc": "Antiker Schutt bekommt einen leuchtenden Rahmen (nur Textur)",
+  "packmixer.feature.crystal_fx": "Farbige Crystal-Explosion",
+  "packmixer.feature.crystal_fx.desc": "V1-Crystals explodieren in ihrer Farbe mit Extra-Effekten. Aus = ganz normale Explosion",
   "packmixer.feature.tt": "TT (Totem-Tracker)",
   "packmixer.feature.tt.desc": "Zeigt, wie viele Totems Spieler in deiner Nähe verbraucht haben",
   "packmixer.feature.language": "Sprache",
@@ -418,5 +420,6 @@
   "packmixer.generating": "Testohd-Packs werden gerade erstellt …",
   "packmixer.generated": "Testohd-Packs sind fertig",
   "packmixer.changelog.1.8.4": "Neu in 1.8.4\n• OP Gaps (verzauberte goldene Äpfel) haben jetzt eine eigene Kategorie\n• Gaps und OP Gaps kannst du aus verschiedenen Packs auswählen\n• Die Vorschau zeigt OP Gaps mit Glanz",
-  "packmixer.changelog.1.8.5": "Neu in 1.8.5\n• OP Gaps haben jetzt einen gut sichtbaren lila Glanz\n• Normale Gaps bleiben ohne Glanz"
+  "packmixer.changelog.1.8.5": "Neu in 1.8.5\n• OP Gaps haben jetzt einen gut sichtbaren lila Glanz\n• Normale Gaps bleiben ohne Glanz",
+  "packmixer.changelog.1.8.6": "Neu in 1.8.6\n• V1-Crystals haben wieder ganz normale Explosionen\n• Farbige Crystal-Explosion kannst du in den Einstellungen anmachen"
 }

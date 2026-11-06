@@ -170,6 +170,8 @@ public final class PackMixerConfig {
 		// TT (Totem-Tracker) + ancient debris highlight
 		public boolean totemTracker = true;
 		public boolean ancientDebris = false;
+		/** Coloured explosion (particles + extra burst) for the V1 / animated crystals; off = normal explosion. */
+		public boolean crystalFx = false;
 
 		// Favourite packs (by name), toggled with right-click
 		public java.util.List<String> favorites = new java.util.ArrayList<>();

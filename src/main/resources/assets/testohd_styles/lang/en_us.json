@@ -153,6 +153,8 @@
   "packmixer.language.open": "Change language...",
   "packmixer.feature.ancient_debris": "Ancient Debris",
   "packmixer.feature.ancient_debris.desc": "Ancient debris gets a glowing frame (texture only)",
+  "packmixer.feature.crystal_fx": "Coloured crystal explosion",
+  "packmixer.feature.crystal_fx.desc": "V1 crystals explode in their colour with extra effects. Off = normal explosion",
   "packmixer.feature.tt": "TT (Totem Tracker)",
   "packmixer.feature.tt.desc": "Shows how many totems players near you have used",
   "packmixer.feature.language": "Language",
@@ -418,5 +420,6 @@
   "packmixer.generating": "Creating the Testohd packs …",
   "packmixer.generated": "Testohd packs are ready",
   "packmixer.changelog.1.8.4": "New in 1.8.4\n• OP gaps (enchanted golden apples) now have their own category\n• Gaps and OP gaps can come from different packs\n• The preview shows OP gaps with their glint",
-  "packmixer.changelog.1.8.5": "New in 1.8.5\n• OP gaps now have a clearly visible purple shine\n• Normal gaps stay without it"
+  "packmixer.changelog.1.8.5": "New in 1.8.5\n• OP gaps now have a clearly visible purple shine\n• Normal gaps stay without it",
+  "packmixer.changelog.1.8.6": "New in 1.8.6\n• V1 crystals have normal explosions again\n• Coloured crystal explosions can be turned on in the settings"
 }

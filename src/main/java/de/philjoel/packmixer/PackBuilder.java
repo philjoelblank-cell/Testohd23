@@ -41,7 +41,8 @@ public final class PackBuilder {
 		for (Category category : categories) {
 			String packName = selection.get(category.id);
 			// nothing chosen for explosions: they come with the animated crystal pack
-			if (packName == null && category.id.equals("explosion") && CrystalPacks.isCrystalPack(selection.get("end_crystal")))
+			if (packName == null && category.id.equals("explosion") && PackMixerConfig.settings().crystalFx
+					&& CrystalPacks.isCrystalPack(selection.get("end_crystal")))
 				packName = selection.get("end_crystal");
 			if (packName == null || category.id.equals(DefaultCategories.ENCHANTED_APPLE)) continue; // OP gaps: see below
 			SourcePack pack = library.get(packName);
