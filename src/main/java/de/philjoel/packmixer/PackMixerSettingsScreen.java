@@ -69,6 +69,11 @@ public class PackMixerSettingsScreen extends Screen {
 			PackMixerConfig.saveSettings();
 			PackBuilder.rebuildAndApply();
 		}, null));
+		settingsEntries.add(new Entry("crystal_fx", "screen", Ui.icon(Items.END_CRYSTAL), () -> s.crystalFx, v -> {
+			s.crystalFx = v;
+			PackMixerConfig.saveSettings();
+			PackBuilder.rebuildAndApply();
+		}, null));
 		settingsEntries.add(new Entry("tt", "screen", Ui.icon(Items.TOTEM_OF_UNDYING), () -> s.totemTracker, v -> s.totemTracker = v, null));
 		settingsEntries.add(new Entry("language", "menu", Ui.icon(Items.BOOK), null, null,
 				() -> net.minecraft.client.Minecraft.getInstance().getLanguageManager().getSelected()));
@@ -349,6 +354,7 @@ public class PackMixerSettingsScreen extends Screen {
 			}
 			case "low_fire" -> { s.lowFire = false; s.fireOffset = 0.3; }
 			case "ancient_debris" -> { s.ancientDebris = false; PackBuilder.rebuildAndApply(); }
+			case "crystal_fx" -> { s.crystalFx = false; PackBuilder.rebuildAndApply(); }
 			case "tt" -> { s.totemTracker = true; TotemTracker.reset(); }
 			case "controls" -> {
 				PackMixerClient.openKey().setKey(PackMixerClient.openKey().getDefaultKey());

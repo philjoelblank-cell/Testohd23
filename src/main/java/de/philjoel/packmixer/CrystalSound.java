@@ -64,7 +64,7 @@ public final class CrystalSound {
 	public static boolean handle(ClientLevel level, double x, double y, double z, float volume, float pitch) {
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
 		boolean crystal = isCrystal(x, y, z);
-		if (crystal) {
+		if (crystal && s.crystalFx) {
 			try {
 				burst(level, x, y, z);
 			} catch (Throwable e) {
