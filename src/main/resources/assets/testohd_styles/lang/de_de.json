@@ -421,5 +421,6 @@
   "packmixer.generated": "Testohd-Packs sind fertig",
   "packmixer.changelog.1.8.4": "Neu in 1.8.4\n• OP Gaps (verzauberte goldene Äpfel) haben jetzt eine eigene Kategorie\n• Gaps und OP Gaps kannst du aus verschiedenen Packs auswählen\n• Die Vorschau zeigt OP Gaps mit Glanz",
   "packmixer.changelog.1.8.5": "Neu in 1.8.5\n• OP Gaps haben jetzt einen gut sichtbaren lila Glanz\n• Normale Gaps bleiben ohne Glanz",
-  "packmixer.changelog.1.8.6": "Neu in 1.8.6\n• V1-Crystals haben wieder ganz normale Explosionen\n• Farbige Crystal-Explosion kannst du in den Einstellungen anmachen"
+  "packmixer.changelog.1.8.6": "Neu in 1.8.6\n• V1-Crystals haben wieder ganz normale Explosionen\n• Farbige Crystal-Explosion kannst du in den Einstellungen anmachen",
+  "packmixer.changelog.1.8.7": "Neu in 1.8.7\n• Cosmetics von anderen siehst du jetzt sofort, wenn sie wechseln – ohne neu einzuloggen\n• Neu: Version für Minecraft 26.2"
 }

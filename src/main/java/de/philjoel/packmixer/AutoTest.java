@@ -156,6 +156,35 @@ final class AutoTest {
 			step("look " + pk, 60, () -> { });
 			shot("switch_" + pk.replace(" ", "_"));
 		}
+		// live cosmetics: a line sent by "another player" must arrive without relog
+		final java.util.UUID fake = java.util.UUID.randomUUID();
+		final long[] sentAt = {0};
+		step("cosm live send", 200, () -> {
+			sentAt[0] = System.currentTimeMillis();
+			new Thread(() -> {
+				try {
+					java.net.http.HttpClient.newHttpClient().send(java.net.http.HttpRequest.newBuilder(
+							java.net.URI.create("https://ntfy.sh/testohd-styles-cosmetics-7f3k9q")).POST(
+							java.net.http.HttpRequest.BodyPublishers.ofString("ts1;" + fake + ";crown;;;")).build(),
+							java.net.http.HttpResponse.BodyHandlers.discarding());
+				} catch (Exception e) {
+					PackMixerClient.LOGGER.info("autotest: COSMLIVE send failed {}", e.toString());
+				}
+			}).start();
+		});
+		step("cosm live check", 5, () -> {
+			PackMixerClient.LOGGER.info("autotest: COSMLIVE received={} after<={}ms", CosmeticSync.get(fake).head(),
+					System.currentTimeMillis() - sentAt[0]);
+			new Thread(() -> {
+				try {
+					java.net.http.HttpClient.newHttpClient().send(java.net.http.HttpRequest.newBuilder(
+							java.net.URI.create("https://ntfy.sh/testohd-styles-cosmetics-7f3k9q")).POST(
+							java.net.http.HttpRequest.BodyPublishers.ofString("ts1;" + fake + ";;;;")).build(),
+							java.net.http.HttpResponse.BodyHandlers.discarding());
+				} catch (Exception ignored) {
+				}
+			}).start();
+		});
 		// OP gaps and normal gaps from different packs
 		step("opgap select", 5, () -> {
 			Map<String, String> sel = new LinkedHashMap<>();
