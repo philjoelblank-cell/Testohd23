@@ -243,7 +243,7 @@ public class PackMixerScreen extends Screen {
 				rescanOnReturn = true;
 				this.minecraft.gui.setScreen(new OnlinePacksScreen(this));
 			}));
-			menu.add(new MenuItem(Component.translatable("packmixer.menu.folder"), () -> com.mojang.blaze3d.Blaze3D.openPath(PackMixerConfig.packsDir())));
+			menu.add(new MenuItem(Component.translatable("packmixer.menu.folder"), () -> net.minecraft.util.Util.getPlatform().openPath(PackMixerConfig.packsDir())));
 			menu.add(new MenuItem(Component.translatable("packmixer.menu.reload"), () -> {
 				rescan();
 				setStatus(Component.translatable("packmixer.pack_count", library.size()).getString());

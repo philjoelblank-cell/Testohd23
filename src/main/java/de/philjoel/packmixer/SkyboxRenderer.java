@@ -5,11 +5,12 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
-import com.mojang.renderpearl.api.commands.RenderPass;
-import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-import com.mojang.renderpearl.api.vertex.VertexFormat;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -174,13 +175,13 @@ public final class SkyboxRenderer {
 	// ======================================================================= drawing
 
 	/** Overworld: after the sky colour, before sun / moon / stars (inside the vanilla sky render pass). */
-	public static void renderOverworld(RenderPass pass, float sunAngle, float rainBrightness) {
-		render(pass, overworldLayers(), sunAngle, rainBrightness);
+	public static void renderOverworld(float sunAngle, float rainBrightness) {
+		render(overworldLayers(), sunAngle, rainBrightness);
 	}
 
 	/** The End: on top of the vanilla end sky. */
-	public static void renderEnd(RenderPass pass) {
-		render(pass, end, 0f, 1f);
+	public static void renderEnd() {
+		render(end, 0f, 1f);
 	}
 
 	private static List<Layer> overworldLayers() {
@@ -196,7 +197,7 @@ public final class SkyboxRenderer {
 		}
 	}
 
-	private static void render(RenderPass pass, List<Layer> layers, float sunAngle, float rain) {
+	private static void render(List<Layer> layers, float sunAngle, float rain) {
 		if (layers.isEmpty()) return;
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.level == null) return;
@@ -215,15 +216,18 @@ public final class SkyboxRenderer {
 				mv.rotateY((float) Math.toRadians(-90));
 				GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(mv), new Vector4f(1f, 1f, 1f, b));
 				mv.popMatrix();
-				pass.pushDebugGroup(() -> "Testohd sky");
-				pass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.END_SKY));
-				RenderSystem.bindDefaultUniforms(pass);
-				pass.setUniform("DynamicTransforms", transform);
-				pass.setUniform("Sampler0", tex.getTextureView(), tex.getSampler());
-				pass.setVertexBuffer(0, box.slice());
-				pass.setIndexBuffer(indices, quads.type());
-				pass.drawIndexed(36, 1, 0, 0, 0);
-				pass.popDebugGroup();
+				GpuTextureView color = mc.gameRenderer.mainRenderTarget().getColorTextureView();
+				GpuTextureView depth = mc.gameRenderer.mainRenderTarget().getDepthTextureView();
+				try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Testohd sky",
+						color, java.util.Optional.empty(), depth, java.util.OptionalDouble.empty())) {
+					pass.setPipeline(RenderPipelines.END_SKY);
+					RenderSystem.bindDefaultUniforms(pass);
+					pass.setUniform("DynamicTransforms", transform);
+					pass.bindTexture("Sampler0", tex.getTextureView(), tex.getSampler());
+					pass.setVertexBuffer(0, box.slice());
+					pass.setIndexBuffer(indices, quads.type());
+					pass.drawIndexed(36, 1, 0, 0, 0);
+				}
 			}
 		} catch (Throwable e) {
 			PackMixerClient.LOGGER.warn("Custom sky failed, turning it off", e);

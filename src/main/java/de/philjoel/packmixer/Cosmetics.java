@@ -211,7 +211,7 @@ public final class Cosmetics {
 					model.body.translateAndRotate(pose);
 					// a bit behind the back, so a chestplate never covers the wings
 					pose.translate(0.0F, 0.375F, id.endsWith("wings") ? 0.11F : 0.0F);
-					pose.rotateDegrees(Axis.YP, (180.0F));
+					pose.mulPose(Axis.YP.rotationDegrees((180.0F)));
 					pose.scale(0.625F, -0.625F, -0.625F);
 					if (id.endsWith("wings")) {
 						// wing flap (phoenix wings beat faster)
@@ -224,17 +224,17 @@ public final class Cosmetics {
 					CustomHeadLayer.translateToHead(pose, CustomHeadLayer.Transforms.DEFAULT);
 					if (id.endsWith("_halo")) { // V1 halos: float higher and turn faster
 						pose.translate(0.0F, (float) Math.sin(t * 0.14F) * 0.04F + 0.03F, 0.0F);
-						pose.rotateDegrees(Axis.YP, (t * 4.5F));
+						pose.mulPose(Axis.YP.rotationDegrees((t * 4.5F)));
 					} else if (id.endsWith("_crown")) {
 						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.012F, 0.0F);
 					} else if (id.equals("halo")) {
 						// floating, slowly spinning halo
 						pose.translate(0.0F, (float) Math.sin(t * 0.12F) * 0.03F, 0.0F);
-						pose.rotateDegrees(Axis.YP, (t * 3.0F));
+						pose.mulPose(Axis.YP.rotationDegrees((t * 3.0F)));
 					} else if (id.equals("crown")) {
 						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.008F, 0.0F);
 					} else if (id.equals("wizard_hat")) {
-						pose.rotateDegrees(Axis.ZP, ((float) Math.sin(t * 0.08F) * 2.5F));
+						pose.mulPose(Axis.ZP.rotationDegrees(((float) Math.sin(t * 0.08F) * 2.5F)));
 					}
 				}
 				item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
@@ -258,9 +258,9 @@ public final class Cosmetics {
 			model.root().translateAndRotate(pose);
 			model.body.translateAndRotate(pose);
 			pose.translate(0.0F, 0.6F, 0.17F); // wing roots on the shoulder blades
-			pose.rotateDegrees(Axis.YP, (180.0F));
+			pose.mulPose(Axis.YP.rotationDegrees((180.0F)));
 			pose.scale(0.62F, -0.62F, -0.62F);
-			pose.rotateDegrees(Axis.YP, (side * open));
+			pose.mulPose(Axis.YP.rotationDegrees((side * open)));
 			item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 			pose.popPose();
 		}

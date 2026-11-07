@@ -576,9 +576,9 @@ public final class BuiltinPacks {
 
 	/** Opens a file of the vanilla resources (26.x: through a vanilla-only resource manager). */
 	static InputStream openVanilla(String path) throws java.io.IOException {
-		var res = Minecraft.getInstance().getVanillaPackResources().asResourceManager()
-				.getResource(Identifier.fromNamespaceAndPath("minecraft", path));
-		return res.isPresent() ? res.get().open() : null;
+		var s = Minecraft.getInstance().getVanillaPackResources().getResource(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+				Identifier.fromNamespaceAndPath("minecraft", path));
+		return s == null ? null : s.get();
 	}
 
 	static NativeImage vanilla(String texturePath) {

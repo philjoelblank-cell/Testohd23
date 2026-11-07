@@ -20,7 +20,7 @@ public final class PackImporter {
 	 */
 	public static List<Path> chooseZipFiles(String title) {
 		PackMixerConfig.ensureDirs();
-		com.mojang.blaze3d.Blaze3D.openPath(PackMixerConfig.packsDir());
+		net.minecraft.util.Util.getPlatform().openPath(PackMixerConfig.packsDir());
 		return new ArrayList<>();
 	}
 

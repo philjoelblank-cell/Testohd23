@@ -28,9 +28,9 @@ public class PackMixerClient implements ClientModInitializer {
 
 		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
 		openKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-				"key.packmixer.open", InputConstants.Type.KEYBOARD, InputConstants.KEY_K, category));
+				"key.packmixer.open", InputConstants.Type.KEYSYM, InputConstants.KEY_K, category));
 		Features.zoomKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-				"key.packmixer.zoom", InputConstants.Type.KEYBOARD, InputConstants.KEY_C, category));
+				"key.packmixer.zoom", InputConstants.Type.KEYSYM, InputConstants.KEY_C, category));
 
 		Cosmetics.init();
 
