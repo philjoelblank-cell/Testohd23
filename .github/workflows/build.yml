@@ -33,15 +33,16 @@ jobs:
           path: build/libs/
       - name: remove sources jar
         run: rm -f build/libs/*-sources.jar
-      - name: release new 26.3 versions automatically (pre-release, so 1.21.11 players never get this jar)
-        if: github.ref == 'refs/heads/mc-26.3'
+      - name: release new versions of the other Minecraft versions automatically (branch mc-<version>, pre-release)
+        if: startsWith(github.ref, 'refs/heads/mc-')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER=$(grep '^version=' gradle.properties | cut -d= -f2)
-          if ! gh release view "v$VER-mc26.3" > /dev/null 2>&1; then
-            gh release create "v$VER-mc26.3" build/libs/testohd-styles-*.jar --prerelease --target mc-26.3 --title "Testohd Styles v$VER für Minecraft 26.3" \
-              --notes "Testohd Styles – Made by Testohd23. Für Minecraft 26.3 (Fabric + Fabric API). Lege die .jar in deinen mods-Ordner. Danach updatet sich die Mod von selbst."
+          MC=${GITHUB_REF_NAME#mc-}
+          if ! gh release view "v$VER-mc$MC" > /dev/null 2>&1; then
+            gh release create "v$VER-mc$MC" build/libs/testohd-styles-*.jar --prerelease --target "$GITHUB_REF_NAME" --title "Testohd Styles v$VER für Minecraft $MC" \
+              --notes "Testohd Styles – Made by Testohd23. Für Minecraft $MC (Fabric + Fabric API). Lege die .jar in deinen mods-Ordner. Danach updatet sich die Mod von selbst."
           fi
       - name: release new versions from main automatically
         if: github.ref == 'refs/heads/main'
