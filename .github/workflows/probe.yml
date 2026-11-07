@@ -1,0 +1,12 @@
+name: probe
+on:
+  push:
+    branches: ['probe/**']
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -s https://meta.fabricmc.net/v2/versions/game | python3 -c "import json,sys;print([(v['version'],v['stable']) for v in json.load(sys.stdin)][:30])"
+          curl -s https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml | grep -o "<version>[^<]*+26\.[0-9.]*</version>" | tail -30
+          curl -s https://meta.fabricmc.net/v2/versions/loader | python3 -c "import json,sys;print([v['version'] for v in json.load(sys.stdin)][:3])"
