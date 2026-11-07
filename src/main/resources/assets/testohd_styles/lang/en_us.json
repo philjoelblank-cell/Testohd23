@@ -422,5 +422,6 @@
   "packmixer.changelog.1.8.4": "New in 1.8.4\n• OP gaps (enchanted golden apples) now have their own category\n• Gaps and OP gaps can come from different packs\n• The preview shows OP gaps with their glint",
   "packmixer.changelog.1.8.5": "New in 1.8.5\n• OP gaps now have a clearly visible purple shine\n• Normal gaps stay without it",
   "packmixer.changelog.1.8.6": "New in 1.8.6\n• V1 crystals have normal explosions again\n• Coloured crystal explosions can be turned on in the settings",
-  "packmixer.changelog.1.8.7": "New in 1.8.7\n• You now see other players' cosmetic changes right away – no relog needed\n• New: version for Minecraft 26.2"
+  "packmixer.changelog.1.8.7": "New in 1.8.7\n• You now see other players' cosmetic changes right away – no relog needed\n• New: version for Minecraft 26.2",
+  "packmixer.changelog.1.8.8": "New in 1.8.8\n• No more thin lines at the edges of the sky"
 }
