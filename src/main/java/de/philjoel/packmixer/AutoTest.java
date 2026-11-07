@@ -156,6 +156,17 @@ final class AutoTest {
 			step("look " + pk, 60, () -> { });
 			shot("switch_" + pk.replace(" ", "_"));
 		}
+		// sky by day, looking at a corner of the sky box (seams between the faces)
+		command("time set 6000");
+		command("weather clear");
+		step("sky corner", 40, () -> {
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+			mc.player.setYRot(45);
+			mc.player.setXRot(-35);
+		});
+		shot("sky_day_corner");
+		step("sky up", 20, () -> mc.player.setXRot(-89));
+		shot("sky_day_up");
 		// live cosmetics: a line sent by "another player" must arrive without relog
 		final java.util.UUID fake = java.util.UUID.randomUUID();
 		final long[] sentAt = {0};
