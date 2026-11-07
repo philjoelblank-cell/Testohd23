@@ -44,7 +44,8 @@ public final class SkyboxRenderer {
 	private static final List<Identifier> loadedTextures = new ArrayList<>();
 	private static volatile boolean dirty = true;
 	private static List<String> lastPacks;
-	private static GpuBuffer box;
+	/** One box per texture size: the UVs stay half a pixel inside every face (no lines from the neighbouring face). */
+	private static final java.util.Map<Long, GpuBuffer> boxes = new java.util.HashMap<>();
 
 	/** Called after the resource packs were (re)applied. */
 	public static void markDirty() {
@@ -202,7 +203,6 @@ public final class SkyboxRenderer {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.level == null) return;
 		try {
-			if (box == null) box = buildBox();
 			int time = (int) Math.floorMod(mc.level.getOverworldClockTime(), 24000L);
 			RenderSystem.AutoStorageIndexBuffer quads = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
 			GpuBuffer indices = quads.getBuffer(36);
@@ -210,6 +210,8 @@ public final class SkyboxRenderer {
 				float b = Math.max(0f, Math.min(1f, fade(l, time) * rain));
 				if (b < 1e-4f) continue;
 				AbstractTexture tex = mc.getTextureManager().getTexture(l.texture);
+				var gt = tex.getTexture();
+				GpuBuffer box = box(gt.getWidth(0), gt.getHeight(0));
 				Matrix4fStack mv = RenderSystem.getModelViewStack();
 				mv.pushMatrix();
 				if (l.rotate) mv.rotate(sunAngle * l.speed, l.axis);
@@ -237,16 +239,20 @@ public final class SkyboxRenderer {
 	}
 
 	/** The 6 faces exactly like OptiFine lays them out in the 3x2 image. */
-	private static GpuBuffer buildBox() {
+	private static GpuBuffer box(int w, int h) {
+		return boxes.computeIfAbsent(((long) w << 32) | h, k -> buildBox(0.5f / Math.max(1, w), 0.5f / Math.max(1, h)));
+	}
+
+	private static GpuBuffer buildBox(float du, float dv) {
 		VertexFormat format = DefaultVertexFormat.POSITION_TEX_COLOR;
 		try (ByteBufferBuilder bytes = ByteBufferBuilder.exactlySized(24 * format.getVertexSize())) {
 			BufferBuilder b = new BufferBuilder(bytes, PrimitiveTopology.QUADS, format);
 			for (int side : new int[]{4, 1, 0, 5, 2, 3}) {
 				float tx = (side % 3) / 3f, ty = (side / 3) / 2f;
-				vertex(b, side, -1, -1, tx, ty);
-				vertex(b, side, -1, 1, tx, ty + 0.5f);
-				vertex(b, side, 1, 1, tx + 1 / 3f, ty + 0.5f);
-				vertex(b, side, 1, -1, tx + 1 / 3f, ty);
+				vertex(b, side, -1, -1, tx + du, ty + dv);
+				vertex(b, side, -1, 1, tx + du, ty + 0.5f - dv);
+				vertex(b, side, 1, 1, tx + 1 / 3f - du, ty + 0.5f - dv);
+				vertex(b, side, 1, -1, tx + 1 / 3f - du, ty + dv);
 			}
 			try (MeshData mesh = b.buildOrThrow()) {
 				return RenderSystem.getDevice().createBuffer(() -> "Testohd sky box", 40, mesh.vertexBuffer());
