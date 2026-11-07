@@ -18,7 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Lets mod users see each other's cosmetics – without a server of our own.
  * <p>
  * Every player posts one short line ({@code ts1;<uuid>;<head>;<face>;<back>;<effect>}) to a public
- * <a href="https://ntfy.sh">ntfy.sh</a> topic; everybody reads the topic every two minutes. Only the player
+ * <a href="https://ntfy.sh">ntfy.sh</a> topic; everybody stays subscribed to the topic, so a change shows up for the
+ * others within a few seconds – no relog needed (if the live connection fails: poll every two minutes). Only the player
  * UUID and the names of the chosen cosmetics are sent. Both directions can be switched off in the settings.
  */
 public final class CosmeticSync {
@@ -27,8 +28,9 @@ public final class CosmeticSync {
 
 	private static final Map<UUID, Cosmetics.Loadout> remote = new ConcurrentHashMap<>();
 	private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
-	private static volatile boolean busy;
-	private static long lastPoll, lastPublish, publishAt;
+	private static volatile boolean busy, streaming;
+	private static Thread streamThread;
+	private static long lastPoll, lastPublish, publishAt, lastCheck;
 	private static String lastSent = "";
 
 	public static Cosmetics.Loadout get(UUID uuid) {
@@ -37,13 +39,20 @@ public final class CosmeticSync {
 
 	/** Your cosmetics changed: send them shortly (a few changes in a row = one message). */
 	public static void publishSoon() {
-		publishAt = System.currentTimeMillis() + 4000;
+		publishAt = System.currentTimeMillis() + 1500;
 	}
 
 	static void tick(Minecraft mc) {
 		if (mc.player == null || busy) return;
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
 		long now = System.currentTimeMillis();
+		// any change (also switching cosmetics on/off) is sent, not only changes made in the cosmetics menu
+		if (now - lastCheck > 1000) {
+			lastCheck = now;
+			if (s.shareCosmetics && lastPublish != 0 && publishAt == 0 && !line(mc.player.getUUID(), Cosmetics.own()).equals(lastSent))
+				publishSoon();
+		}
+		if (s.showOthersCosmetics) startStream();
 		boolean periodic = lastPublish != 0 && now - lastPublish > REPUBLISH_MS;
 		if (s.shareCosmetics && (lastPublish == 0 || (publishAt != 0 && now >= publishAt) || periodic)) {
 			publishAt = 0;
@@ -57,7 +66,7 @@ public final class CosmeticSync {
 			}
 			return;
 		}
-		if (s.showOthersCosmetics && now - lastPoll > POLL_MS) {
+		if (s.showOthersCosmetics && !streaming && now - lastPoll > POLL_MS) {
 			lastPoll = now;
 			run(CosmeticSync::poll);
 		}
@@ -82,6 +91,55 @@ public final class CosmeticSync {
 			} catch (Exception ignored) {
 			}
 		}
+	}
+
+	/** Live subscription: ntfy keeps the connection open and sends every new line right away. */
+	private static synchronized void startStream() {
+		if (streamThread != null) return;
+		streamThread = new Thread(() -> {
+			long wait = 5000;
+			while (true) {
+				try {
+					if (!PackMixerConfig.settings().showOthersCosmetics) {
+						Thread.sleep(10_000);
+						continue;
+					}
+					HttpResponse<java.io.InputStream> res = HTTP.send(HttpRequest.newBuilder(URI.create(TOPIC_URL + "/json?since=12h"))
+							.timeout(Duration.ofSeconds(20)).header("User-Agent", "testohd-styles").GET().build(),
+							HttpResponse.BodyHandlers.ofInputStream());
+					if (res.statusCode() == 200) {
+						streaming = true;
+						wait = 5000;
+						try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(res.body(), StandardCharsets.UTF_8))) {
+							String json;
+							while ((json = r.readLine()) != null) {
+								if (!PackMixerConfig.settings().showOthersCosmetics) break;
+								if (json.isBlank()) continue;
+								try {
+									JsonObject o = JsonParser.parseString(json).getAsJsonObject();
+									if (o.has("event") && o.get("event").getAsString().equals("message") && o.has("message"))
+										parse(o.get("message").getAsString());
+								} catch (Exception ignored) {
+								}
+							}
+						}
+					} else res.body().close();
+				} catch (InterruptedException e) {
+					return;
+				} catch (Exception e) {
+					PackMixerClient.LOGGER.debug("Cosmetic stream: {}", e.toString());
+				}
+				streaming = false;
+				try {
+					Thread.sleep(wait);
+				} catch (InterruptedException e) {
+					return;
+				}
+				wait = Math.min(wait * 2, 120_000);
+			}
+		}, "Testohd cosmetics live");
+		streamThread.setDaemon(true);
+		streamThread.start();
 	}
 
 	/** Strict check: only known cosmetic names are accepted. */
