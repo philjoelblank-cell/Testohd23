@@ -32,12 +32,14 @@ public final class CrystalPacks {
 					0x35F2DD, 0xE6FFFC),
 			new Design("Kristall Holy", "c_holy", 0xFFF2C8, new int[]{0x8A7A50, 0xE8D8A0, 0xFFF6D8, 0xFFFFFF},
 					0xFFE680, 0xFFFFFF),
-			// V2 crystals: two colours swirling, a light orbiting the core
-			new Design("Kristall V2 Sunset", "c2_sunset", 0xFF8A50, new int[]{0x3A0800, 0xFF5A1F, 0xFF2E93, 0xFFE3A0}, 0xFF5A1F, 0xFF2E93),
-			new Design("Kristall V2 Ocean", "c2_ocean", 0x50A0FF, new int[]{0x020A3A, 0x1240FF, 0x2EE6FF, 0xE0FBFF}, 0x1240FF, 0x2EE6FF),
-			new Design("Kristall V2 Aurora", "c2_aurora", 0x60E8B0, new int[]{0x04201A, 0x18D98A, 0x8A3BFF, 0xD8FFF0}, 0x18D98A, 0x8A3BFF),
-			new Design("Kristall V2 Neon", "c2_neon", 0xC060FF, new int[]{0x200030, 0xFF1FB4, 0x22E6FF, 0xFFFFFF}, 0xFF1FB4, 0x22E6FF),
-			new Design("Kristall V2 Blood Moon", "c2_bloodmoon", 0xC02020, new int[]{0x120002, 0x7A0012, 0xFF2A2A, 0xFFB0A0}, 0x7A0012, 0xFF2A2A));
+			// V2 crystals: the animation of their pack
+			new Design("Kristall V2 Thunder Gold", "c2_thunder", 0xFFB800, new int[]{0x1A1205, 0xFFB800, 0xFFF7C2, 0xFFFFFF}, 0xFFB800, 0xFFF7C2),
+			new Design("Kristall V2 Toxic Lagoon", "c2_toxic", 0x45FF2A, new int[]{0x2A0848, 0x45FF2A, 0xD8FFB0, 0xFFFFFF}, 0x45FF2A, 0xD8FFB0),
+			new Design("Kristall V2 Cyber Lime", "c2_cyber", 0xB6FF00, new int[]{0x0C0C10, 0xB6FF00, 0x00F0FF, 0xFFFFFF}, 0xB6FF00, 0x00F0FF),
+			new Design("Kristall V2 Midnight Galaxy", "c2_galaxy", 0xFF2BD6, new int[]{0x06092A, 0xFF2BD6, 0xBFE6FF, 0xFFFFFF}, 0xFF2BD6, 0xBFE6FF),
+			new Design("Kristall V2 Matrix", "c2_matrix", 0x00FF66, new int[]{0x001A08, 0x00FF66, 0xD6FFE6, 0xFFFFFF}, 0x00FF66, 0xD6FFE6),
+			new Design("Kristall V2 Cherry Pulse", "c2_cherry", 0xFF1F5A, new int[]{0x4A0014, 0xFF1F5A, 0xFFD0DE, 0xFFFFFF}, 0xFF1F5A, 0xFFD0DE),
+			new Design("Kristall V2 Hologram", "c2_holo", 0xD38CFF, new int[]{0x8FE9FF, 0xD38CFF, 0xFFFFFF, 0xFFFFFF}, 0xD38CFF, 0xFFFFFF));
 
 	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
 
@@ -162,13 +164,8 @@ public final class CrystalPacks {
 		double ph = f / (double) FRAMES * Math.PI * 2;
 		double r = Math.hypot(u - 7.5, v - 7.5), ang = Math.atan2(v - 7.5, u - 7.5);
 		int iu = (int) u, iv = (int) v;
-		if (d.key.startsWith("c2_")) { // V2: two colours swirling around, a light orbiting
-			double sw = Math.sin(ang * 2 + ph - r * 0.7) * 0.5 + 0.5;
-			int c = col(new int[]{d.boomRamp[0], d.c1, d.c2, d.boomRamp[3]}, l * 0.5 + sw * 0.5);
-			double oa = ph * 2, ox = 7.5 + Math.cos(oa) * 5, oy = 7.5 + Math.sin(oa) * 5;
-			double orb = Math.exp(-(Math.pow(u - ox, 2) + Math.pow(v - oy, 2)) / 2.5);
-			return mix(c, 0xFFFFFF, Math.min(1, orb * 0.9 + (sw > 0.94 ? 0.3 : 0)));
-		}
+		V2Style.Palette v2 = V2Style.ofCrystal(d.key);
+		if (v2 != null) return V2Style.effColor(V2Style.effect(v2, u, v, f, FRAMES, l, 7)); // V2: the pack's own animation
 		switch (d.key) {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 10, 2) / 2.2)
@@ -227,10 +224,8 @@ public final class CrystalPacks {
 	static int coreColor(Design d, int f, double u, double v, boolean glyph, int faceSeed) {
 		double ph = f / (double) FRAMES * Math.PI * 2;
 		double r = Math.hypot(u - 7.5, v - 7.5), ang = Math.atan2(v - 7.5, u - 7.5);
-		if (d.key.startsWith("c2_")) {
-			double sw = Math.sin(ang * 2 - ph * 2 + r * 1.2) * 0.5 + 0.5;
-			return glyph ? mix(0xFFFFFF, d.c2, 0.3 + 0.3 * Math.sin(ph * 2)) : col(new int[]{d.boomRamp[0], d.c1, d.c2}, sw);
-		}
+		V2Style.Palette v2c = V2Style.ofCrystal(d.key);
+		if (v2c != null) return glyph ? v2c.glow() : V2Style.effColor(V2Style.effect(v2c, u, v, f, FRAMES, 0.55, 13 + faceSeed));
 		switch (d.key) {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 11, 2) / 3);

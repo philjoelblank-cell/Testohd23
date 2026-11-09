@@ -27,12 +27,14 @@ final class V1Packs {
 			new V1("Testohd23 V1 Turquoise", Element.ENERGY, "c_teal", 0x35F2DD),
 			new V1("Testohd Christmas V1 Turquoise", Element.ICE, "c_frost", 0x8FE3FF),
 			new V1("Testohd23 V1 White", Element.HOLY, "c_holy", 0xFFE680),
-			// V2: always alive (flowing colours, shine, lights running around the outline)
-			new V1("Testohd23 V2 Sunset", Element.FIRE, "c2_sunset", 0xFF7A3A, new V2Style.Palette(0xFF5A1F, 0xFF2E93, 0xFFE3A0)),
-			new V1("Testohd23 V2 Ocean", Element.ENERGY, "c2_ocean", 0x2EE6FF, new V2Style.Palette(0x1240FF, 0x2EE6FF, 0xE0FBFF)),
-			new V1("Testohd23 V2 Aurora", Element.ENERGY, "c2_aurora", 0x3BFFAA, new V2Style.Palette(0x18D98A, 0x8A3BFF, 0xD8FFF0)),
-			new V1("Testohd23 V2 Neon", Element.PLASMA, "c2_neon", 0xFF3FD0, new V2Style.Palette(0xFF1FB4, 0x22E6FF, 0xFFFFFF)),
-			new V1("Testohd23 V2 Blood Moon", Element.BLOOD, "c2_bloodmoon", 0xFF3030, new V2Style.Palette(0x7A0012, 0xFF2A2A, 0xFFB0A0)));
+			// V2: every pack its own animation that never stops
+			new V1("Testohd23 V2 Thunder Gold", Element.THUNDER, "c2_thunder", 0xFFF7C2, new V2Style.Palette(V2Style.Anim.LIGHTNING, 0x1A1205, 0xFFB800, 0xFFF7C2)),
+			new V1("Testohd23 V2 Toxic Lagoon", Element.TOXIC, "c2_toxic", 0xD8FFB0, new V2Style.Palette(V2Style.Anim.LIQUID, 0x2A0848, 0x45FF2A, 0xD8FFB0)),
+			new V1("Testohd23 V2 Cyber Lime", Element.ENERGY, "c2_cyber", 0x00F0FF, new V2Style.Palette(V2Style.Anim.GLITCH, 0x0C0C10, 0xB6FF00, 0x00F0FF)),
+			new V1("Testohd23 V2 Midnight Galaxy", Element.GALAXY, "c2_galaxy", 0xBFE6FF, new V2Style.Palette(V2Style.Anim.STARS, 0x06092A, 0xFF2BD6, 0xBFE6FF)),
+			new V1("Testohd23 V2 Matrix", Element.TOXIC, "c2_matrix", 0xD6FFE6, new V2Style.Palette(V2Style.Anim.RAIN, 0x001A08, 0x00FF66, 0xD6FFE6)),
+			new V1("Testohd23 V2 Cherry Pulse", Element.BLOOD, "c2_cherry", 0xFFD0DE, new V2Style.Palette(V2Style.Anim.HEARTBEAT, 0x4A0014, 0xFF1F5A, 0xFFD0DE)),
+			new V1("Testohd23 V2 Hologram", Element.PLASMA, "c2_holo", 0xFFFFFF, new V2Style.Palette(V2Style.Anim.HOLO, 0x8FE9FF, 0xD38CFF, 0xFFFFFF)));
 
 	static V1 of(String name) {
 		if (name == null) return null;
