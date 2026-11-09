@@ -31,7 +31,13 @@ public final class CrystalPacks {
 			new Design("Kristall Tuerkis", "c_teal", 0x40E8D8, new int[]{0x04201E, 0x0E9C92, 0x35F2DD, 0xB8FFF6},
 					0x35F2DD, 0xE6FFFC),
 			new Design("Kristall Holy", "c_holy", 0xFFF2C8, new int[]{0x8A7A50, 0xE8D8A0, 0xFFF6D8, 0xFFFFFF},
-					0xFFE680, 0xFFFFFF));
+					0xFFE680, 0xFFFFFF),
+			// V2 crystals: two colours swirling, a light orbiting the core
+			new Design("Kristall V2 Sunset", "c2_sunset", 0xFF8A50, new int[]{0x3A0800, 0xFF5A1F, 0xFF2E93, 0xFFE3A0}, 0xFF5A1F, 0xFF2E93),
+			new Design("Kristall V2 Ocean", "c2_ocean", 0x50A0FF, new int[]{0x020A3A, 0x1240FF, 0x2EE6FF, 0xE0FBFF}, 0x1240FF, 0x2EE6FF),
+			new Design("Kristall V2 Aurora", "c2_aurora", 0x60E8B0, new int[]{0x04201A, 0x18D98A, 0x8A3BFF, 0xD8FFF0}, 0x18D98A, 0x8A3BFF),
+			new Design("Kristall V2 Neon", "c2_neon", 0xC060FF, new int[]{0x200030, 0xFF1FB4, 0x22E6FF, 0xFFFFFF}, 0xFF1FB4, 0x22E6FF),
+			new Design("Kristall V2 Blood Moon", "c2_bloodmoon", 0xC02020, new int[]{0x120002, 0x7A0012, 0xFF2A2A, 0xFFB0A0}, 0x7A0012, 0xFF2A2A));
 
 	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
 
@@ -156,6 +162,13 @@ public final class CrystalPacks {
 		double ph = f / (double) FRAMES * Math.PI * 2;
 		double r = Math.hypot(u - 7.5, v - 7.5), ang = Math.atan2(v - 7.5, u - 7.5);
 		int iu = (int) u, iv = (int) v;
+		if (d.key.startsWith("c2_")) { // V2: two colours swirling around, a light orbiting
+			double sw = Math.sin(ang * 2 + ph - r * 0.7) * 0.5 + 0.5;
+			int c = col(new int[]{d.boomRamp[0], d.c1, d.c2, d.boomRamp[3]}, l * 0.5 + sw * 0.5);
+			double oa = ph * 2, ox = 7.5 + Math.cos(oa) * 5, oy = 7.5 + Math.sin(oa) * 5;
+			double orb = Math.exp(-(Math.pow(u - ox, 2) + Math.pow(v - oy, 2)) / 2.5);
+			return mix(c, 0xFFFFFF, Math.min(1, orb * 0.9 + (sw > 0.94 ? 0.3 : 0)));
+		}
 		switch (d.key) {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 10, 2) / 2.2)
@@ -214,6 +227,10 @@ public final class CrystalPacks {
 	static int coreColor(Design d, int f, double u, double v, boolean glyph, int faceSeed) {
 		double ph = f / (double) FRAMES * Math.PI * 2;
 		double r = Math.hypot(u - 7.5, v - 7.5), ang = Math.atan2(v - 7.5, u - 7.5);
+		if (d.key.startsWith("c2_")) {
+			double sw = Math.sin(ang * 2 - ph * 2 + r * 1.2) * 0.5 + 0.5;
+			return glyph ? mix(0xFFFFFF, d.c2, 0.3 + 0.3 * Math.sin(ph * 2)) : col(new int[]{d.boomRamp[0], d.c1, d.c2}, sw);
+		}
 		switch (d.key) {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 11, 2) / 3);
