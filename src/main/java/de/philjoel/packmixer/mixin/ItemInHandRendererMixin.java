@@ -27,6 +27,8 @@ public abstract class ItemInHandRendererMixin {
 			float sc = (float) s.itemScale;
 			pose.scale(sc, sc, sc);
 		}
+		if (s.lowShield && stack.is(net.minecraft.world.item.Items.SHIELD)) // low shield: see more while holding / blocking
+			pose.translate(0.0F, (float) -s.shieldOffset, 0.0F);
 	}
 
 	@Inject(method = "renderArmWithItem", at = @At("RETURN"))

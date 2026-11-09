@@ -158,6 +158,9 @@ public final class PackMixerConfig {
 		// Low fire
 		public boolean lowFire = false;
 		public double fireOffset = 0.3;                // 0 .. 0.5
+		// Low shield
+		public boolean lowShield = false;
+		public double shieldOffset = 0.25;             // 0 .. 0.5
 
 		// Cosmetics
 		public String hat = "";                        // "" = none
