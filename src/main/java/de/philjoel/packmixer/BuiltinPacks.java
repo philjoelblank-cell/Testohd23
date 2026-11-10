@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 18;
+	public static final int VERSION = 19;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO, V1XMAS;
@@ -299,6 +299,13 @@ public final class BuiltinPacks {
 			v1("Testohd23 V2 Sand", "v2_sand", "circle", Style.DUO, 0xB49A74, 0xF1E6D0),
 			v1("Testohd23 V2 Bordeaux", "v2_bordeaux", "circle", Style.DUO, 0x6E1A28, 0xE6C3C8),
 			v1("Testohd23 V2 Silver", "v2_silver", "circle", Style.DUO, 0xC8CCD2, 0xFFFFFF),
+			v1("Testohd23 V3 Aurora", "v3_aurora", "circle", Style.DUO, 0x34D8B4, 0x8B7CF6),
+			v1("Testohd23 V3 Vortex", "v3_vortex", "circle", Style.DUO, 0x7C6CF2, 0xE59CF5),
+			v1("Testohd23 V3 Ember", "v3_ember", "circle", Style.DUO, 0xF2704F, 0xFFB35C),
+			v1("Testohd23 V3 Tide", "v3_tide", "circle", Style.DUO, 0x1487A8, 0x6FE3F2),
+			v1("Testohd23 V3 Prism", "v3_prism", "circle", Style.DUO, 0x3CCB9B, 0xB5F5DC),
+			v1("Testohd23 V3 Rose", "v3_rose", "circle", Style.DUO, 0xEE7BAE, 0xFFC9DE),
+			v1("Testohd23 V3 Warp", "v3_warp", "circle", Style.DUO, 0x5B9DF5, 0xB9D8FF),
 			// ---- duo: clean colour + matching colour shift in the highlights
 			duo("Testohd Duo Lila Pink", "d_purplepink", "ring_dot", 0x7B2FE0, 0xFF7AD9),
 			duo("Testohd Duo Blau Cyan", "d_bluecyan", "small_plus", 0x1F4FE0, 0x5CF0FF),
@@ -338,7 +345,12 @@ public final class BuiltinPacks {
 	/** Generates the packs once per VERSION (in a background thread). */
 	public static void generateIfNeeded(Runnable whenDone) {
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
-		if (s.builtinPacksVersion >= VERSION || generating) return;
+		if (generating) return;
+		// also when a pack folder is missing (new pack in an update, deleted by hand, failed last time)
+		boolean missing = false;
+		for (Theme t : THEMES) if (!Files.isDirectory(PackMixerConfig.packsDir().resolve(folder(t)))) { missing = true; break; }
+		if (s.builtinPacksVersion >= VERSION && !missing) return;
+		if (missing) PackMixerClient.LOGGER.info("Built-in packs missing, generating them");
 		generating = true;
 		Thread t = new Thread(() -> {
 			try {

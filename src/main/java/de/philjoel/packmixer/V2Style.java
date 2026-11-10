@@ -9,11 +9,16 @@ import com.mojang.blaze3d.platform.NativeImage;
  */
 final class V2Style {
 	enum Anim {
-		LIGHTNING, LIQUID, GLITCH, STARS, RAIN, HEARTBEAT, HOLO, SHEEN
+		LIGHTNING, LIQUID, GLITCH, STARS, RAIN, HEARTBEAT, HOLO, SHEEN,
+		// V3
+		AURORA, VORTEX, FLAME, TIDE, PRISM, TRACE, WARP, DREAM
 	}
 
-	/** a = dark / main colour, b = effect colour, glow = brightest light. */
-	record Palette(Anim anim, int a, int b, int glow) {
+	/** a = dark / main colour, b = effect colour, glow = brightest light, c = second effect colour (V3). */
+	record Palette(Anim anim, int a, int b, int glow, int c) {
+		Palette(Anim anim, int a, int b, int glow) {
+			this(anim, a, b, glow, b);
+		}
 	}
 
 	/** Palette of the pack being generated right now (null = not a V2 pack). */
@@ -47,6 +52,29 @@ final class V2Style {
 			default -> { r = v; g = p; b = q; }
 		}
 		return ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | (int) (b * 255);
+	}
+
+	/** Smooth value noise on a lattice that repeats every 8 cells (so scrolling by 8 cells loops). */
+	private static double vnoise(double x, double y, int seed) {
+		int x0 = (int) Math.floor(x), y0 = (int) Math.floor(y);
+		double fx = x - x0, fy = y - y0;
+		fx = fx * fx * (3 - 2 * fx);
+		fy = fy * fy * (3 - 2 * fy);
+		double a = rnd(Math.floorMod(x0, 8), Math.floorMod(y0, 8), seed), b = rnd(Math.floorMod(x0 + 1, 8), Math.floorMod(y0, 8), seed);
+		double c = rnd(Math.floorMod(x0, 8), Math.floorMod(y0 + 1, 8), seed), d = rnd(Math.floorMod(x0 + 1, 8), Math.floorMod(y0 + 1, 8), seed);
+		return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
+	}
+
+	/** Distance behind a light that runs once around the centre per loop (0 = at the light, 1 = just ahead of it). */
+	private static double behind(double x, double y, double t) {
+		double ang = Math.atan2(y - 8, x - 8) / (2 * Math.PI);
+		return (((t - ang) % 1) + 1) % 1;
+	}
+
+	/** TRACE: comet tail strength on the outline, two comets opposite each other. */
+	static double comet(double x, double y, double t) {
+		double d = Math.min(behind(x, y, t), behind(x, y, t + 0.5));
+		return d < 0.3 ? Math.pow(1 - d / 0.3, 1.6) : 0;
 	}
 
 	/** Lightning bolt: a jagged line from top to bottom, new path every 10 frames; returns 0..1. */
@@ -134,6 +162,93 @@ final class V2Style {
 				c = mix(col(new int[]{p.a, p.b, p.glow}, l * 0.75 + beat * 0.3), p.glow, ring);
 				s = Math.min(1, beat * 0.6 + ring);
 			}
+			case AURORA -> { // northern lights: three curtains waving sideways, colours drifting
+				double v = 0;
+				for (int i = 0; i < 3; i++) {
+					double cx = 3.5 + i * 4.5 + 2.4 * Math.sin(2 * Math.PI * (t + y / 20.0) + i * 2.1) + 1.1 * Math.sin(2 * Math.PI * 2 * t + y * 0.55 + i);
+					double d = x - cx;
+					v += Math.exp(-d * d / 2.4) * (0.65 + 0.35 * Math.sin(2 * Math.PI * (t * 2 + i / 3.0) + y * 0.4));
+				}
+				v = Math.min(1, v);
+				double hue = 0.5 + 0.5 * Math.sin(2 * Math.PI * t + x * 0.35 - y * 0.15);
+				int light = mix(p.b, p.c, hue);
+				int base = col(new int[]{p.a, mix(p.a, p.b, 0.35)}, l);
+				c = mix(mix(base, light, v), p.glow, Math.max(0, v - 0.75) * 2.2);
+				s = 0.3 + v * 0.7;
+			}
+			case VORTEX -> { // three spiral arms turning around a bright core
+				double dx = x - 8, dy = y - 8, r = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
+				double v = 0.5 + 0.5 * Math.sin(3 * ang + r * 0.85 - 2 * Math.PI * t * 3);
+				v = v * v;
+				double core = Math.exp(-r * r / 7.0) * (0.75 + 0.25 * Math.sin(2 * Math.PI * t * 2));
+				c = mix(col(new int[]{p.a, p.b, p.c}, v * 0.85 + l * 0.15), p.glow, Math.min(1, core + Math.max(0, v - 0.85) * 2));
+				s = Math.min(1, 0.35 + v * 0.5 + core * 0.5);
+			}
+			case FLAME -> { // fire climbing up the item, hottest at the bottom
+				double n = vnoise(x / 2.0, y / 2.0 + t * 16, seed) * 0.6 + vnoise(x, y + t * 24, seed + 4) * 0.4;
+				double heat = Math.max(0, Math.min(1, Math.pow(y / 16.0, 1.15) * 1.15 + (n - 0.5) * 1.1));
+				c = col(new int[]{p.a, mix(p.a, p.b, 0.7), p.b, p.c, p.glow}, heat);
+				s = 0.4 + heat * 0.6;
+			}
+			case TIDE -> { // water sloshing left and right inside the item
+				double surf = 8.5 + 3.2 * Math.sin(2 * Math.PI * t) * ((x - 8) / 8.0) + 1.1 * Math.sin(2 * Math.PI * 2 * t + x * 0.75);
+				double d = y - surf;
+				if (d < -0.8) { // air
+					c = col(new int[]{p.a, mix(p.a, p.b, 0.3)}, l);
+					s = 0.3;
+				} else if (d < 0.6) { // foam line
+					c = p.glow;
+					s = 1;
+				} else {
+					double depth = Math.min(1, d / 7.0);
+					double caust = Math.pow(0.5 + 0.5 * Math.sin(x * 1.3 + 1.6 * Math.sin(y * 0.8 + 2 * Math.PI * 2 * t) + 2 * Math.PI * 3 * t), 3);
+					// bubbles rising in some columns
+					int colx = (int) x;
+					double by = 16 - (((t * 2 + rnd(colx, 2, seed)) % 1) * 12);
+					boolean bubble = rnd(colx, 5, seed) > 0.7 && Math.abs(y - by) < 0.6 && by > surf + 1;
+					c = bubble ? p.glow : mix(col(new int[]{p.c, p.b, mix(p.b, p.a, 0.55)}, depth), p.glow, caust * 0.35 * (1 - depth));
+					s = 0.85;
+				}
+			}
+			case PRISM -> { // crystal facets, a light wanders through them one by one
+				double d1 = 99, d2 = 99;
+				int cell = 0;
+				double ccx = 0, ccy = 0;
+				for (int i = 0; i < 9; i++) {
+					double px = rnd(i, 1, seed + 21) * 16, py = rnd(i, 2, seed + 21) * 16, d = Math.hypot(x - px, y - py);
+					if (d < d1) { d2 = d1; d1 = d; cell = i; ccx = px; ccy = py; } else if (d < d2) d2 = d;
+				}
+				double ph = (ccx + ccy) / 32.0, dt = Math.abs((((t - ph) % 1) + 1.5) % 1 - 0.5);
+				double flash = Math.exp(-dt * dt * 260);
+				boolean seam = d2 - d1 < 0.55;
+				int shade = col(new int[]{mix(p.a, p.b, 0.5), mix(p.a, p.b, 0.8), p.b, mix(p.b, p.c, 0.6)}, rnd(cell, 3, seed + 21) * 0.85 + l * 0.15);
+				c = mix(seam ? mix(shade, p.c, 0.6) : shade, p.glow, flash * 0.8);
+				s = 0.7 + flash * 0.3;
+			}
+			case TRACE -> { // calm inside (the comets run on the outline, see animate)
+				double breathe = 0.5 + 0.5 * Math.sin(2 * Math.PI * t * 2 - (x + y) * 0.25);
+				c = col(new int[]{mix(p.a, p.b, 0.45), p.b, mix(p.b, p.c, 0.7)}, l * 0.6 + breathe * 0.35);
+				s = 0.7;
+			}
+			case WARP -> { // hyperspace: rings and star streaks flying out of the middle
+				double dx = x - 8, dy = y - 8, r = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
+				double ringPos = ((r / 6.0 - t * 3) % 1 + 1) % 1;
+				double ring = Math.exp(-Math.pow(ringPos - 0.5, 2) * 40) * Math.min(1, r / 4.0);
+				int sector = (int) Math.floor((ang + Math.PI) / (2 * Math.PI) * 20);
+				double pos = Math.pow((t * 2 + rnd(sector, 9, seed)) % 1, 1.7) * 13, len = 0.8 + pos * 0.35;
+				double streak = rnd(sector, 4, seed) > 0.45 && r <= pos && r > pos - len ? (r - (pos - len)) / len : 0;
+				int base = col(new int[]{p.a, mix(p.a, p.b, 0.45)}, l * 0.3 + Math.min(1, r / 10.0) * 0.7);
+				c = mix(mix(base, mix(p.b, p.c, ring), ring * 0.95), p.glow, streak);
+				s = Math.min(1, 0.6 + ring * 0.3 + streak * 0.4);
+			}
+			case DREAM -> { // soft colours flowing through each other, a sparkle now and then
+				double h = (((x * 0.6 + y) / 22.0 + t + 0.08 * Math.sin(2 * Math.PI * 2 * t + x * 0.5)) % 1 + 1) % 1;
+				int flow = col(new int[]{p.b, p.c, p.glow, p.b}, h);
+				double r = rnd((int) x, (int) y, seed + 31);
+				double tw = r > 0.94 ? Math.max(0, 1 - Math.abs((((t - r * 7) % 1) + 1.5) % 1 - 0.5) * 9) : 0;
+				c = mix(mix(flow, p.a, (1 - l) * 0.25), 0xFFFFFF, tw * 0.9 + l * 0.12);
+				s = 0.75 + tw * 0.25;
+			}
 			case SHEEN -> { // calm metal: soft light band sliding across now and then
 				double pos = (x + y) / 2.0 - (t * 1.6 - 0.3) * 24;
 				double band = Math.exp(-pos * pos / 6.0);
@@ -191,6 +306,30 @@ final class V2Style {
 				double ring = Math.exp(-Math.pow(r - ringR, 2) / 0.8) * (1 - (t % 0.5) * 2);
 				if (ring > 0.45 && near(solid, w, h, x, y, ext * 2)) return 0xFF000000 | p.glow;
 			}
+			case FLAME -> { // sparks flying up from the top of the item
+				int cx = (int) ax;
+				if (rnd(cx, 7, seed) > 0.6) {
+					int top = -1;
+					for (int yy = 0; yy < h && top < 0; yy++) if (solid[yy * w + Math.min(w - 1, (int) (cx * u + u / 2))]) top = yy;
+					if (top >= 0) {
+						double dy = top / u - ay, spark = ((t * 2 + rnd(cx, 3, seed)) % 1) * 6;
+						if (dy > 0 && Math.abs(dy - spark) < 0.55) return 0xFF000000 | (spark < 2.5 ? p.glow : p.c);
+					}
+				}
+			}
+			case TRACE -> { // glow next to the comet heads
+				if (comet(ax, ay, t) > 0.6 && near(solid, w, h, x, y, ext)) return 0xFF000000 | p.c;
+			}
+			case VORTEX -> { // specks circling the item
+				double dx = ax - 8, dy = ay - 8, r = Math.hypot(dx, dy);
+				double v = Math.sin(3 * Math.atan2(dy, dx) + r * 0.85 - 2 * Math.PI * t * 3);
+				if (v > 0.93 && rnd((int) ax, (int) ay, seed + 5) > 0.5 && near(solid, w, h, x, y, ext * 2)) return 0xFF000000 | p.c;
+			}
+			case AURORA, DREAM -> { // soft twinkles around the item
+				double r = rnd((int) ax, (int) ay, seed + 77);
+				int ph = (int) (r * FRAMES);
+				if (r > 0.94 && Math.abs(f - ph) <= 1 && near(solid, w, h, x, y, ext * 2)) return 0xFF000000 | (f == ph ? p.glow : p.c);
+			}
 			case STARS -> { // twinkles around the item
 				double r = rnd((int) ax, (int) ay, seed + 77);
 				int ph = (int) (r * FRAMES);
@@ -222,10 +361,16 @@ final class V2Style {
 						if (mode == V1Packs.Mode.TOOL) {
 							boolean edge = isEdge(solid, w, h, x, y, ext);
 							c = mix(px & 0xFFFFFF, effColor(e), effStrength(e) * 0.8 + (edge ? 0.25 : 0));
+							if (edge && p.anim == Anim.TRACE) c = mix(c, p.glow, Math.min(1, comet(x / u, y / u, f / (double) FRAMES) * 1.15));
 						} else {
 							// keep the item's shading and outline readable under the effect
 							c = mix(effColor(e), 0x000000, (1 - l) * 0.35 * (1 - effStrength(e)));
-							if (isEdge(solid, w, h, x, y, ext)) c = mix(c, p.glow, 0.3);
+							if (isEdge(solid, w, h, x, y, ext)) {
+								if (p.anim == Anim.TRACE) { // outline in the pack colour, the comets light it up
+									double tail = comet(x / u, y / u, f / (double) FRAMES);
+									c = mix(mix(c, p.a, 0.5), tail > 0.85 ? 0xFFFFFF : mix(p.c, p.glow, tail), Math.min(1, tail * 1.3));
+								} else c = mix(c, p.glow, 0.3);
+							}
 						}
 						out.setPixel(x, oy + y, (px & 0xFF000000) | c);
 						continue;
