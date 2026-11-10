@@ -33,13 +33,13 @@ public final class CrystalPacks {
 			new Design("Kristall Holy", "c_holy", 0xFFF2C8, new int[]{0x8A7A50, 0xE8D8A0, 0xFFF6D8, 0xFFFFFF},
 					0xFFE680, 0xFFFFFF),
 			// V2 crystals: the animation of their pack
-			new Design("Kristall V2 Thunder Gold", "c2_thunder", 0xFFB800, new int[]{0x1A1205, 0xFFB800, 0xFFF7C2, 0xFFFFFF}, 0xFFB800, 0xFFF7C2),
-			new Design("Kristall V2 Toxic Lagoon", "c2_toxic", 0x45FF2A, new int[]{0x2A0848, 0x45FF2A, 0xD8FFB0, 0xFFFFFF}, 0x45FF2A, 0xD8FFB0),
-			new Design("Kristall V2 Cyber Lime", "c2_cyber", 0xB6FF00, new int[]{0x0C0C10, 0xB6FF00, 0x00F0FF, 0xFFFFFF}, 0xB6FF00, 0x00F0FF),
-			new Design("Kristall V2 Midnight Galaxy", "c2_galaxy", 0xFF2BD6, new int[]{0x06092A, 0xFF2BD6, 0xBFE6FF, 0xFFFFFF}, 0xFF2BD6, 0xBFE6FF),
-			new Design("Kristall V2 Matrix", "c2_matrix", 0x00FF66, new int[]{0x001A08, 0x00FF66, 0xD6FFE6, 0xFFFFFF}, 0x00FF66, 0xD6FFE6),
-			new Design("Kristall V2 Cherry Pulse", "c2_cherry", 0xFF1F5A, new int[]{0x4A0014, 0xFF1F5A, 0xFFD0DE, 0xFFFFFF}, 0xFF1F5A, 0xFFD0DE),
-			new Design("Kristall V2 Hologram", "c2_holo", 0xD38CFF, new int[]{0x8FE9FF, 0xD38CFF, 0xFFFFFF, 0xFFFFFF}, 0xD38CFF, 0xFFFFFF));
+			new Design("Kristall V2 Mono", "c2_mono", 0x5A5A60, new int[]{0x0E0E10, 0x5A5A60, 0xF2F2F2, 0xFFFFFF}, 0x5A5A60, 0xF2F2F2),
+			new Design("Kristall V2 Graphite", "c2_graphite", 0x4B5059, new int[]{0x1B1D21, 0x4B5059, 0xC9CDD3, 0xFFFFFF}, 0x4B5059, 0xC9CDD3),
+			new Design("Kristall V2 Navy", "c2_navy", 0x2E4A7A, new int[]{0x0B1630, 0x2E4A7A, 0xB8C8E0, 0xFFFFFF}, 0x2E4A7A, 0xB8C8E0),
+			new Design("Kristall V2 Sage", "c2_sage", 0x6F8466, new int[]{0x1E261C, 0x6F8466, 0xDCE6D2, 0xFFFFFF}, 0x6F8466, 0xDCE6D2),
+			new Design("Kristall V2 Sand", "c2_sand", 0xB49A74, new int[]{0x2B2218, 0xB49A74, 0xF1E6D0, 0xFFFFFF}, 0xB49A74, 0xF1E6D0),
+			new Design("Kristall V2 Bordeaux", "c2_bordeaux", 0x6E1A28, new int[]{0x24080E, 0x6E1A28, 0xE6C3C8, 0xFFFFFF}, 0x6E1A28, 0xE6C3C8),
+			new Design("Kristall V2 Silver", "c2_silver", 0xC8CCD2, new int[]{0x6E737C, 0xC8CCD2, 0xFFFFFF, 0xFFFFFF}, 0xC8CCD2, 0xFFFFFF));
 
 	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
 

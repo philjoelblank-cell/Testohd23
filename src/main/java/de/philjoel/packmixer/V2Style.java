@@ -9,7 +9,7 @@ import com.mojang.blaze3d.platform.NativeImage;
  */
 final class V2Style {
 	enum Anim {
-		LIGHTNING, LIQUID, GLITCH, STARS, RAIN, HEARTBEAT, HOLO
+		LIGHTNING, LIQUID, GLITCH, STARS, RAIN, HEARTBEAT, HOLO, SHEEN
 	}
 
 	/** a = dark / main colour, b = effect colour, glow = brightest light. */
@@ -108,7 +108,7 @@ final class V2Style {
 					double sp = layer == 0 ? 16 : 32;
 					int sx = (int) Math.floor(x + t * sp), sy = (int) Math.floor(y + t * sp * 0.5);
 					double r = rnd(Math.floorMod(sx, 16), Math.floorMod(sy, 16), seed + layer * 11);
-					if (r > (layer == 0 ? 0.9 : 0.86)) best = Math.max(best, layer == 0 ? 1 : 0.6);
+					if (r > (layer == 0 ? 0.95 : 0.93)) best = Math.max(best, layer == 0 ? 1 : 0.6);
 				}
 				double neb = 0.5 + 0.5 * Math.sin(x * 0.5 + y * 0.3 + t * 2 * Math.PI);
 				int base = col(new int[]{p.a, mix(p.a, p.b, 0.45)}, l * 0.7 + neb * 0.3);
@@ -133,6 +133,13 @@ final class V2Style {
 				double ring = Math.exp(-Math.pow(r - ringR, 2) / 1.5) * (1 - (t % 0.5) * 2);
 				c = mix(col(new int[]{p.a, p.b, p.glow}, l * 0.75 + beat * 0.3), p.glow, ring);
 				s = Math.min(1, beat * 0.6 + ring);
+			}
+			case SHEEN -> { // calm metal: soft light band sliding across now and then
+				double pos = (x + y) / 2.0 - (t * 1.6 - 0.3) * 24;
+				double band = Math.exp(-pos * pos / 6.0);
+				int base = col(new int[]{p.a, p.b}, l);
+				c = mix(base, p.glow, band * 0.85);
+				s = 0.2 + band * 0.6;
 			}
 			default -> { // HOLO: rainbow sheen by angle + moving scanlines
 				double h = (x + y) / 32.0 + t;

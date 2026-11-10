@@ -28,13 +28,13 @@ final class V1Packs {
 			new V1("Testohd Christmas V1 Turquoise", Element.ICE, "c_frost", 0x8FE3FF),
 			new V1("Testohd23 V1 White", Element.HOLY, "c_holy", 0xFFE680),
 			// V2: every pack its own animation that never stops
-			new V1("Testohd23 V2 Thunder Gold", Element.THUNDER, "c2_thunder", 0xFFF7C2, new V2Style.Palette(V2Style.Anim.LIGHTNING, 0x1A1205, 0xFFB800, 0xFFF7C2)),
-			new V1("Testohd23 V2 Toxic Lagoon", Element.TOXIC, "c2_toxic", 0xD8FFB0, new V2Style.Palette(V2Style.Anim.LIQUID, 0x2A0848, 0x45FF2A, 0xD8FFB0)),
-			new V1("Testohd23 V2 Cyber Lime", Element.ENERGY, "c2_cyber", 0x00F0FF, new V2Style.Palette(V2Style.Anim.GLITCH, 0x0C0C10, 0xB6FF00, 0x00F0FF)),
-			new V1("Testohd23 V2 Midnight Galaxy", Element.GALAXY, "c2_galaxy", 0xBFE6FF, new V2Style.Palette(V2Style.Anim.STARS, 0x06092A, 0xFF2BD6, 0xBFE6FF)),
-			new V1("Testohd23 V2 Matrix", Element.TOXIC, "c2_matrix", 0xD6FFE6, new V2Style.Palette(V2Style.Anim.RAIN, 0x001A08, 0x00FF66, 0xD6FFE6)),
-			new V1("Testohd23 V2 Cherry Pulse", Element.BLOOD, "c2_cherry", 0xFFD0DE, new V2Style.Palette(V2Style.Anim.HEARTBEAT, 0x4A0014, 0xFF1F5A, 0xFFD0DE)),
-			new V1("Testohd23 V2 Hologram", Element.PLASMA, "c2_holo", 0xFFFFFF, new V2Style.Palette(V2Style.Anim.HOLO, 0x8FE9FF, 0xD38CFF, 0xFFFFFF)));
+			new V1("Testohd23 V2 Mono", Element.VOID, "c2_mono", 0xF2F2F2, new V2Style.Palette(V2Style.Anim.STARS, 0x0E0E10, 0x5A5A60, 0xF2F2F2)),
+			new V1("Testohd23 V2 Graphite", Element.VOID, "c2_graphite", 0xC9CDD3, new V2Style.Palette(V2Style.Anim.GLITCH, 0x1B1D21, 0x4B5059, 0xC9CDD3)),
+			new V1("Testohd23 V2 Navy", Element.ICE, "c2_navy", 0xB8C8E0, new V2Style.Palette(V2Style.Anim.LIQUID, 0x0B1630, 0x2E4A7A, 0xB8C8E0)),
+			new V1("Testohd23 V2 Sage", Element.TOXIC, "c2_sage", 0xDCE6D2, new V2Style.Palette(V2Style.Anim.RAIN, 0x1E261C, 0x6F8466, 0xDCE6D2)),
+			new V1("Testohd23 V2 Sand", Element.HOLY, "c2_sand", 0xF1E6D0, new V2Style.Palette(V2Style.Anim.LIGHTNING, 0x2B2218, 0xB49A74, 0xF1E6D0)),
+			new V1("Testohd23 V2 Bordeaux", Element.BLOOD, "c2_bordeaux", 0xE6C3C8, new V2Style.Palette(V2Style.Anim.HEARTBEAT, 0x24080E, 0x6E1A28, 0xE6C3C8)),
+			new V1("Testohd23 V2 Silver", Element.PLASMA, "c2_silver", 0xFFFFFF, new V2Style.Palette(V2Style.Anim.SHEEN, 0x6E737C, 0xC8CCD2, 0xFFFFFF)));
 
 	static V1 of(String name) {
 		if (name == null) return null;
