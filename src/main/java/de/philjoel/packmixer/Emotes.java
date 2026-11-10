@@ -27,7 +27,10 @@ public final class Emotes {
 			new Emote("facepalm", "☹", 2.4f), new Emote("flex", "⚡", 3f),
 			new Emote("football", "⚽", 6f), new Emote("basketball", "●", 3.6f), new Emote("default_dance", "♪", 6f),
 			new Emote("take_l", "L", 5f), new Emote("floss", "≈", 5f), new Emote("robot", "⚙", 5f), new Emote("headbang", "♬", 4f),
-			new Emote("bow", "♛", 2.4f));
+			new Emote("bow", "♛", 2.4f),
+			new Emote("sit", "▄", 6f), new Emote("faint", "✝", 4f), new Emote("superman", "✈", 4f), new Emote("ascend", "↑", 4f),
+			new Emote("spin", "✿", 3f), new Emote("yellow_card", "▮", 2.6f), new Emote("red_card", "▮", 2.6f),
+			new Emote("worship", "☼", 4f), new Emote("six_seven", "67", 3f), new Emote("vibe", "♩", 5f));
 
 	public static KeyMapping key;
 
@@ -92,20 +95,45 @@ public final class Emotes {
 	}
 
 	/** Called after the vanilla pose was set up: bends arms / legs / head for the running emote. */
+	/** Render state ids at or below this are previews in the emote wheel: -(PREVIEW + index of the emote). */
+	public static final int PREVIEW = 100000;
+
+	/** Emote shown by a preview doll (its render state id), or null. */
+	public static Emote preview(int stateId) {
+		int i = -stateId - PREVIEW;
+		return stateId <= -PREVIEW && i < ALL.size() ? ALL.get(i) : null;
+	}
+
+	/** Seconds into the looping preview of an emote. */
+	static float previewTime(Emote e) {
+		return (System.nanoTime() / 1e9f) % e.seconds;
+	}
+
 	public static void pose(PlayerModel model, AvatarRenderState state) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.level == null || active.isEmpty()) return;
-		Entity e = mc.level.getEntity(state.id);
-		if (e == null) return;
-		Active a = active.get(e.getUUID());
-		if (a == null) return;
-		float t = time(e.getUUID(), a), dur = a.emote.seconds;
-		// blend in / out over 0.25 s
-		float k = Math.min(1f, Math.min(t, dur - t) / 0.25f);
+		Emote em;
+		float t;
+		Emote pv = preview(state.id);
+		if (pv != null) {
+			em = pv;
+			t = previewTime(pv);
+		} else {
+			if (mc.level == null || active.isEmpty()) return;
+			Entity e = mc.level.getEntity(state.id);
+			if (e == null) return;
+			Active a = active.get(e.getUUID());
+			if (a == null) return;
+			em = a.emote;
+			t = time(e.getUUID(), a);
+		}
+		float dur = em.seconds;
+		// blend in / out over 0.25 s (previews loop without)
+		float k = pv != null ? 1f : Math.min(1f, Math.min(t, dur - t) / 0.25f);
 		if (k <= 0) return;
 		float s = t * 20f; // ticks
 		ModelPart ra = model.rightArm, la = model.leftArm, rl = model.rightLeg, ll = model.leftLeg, head = model.head, body = model.body;
-		switch (a.emote.id) {
+		ModelPart root = model.root();
+		switch (em.id) {
 			case "wave" -> {
 				set(ra, -3.0f, 0, 0.55f + 0.4f * (float) Math.sin(s * 0.55f), k);
 			}
@@ -214,34 +242,129 @@ public final class Emotes {
 				set(ra, -0.4f * bw, 0, 0.1f, k);
 				set(la, 0.3f * bw, 0, -0.1f, k);
 			}
+			case "sit" -> { // cross-legged on the ground
+				set(rl, -1.45f, 0.35f, 0, k);
+				set(ll, -1.45f, -0.35f, 0, k);
+				set(ra, -0.65f, 0.1f, 0, k);
+				set(la, -0.65f, -0.1f, 0, k);
+				root.y += 10f * k;
+				set(head, 0.08f * (float) Math.sin(s * 0.08f), 0.2f * (float) Math.sin(s * 0.05f), 0, k);
+			}
+			case "faint" -> { // falls over backwards and lies there
+				float a = (float) (Math.min(1f, t / 0.7f) * Math.PI / 2) * k;
+				lie(root, -a);
+				set(ra, 0, 0, 0.6f, k);
+				set(la, 0, 0, -0.6f, k);
+			}
+			case "superman" -> { // flying, arms forward
+				float a = (float) (Math.PI / 2) * k;
+				lie(root, a);
+				root.y -= (6f + 2f * (float) Math.sin(s * 0.2f)) * k;
+				set(ra, -3.05f, 0, 0.1f, k);
+				set(la, -3.05f, 0, -0.1f, k);
+				set(head, -1.2f, 0, 0, k);
+			}
+			case "ascend" -> { // rises up slowly, arms open
+				root.y -= 14f * Math.min(1f, t / 3f) * k;
+				set(ra, 0, 0, 1.2f, k);
+				set(la, 0, 0, -1.2f, k);
+				set(head, -0.45f, 0, 0, k);
+				set(rl, 0.1f, 0, 0.05f, k);
+				set(ll, 0.1f, 0, -0.05f, k);
+			}
+			case "spin" -> { // ballet spin
+				root.yRot += (float) (t / dur * Math.PI * 4) * k;
+				set(ra, -3.0f, 0, -0.3f, k);
+				set(la, -3.0f, 0, 0.3f, k);
+				set(ll, -0.5f, 0, -0.35f, k);
+			}
+			case "yellow_card", "red_card" -> { // referee: card up high
+				float up = Math.min(1f, t / 0.35f);
+				set(ra, -2.95f * up, 0, 0.15f, k);
+				set(head, -0.15f, 0, 0, k);
+				set(la, 0, 0, -0.2f, k);
+			}
+			case "worship" -> { // kneeling and bowing again and again
+				float b = (float) Math.abs(Math.sin(s * 0.18f));
+				set(rl, 1.4f, 0, 0, k);
+				set(ll, 1.4f, 0, 0, k);
+				root.y += 9f * k;
+				set(body, 0.7f * b, 0, 0, k);
+				set(head, 0.7f * b, 0, 0, k);
+				set(ra, -2.6f + 1.2f * b, 0, 0.2f, k);
+				set(la, -2.6f + 1.2f * b, 0, -0.2f, k);
+			}
+			case "six_seven" -> { // both hands up, palms up, going up and down in turns
+				float b = (float) Math.sin(s * 0.55f);
+				set(ra, -1.25f + 0.45f * b, 0, 0, k);
+				set(la, -1.25f - 0.45f * b, 0, 0, k);
+				set(head, 0, 0.25f * b, 0, k);
+			}
+			case "vibe" -> { // stepping from side to side
+				float b = (float) Math.sin(s * 0.3f);
+				root.x += 2.2f * b * k;
+				set(body, 0, 0, 0.1f * b, k);
+				set(head, 0.12f * (float) Math.abs(Math.sin(s * 0.6f)), 0, -0.15f * b, k);
+				set(ra, -0.4f - 0.3f * b, 0, 0.35f, k);
+				set(la, -0.4f + 0.3f * b, 0, -0.35f, k);
+				set(rl, 0, 0, 0.2f * Math.max(0, b), k);
+				set(ll, 0, 0, -0.2f * Math.max(0, -b), k);
+			}
 			default -> {
 			}
 		}
 	}
 
+	/** Tilts the whole player by {@code angle} around the feet (lying on the back / front), feet stay on the ground. */
+	private static void lie(ModelPart root, float angle) {
+		root.xRot += angle;
+		root.y += 24f * (1 - (float) Math.cos(angle));
+		root.z -= 24f * (float) Math.sin(angle);
+	}
+
+	/** Prop held in the right hand: "card_yellow" / "card_red", or null. */
+	public static String prop(int stateId, UUID uuid) {
+		Emote e = preview(stateId);
+		if (e == null) {
+			Active a = uuid == null ? null : active.get(uuid);
+			e = a == null ? null : a.emote;
+		}
+		if (e == null) return null;
+		return e.id.equals("yellow_card") ? "card_yellow" : e.id.equals("red_card") ? "card_red" : null;
+	}
+
+
+
 	/**
 	 * Ball of a football / basketball emote in model space of this player (x, y down, z forward = negative),
 	 * {type 0 = football, 1 = basketball}, or null.
 	 */
-	public static float[] ball(UUID uuid) {
-		Active a = active.get(uuid);
-		if (a == null) return null;
-		float t = time(uuid, a), s = t * 20f;
-		if (a.emote.id.equals("football")) {
+	public static float[] ball(int stateId, UUID uuid) {
+		Emote e = preview(stateId);
+		float t;
+		if (e != null) t = previewTime(e);
+		else {
+			Active a = uuid == null ? null : active.get(uuid);
+			if (a == null) return null;
+			e = a.emote;
+			t = time(uuid, a);
+		}
+		float s = t * 20f;
+		if (e.id.equals("football")) {
 			float u = (s / 12f) % 1f;
 			float h = 4 * u * (1 - u); // up and down between two kicks
-			return new float[]{-0.12f, 1.32f - 1.05f * h, -0.32f, 0};
+			return new float[]{-0.12f, 1.2f - 0.95f * h, -0.5f, 0};
 		}
-		if (a.emote.id.equals("basketball")) {
+		if (e.id.equals("basketball")) {
 			if (t < 1.6f) {
 				float d = (float) Math.abs(Math.sin(Math.PI * s / 8));
-				return new float[]{-0.36f, 1.38f - 0.6f * d, -0.3f, 1};
+				return new float[]{-0.45f, 1.25f - 0.55f * d, -0.42f, 1};
 			}
 			float tt = t - 1.6f;
-			if (tt < 0.35f) return new float[]{0, 0.6f - 1.15f * (tt / 0.35f), -0.25f, 1};
+			if (tt < 0.35f) return new float[]{0, 0.5f - 1.25f * (tt / 0.35f), -0.4f, 1};
 			float f = tt - 0.35f;
 			if (f > 1.6f) return null;
-			return new float[]{0, -0.55f - 3.2f * f + 2.4f * f * f, -0.25f - 3.0f * f, 1};
+			return new float[]{0, -0.75f - 3.2f * f + 2.4f * f * f, -0.4f - 3.0f * f, 1};
 		}
 		return null;
 	}
