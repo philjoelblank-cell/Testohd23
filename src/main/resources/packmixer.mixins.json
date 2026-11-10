@@ -12,7 +12,9 @@
 		"SkyRendererMixin",
 		"ExplosionSoundMixin",
 		"ItemStackFoilMixin",
-		"ParticleSizeMixin"
+		"ParticleSizeMixin",
+		"AvatarCapeMixin",
+		"PlayerModelEmoteMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0

@@ -32,6 +32,8 @@ public class PackMixerClient implements ClientModInitializer {
 				"key.packmixer.open", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, category));
 		Features.zoomKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 				"key.packmixer.zoom", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, category));
+		Emotes.key = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+				"key.packmixer.emotes", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, category));
 
 		Cosmetics.init();
 
@@ -56,11 +58,16 @@ public class PackMixerClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			Features.tick(client);
 			CosmeticEffects.tick(client);
+			Capes.tick(client);
+			Emotes.tick(client);
 			Updater.tick(client);
 			CosmeticSync.tick(client);
 			AutoTest.tick(client);
 			CrystalSound.tick(client);
 			CrystalAnim.tick(client);
+			while (Emotes.key.consumeClick()) {
+				if (client.screen == null && client.player != null) client.setScreen(new EmoteWheelScreen());
+			}
 			while (openKey.consumeClick()) {
 				if (client.screen == null) {
 					client.setScreen(new PackMixerScreen(null));
