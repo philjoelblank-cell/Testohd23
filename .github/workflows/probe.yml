@@ -16,9 +16,9 @@ jobs:
           path: |
             ~/.gradle/caches
             .gradle/loom-cache
-          key: probe262-v1
+          key: probe263-v1
       - run: chmod +x gradlew && ./gradlew genSources --no-configuration-cache -q || true
       - run: |
-          f=$(find . ~/.gradle -name "*sources.jar" | grep minecraft-merged | grep "26.2" | head -1)
+          f=$(find . ~/.gradle -name "*sources.jar" | grep minecraft-merged | grep "26.3" | head -1)
           mkdir s && cd s && unzip -q "../$f" 2>/dev/null || unzip -q "$f"
           bash ../.github/probe.sh
