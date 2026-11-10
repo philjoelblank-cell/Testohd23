@@ -14,7 +14,10 @@ final class V1Packs {
 		PLASMA, FIRE, VOID, ENERGY, ICE, BLOOD, THUNDER, TOXIC, SAKURA, GALAXY, HOLY
 	}
 
-	record V1(String name, Element element, String crystal, int eye) {
+	record V1(String name, Element element, String crystal, int eye, V2Style.Palette v2) {
+		V1(String name, Element element, String crystal, int eye) {
+			this(name, element, crystal, eye, null);
+		}
 	}
 
 	static final List<V1> PACKS = List.of(
@@ -23,7 +26,15 @@ final class V1Packs {
 			new V1("Testohd23 V1 Black", Element.VOID, "c_void", 0xB46CFF),
 			new V1("Testohd23 V1 Turquoise", Element.ENERGY, "c_teal", 0x35F2DD),
 			new V1("Testohd Christmas V1 Turquoise", Element.ICE, "c_frost", 0x8FE3FF),
-			new V1("Testohd23 V1 White", Element.HOLY, "c_holy", 0xFFE680));
+			new V1("Testohd23 V1 White", Element.HOLY, "c_holy", 0xFFE680),
+			// V2: every pack its own animation that never stops
+			new V1("Testohd23 V2 Mono", Element.VOID, "c2_mono", 0xF2F2F2, new V2Style.Palette(V2Style.Anim.STARS, 0x0E0E10, 0x5A5A60, 0xF2F2F2)),
+			new V1("Testohd23 V2 Graphite", Element.VOID, "c2_graphite", 0xC9CDD3, new V2Style.Palette(V2Style.Anim.GLITCH, 0x1B1D21, 0x4B5059, 0xC9CDD3)),
+			new V1("Testohd23 V2 Navy", Element.ICE, "c2_navy", 0xB8C8E0, new V2Style.Palette(V2Style.Anim.LIQUID, 0x0B1630, 0x2E4A7A, 0xB8C8E0)),
+			new V1("Testohd23 V2 Sage", Element.TOXIC, "c2_sage", 0xDCE6D2, new V2Style.Palette(V2Style.Anim.RAIN, 0x1E261C, 0x6F8466, 0xDCE6D2)),
+			new V1("Testohd23 V2 Sand", Element.HOLY, "c2_sand", 0xF1E6D0, new V2Style.Palette(V2Style.Anim.LIGHTNING, 0x2B2218, 0xB49A74, 0xF1E6D0)),
+			new V1("Testohd23 V2 Bordeaux", Element.BLOOD, "c2_bordeaux", 0xE6C3C8, new V2Style.Palette(V2Style.Anim.HEARTBEAT, 0x24080E, 0x6E1A28, 0xE6C3C8)),
+			new V1("Testohd23 V2 Silver", Element.PLASMA, "c2_silver", 0xFFFFFF, new V2Style.Palette(V2Style.Anim.SHEEN, 0x6E737C, 0xC8CCD2, 0xFFFFFF)));
 
 	static V1 of(String name) {
 		if (name == null) return null;
@@ -88,6 +99,7 @@ final class V1Packs {
 	}
 
 	static NativeImage animate(NativeImage img, Element el, int seed, Mode mode) {
+		if (V2Style.current != null) return V2Style.animate(img, V2Style.current, seed, mode);
 		int w = img.getWidth(), h = img.getHeight();
 		double u = w / 16.0; // pixel size of one "art pixel"
 		boolean[] solid = new boolean[w * h];
@@ -154,6 +166,7 @@ final class V1Packs {
 	 * @param grid art pixels per row (16 for blocks, 64 for entity textures)
 	 */
 	static NativeImage animateBlock(NativeImage img, Element el, int seed, int grid) {
+		if (V2Style.current != null) return V2Style.animateBlock(img, V2Style.current, seed, grid);
 		int w = img.getWidth(), h = img.getHeight();
 		double u = Math.max(1, w / (double) grid);
 		int gw = (int) Math.round(w / u), gh = (int) Math.round(h / u);

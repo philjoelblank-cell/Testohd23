@@ -476,7 +476,7 @@ final class AutoTest {
 			startVideo(mc, "v1_video");
 		});
 		for (V1Packs.V1 v : V1Packs.PACKS) {
-			String tag = v.name().replace("Testohd23 V1 ", "v1_").replace("Testohd Christmas V1 ", "xmas_").toLowerCase();
+			String tag = v.name().replace("Testohd23 V1 ", "v1_").replace("Testohd23 V2 ", "v2_").replace("Testohd Christmas V1 ", "xmas_").toLowerCase().replace(' ', '_');
 			step("v1 " + tag, 2, () -> {
 				Map<String, String> sel = new LinkedHashMap<>();
 				for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, v.name());
