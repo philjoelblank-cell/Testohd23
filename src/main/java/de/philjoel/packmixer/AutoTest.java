@@ -151,6 +151,7 @@ final class AutoTest {
 			mc.setScreen(null);
 			PackMixerConfig.settings().emoteCamera = false;
 			mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+			mc.options.fov().set(30); // closer to you
 		});
 		step("emotes rec", 2, () -> startVideo(mc, "t06_emotes"));
 		for (String[] e : new String[][]{{"football", "70"}, {"basketball", "72"}, {"default_dance", "60"}, {"superman", "60"},
@@ -162,6 +163,7 @@ final class AutoTest {
 		step("auras prep", 30, () -> {
 			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
 			mc.player.setXRot(20);
+			mc.options.fov().set(38);
 			Cosmetics.Slot.CAPE.set("cape_galaxy");
 		});
 		step("auras rec", 2, () -> startVideo(mc, "t07_auras"));
@@ -177,6 +179,7 @@ final class AutoTest {
 		// 9: low shield
 		step("shield prep", 10, () -> {
 			mc.setScreen(null);
+			mc.options.fov().set(70);
 			mc.options.setCameraType(CameraType.FIRST_PERSON);
 			mc.player.setXRot(5);
 			PackMixerConfig.settings().lowShield = false;

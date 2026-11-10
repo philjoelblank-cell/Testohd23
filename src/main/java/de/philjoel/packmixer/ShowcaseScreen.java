@@ -19,7 +19,7 @@ class ShowcaseScreen extends Screen {
 		g.fillGradient(0, 0, this.width, this.height, 0xFF2A0F45, 0xFF0B0614);
 		float t = (System.nanoTime() - start) / 1e9f;
 		int w = this.width, h = this.height;
-		Doll.draw(g, w / 2 - h / 2, 0, w / 2 + h / 2, h, 0, 160f + t * degPerSecond, 1.7f);
+		Doll.draw(g, w / 2 - h / 2, h / 12, w / 2 + h / 2, h, 0, 160f + t * degPerSecond, 1.05f);
 		super.render(g, mouseX, mouseY, delta);
 	}
 
