@@ -346,7 +346,12 @@ public final class BuiltinPacks {
 	/** Generates the packs once per VERSION (in a background thread). */
 	public static void generateIfNeeded(Runnable whenDone) {
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
-		if (s.builtinPacksVersion >= VERSION || generating) return;
+		if (generating) return;
+		// also when a pack folder is missing (new pack in an update, deleted by hand, failed last time)
+		boolean missing = false;
+		for (Theme t : THEMES) if (!Files.isDirectory(PackMixerConfig.packsDir().resolve(folder(t)))) { missing = true; break; }
+		if (s.builtinPacksVersion >= VERSION && !missing) return;
+		if (missing) PackMixerClient.LOGGER.info("Built-in packs missing, generating them");
 		generating = true;
 		Thread t = new Thread(() -> {
 			try {
