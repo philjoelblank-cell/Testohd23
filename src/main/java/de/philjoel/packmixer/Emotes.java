@@ -24,7 +24,10 @@ public final class Emotes {
 	public static final List<Emote> ALL = List.of(
 			new Emote("wave", "✋", 2.6f), new Emote("dance", "♫", 6f), new Emote("cheer", "★", 3f),
 			new Emote("dab", "➚", 2f), new Emote("salute", "⚑", 2.6f), new Emote("clap", "✦", 3f),
-			new Emote("facepalm", "☹", 2.4f), new Emote("flex", "⚡", 3f));
+			new Emote("facepalm", "☹", 2.4f), new Emote("flex", "⚡", 3f),
+			new Emote("football", "⚽", 6f), new Emote("basketball", "●", 3.6f), new Emote("default_dance", "♪", 6f),
+			new Emote("take_l", "L", 5f), new Emote("floss", "≈", 5f), new Emote("robot", "⚙", 5f), new Emote("headbang", "♬", 4f),
+			new Emote("bow", "♛", 2.4f));
 
 	public static KeyMapping key;
 
@@ -144,9 +147,103 @@ public final class Emotes {
 				set(ra, 0, 0, 2.2f + p, k);
 				set(la, 0, 0, -2.2f - p, k);
 			}
+			case "football" -> { // keepy-uppy: the right foot kicks the ball up again and again
+				float u = (s / 12f) % 1f;
+				float kick = Math.max(0, 1 - u * 4);
+				set(rl, -0.75f * kick, 0, 0, k);
+				set(ra, 0, 0, 0.45f, k);
+				set(la, 0, 0, -0.45f, k);
+				set(head, 0.45f, 0, 0, k);
+			}
+			case "basketball" -> {
+				if (t < 1.6f) { // dribbling
+					float d = (float) Math.abs(Math.sin(Math.PI * s / 8));
+					set(ra, -0.75f + 0.35f * d, 0, 0.1f, k);
+					set(head, 0.3f, 0, 0, k);
+				} else { // jump shot: both arms up, ball flies away
+					float up = Math.min(1f, (t - 1.6f) / 0.35f);
+					set(ra, -1.3f - 1.6f * up, 0, 0.15f, k);
+					set(la, -1.3f - 1.6f * up, 0, -0.15f, k);
+					set(head, -0.35f * up, 0, 0, k);
+				}
+			}
+			case "default_dance" -> {
+				float p = s * 0.35f, sn = (float) Math.sin(p), cs = (float) Math.cos(p);
+				set(ra, -1.1f + 0.9f * sn, 0, -0.55f * sn + 0.2f, k);
+				set(la, -1.1f - 0.9f * sn, 0, -0.55f * sn - 0.2f, k);
+				set(rl, 0.45f * Math.max(0, cs), 0, 0.05f, k);
+				set(ll, 0.45f * Math.max(0, -cs), 0, -0.05f, k);
+				set(body, 0, 0.25f * sn, 0, k);
+				set(head, 0, -0.2f * sn, 0.12f * cs, k);
+			}
+			case "take_l" -> { // "L" on the forehead, legs kicking out to the side
+				float b = (float) Math.sin(s * 0.5f);
+				set(la, -2.5f, 0.2f, -0.35f, k);
+				set(ra, -0.3f, 0, 0.35f + 0.2f * b, k);
+				set(rl, 0, 0, 0.55f * Math.max(0, b), k);
+				set(ll, 0, 0, -0.55f * Math.max(0, -b), k);
+				set(head, -0.15f, 0.3f * b, 0, k);
+			}
+			case "floss" -> { // arms swing side to side, hips the other way
+				float p = (float) Math.sin(s * 0.55f), sw = Math.signum((float) Math.sin(s * 1.1f));
+				set(ra, 0.35f * sw, 0, 0.5f * p, k);
+				set(la, -0.35f * sw, 0, 0.5f * p, k);
+				set(body, 0, -0.3f * p, 0, k);
+				set(rl, 0, 0, -0.15f * p, k);
+				set(ll, 0, 0, -0.15f * p, k);
+			}
+			case "robot" -> { // stiff moves, one pose after the other
+				int step = (int) (s / 8) % 4;
+				float[][] poses = {{-1.57f, 0, -0.3f, 0}, {-1.57f, -1.57f, 0, 0.5f}, {0, -1.57f, 0.5f, 0}, {-1.57f, -1.57f, -0.3f, -0.5f}};
+				float[] q = poses[step];
+				set(ra, q[0], 0, 0, k);
+				set(la, q[1], 0, 0, k);
+				set(head, 0, q[2], 0, k);
+				set(body, 0, q[3] * 0.3f, 0, k);
+			}
+			case "headbang" -> { // head goes hard, air guitar
+				float h = (float) Math.sin(s * 0.9f);
+				set(head, 0.25f + 0.45f * h, 0, 0, k);
+				set(ra, -0.9f + 0.3f * h, -0.45f, 0, k);
+				set(la, -0.75f, 0.55f, 0, k);
+			}
+			case "bow" -> {
+				float bw = (float) Math.sin(Math.min(1f, t / dur) * Math.PI);
+				set(body, 0.5f * bw, 0, 0, k);
+				set(head, 0.6f * bw, 0, 0, k);
+				set(ra, -0.4f * bw, 0, 0.1f, k);
+				set(la, 0.3f * bw, 0, -0.1f, k);
+			}
 			default -> {
 			}
 		}
+	}
+
+	/**
+	 * Ball of a football / basketball emote in model space of this player (x, y down, z forward = negative),
+	 * {type 0 = football, 1 = basketball}, or null.
+	 */
+	public static float[] ball(UUID uuid) {
+		Active a = active.get(uuid);
+		if (a == null) return null;
+		float t = time(uuid, a), s = t * 20f;
+		if (a.emote.id.equals("football")) {
+			float u = (s / 12f) % 1f;
+			float h = 4 * u * (1 - u); // up and down between two kicks
+			return new float[]{-0.12f, 1.32f - 1.05f * h, -0.32f, 0};
+		}
+		if (a.emote.id.equals("basketball")) {
+			if (t < 1.6f) {
+				float d = (float) Math.abs(Math.sin(Math.PI * s / 8));
+				return new float[]{-0.36f, 1.38f - 0.6f * d, -0.3f, 1};
+			}
+			float tt = t - 1.6f;
+			if (tt < 0.35f) return new float[]{0, 0.6f - 1.15f * (tt / 0.35f), -0.25f, 1};
+			float f = tt - 0.35f;
+			if (f > 1.6f) return null;
+			return new float[]{0, -0.55f - 3.2f * f + 2.4f * f * f, -0.25f - 3.0f * f, 1};
+		}
+		return null;
 	}
 
 	private static void set(ModelPart p, float x, float y, float z, float k) {

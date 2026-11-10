@@ -14,7 +14,8 @@
 		"ItemStackFoilMixin",
 		"ParticleSizeMixin",
 		"AvatarCapeMixin",
-		"PlayerModelEmoteMixin"
+		"PlayerModelEmoteMixin",
+		"TabBadgeMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0
