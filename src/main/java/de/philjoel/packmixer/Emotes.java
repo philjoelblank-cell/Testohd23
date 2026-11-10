@@ -161,10 +161,10 @@ public final class Emotes {
 					set(ra, -0.75f + 0.35f * d, 0, 0.1f, k);
 					set(head, 0.3f, 0, 0, k);
 				} else { // jump shot: both arms up, ball flies away
-					float a = Math.min(1f, (t - 1.6f) / 0.35f);
-					set(ra, -1.3f - 1.6f * a, 0, 0.15f, k);
-					set(la, -1.3f - 1.6f * a, 0, -0.15f, k);
-					set(head, -0.35f * a, 0, 0, k);
+					float up = Math.min(1f, (t - 1.6f) / 0.35f);
+					set(ra, -1.3f - 1.6f * up, 0, 0.15f, k);
+					set(la, -1.3f - 1.6f * up, 0, -0.15f, k);
+					set(head, -0.35f * up, 0, 0, k);
 				}
 			}
 			case "default_dance" -> {
@@ -208,11 +208,11 @@ public final class Emotes {
 				set(la, -0.75f, 0.55f, 0, k);
 			}
 			case "bow" -> {
-				float a = (float) Math.sin(Math.min(1f, t / dur) * Math.PI);
-				set(body, 0.5f * a, 0, 0, k);
-				set(head, 0.6f * a, 0, 0, k);
-				set(ra, -0.4f * a, 0, 0.1f, k);
-				set(la, 0.3f * a, 0, -0.1f, k);
+				float bw = (float) Math.sin(Math.min(1f, t / dur) * Math.PI);
+				set(body, 0.5f * bw, 0, 0, k);
+				set(head, 0.6f * bw, 0, 0, k);
+				set(ra, -0.4f * bw, 0, 0.1f, k);
+				set(la, 0.3f * bw, 0, -0.1f, k);
 			}
 			default -> {
 			}
