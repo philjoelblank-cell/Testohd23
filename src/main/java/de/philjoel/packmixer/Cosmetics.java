@@ -5,6 +5,9 @@ import com.mojang.math.Axis;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.player.PlayerCapeModel;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -13,6 +16,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -195,14 +199,17 @@ public final class Cosmetics {
 	static void init() {
 		LivingEntityRenderLayerRegistrationCallback.EVENT.register((entityType, entityRenderer, helper, context) -> {
 			if (entityRenderer instanceof AvatarRenderer<?> avatar) {
-				helper.register(new CosmeticLayer(avatar));
+				helper.register(new CosmeticLayer(avatar, context.getModelSet()));
 			}
 		});
 	}
 
 	static final class CosmeticLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
-		CosmeticLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent) {
+		private final PlayerCapeModel capeModel;
+
+		CosmeticLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet models) {
 			super(parent);
+			this.capeModel = new PlayerCapeModel(models.bakeLayer(ModelLayers.PLAYER_CAPE));
 		}
 
 		@Override
@@ -251,8 +258,23 @@ public final class Cosmetics {
 			float t = state.ageInTicks;
 			if (Auras3D.handles(loadout.effect())) Auras3D.render(pose, collector, state, model, mc, loadout.effect(), t);
 
+			// The cape is drawn by this layer itself (not by the vanilla cape layer), so other clients
+			// that replace or hide vanilla capes (NoRisk, Lunar ...) can't make it disappear.
+			String capeId = loadout.cape();
+			boolean capeOn = false;
+			if (!capeId.isEmpty() && Capes.ready(capeId) && !state.chestEquipment.has(DataComponents.GLIDER) && !Emotes.hidesCape(state.id, uuid)) {
+				capeOn = true;
+				pose.pushPose();
+				if (!state.chestEquipment.isEmpty()) pose.translate(0.0F, -0.053125F, 0.06875F); // over a chestplate
+				collector.submitModel(capeModel, state, pose, RenderTypes.entitySolid(capeTexture(capeId, mc.level.getGameTime())),
+						light, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
+				pose.popPose();
+			}
+			// with a helmet on, hats and glasses sit on the helmet instead of inside it
+			float overHelmet = state.headEquipment.isEmpty() ? 1.0F : 1.25F;
+
 			String back = loadout.back();
-			if (WINGS.contains(back)) wings(pose, collector, light, state, model, mc, back, t);
+			if (WINGS.contains(back)) wings(pose, collector, light, state, model, mc, back, t, capeOn);
 			for (Slot slot : new Slot[]{Slot.HEAD, Slot.FACE, Slot.BACK}) {
 				String id = loadout.get(slot);
 				if (id.isEmpty() || WINGS.contains(id)) continue;
@@ -277,6 +299,7 @@ public final class Cosmetics {
 				} else {
 					model.getHead().translateAndRotate(pose);
 					CustomHeadLayer.translateToHead(pose, CustomHeadLayer.Transforms.DEFAULT);
+					if (overHelmet != 1.0F) pose.scale(overHelmet, overHelmet, overHelmet);
 					if (id.endsWith("_halo")) { // V1 halos: float higher and turn faster
 						pose.translate(0.0F, (float) Math.sin(t * 0.14F) * 0.04F + 0.03F, 0.0F);
 						pose.mulPose(Axis.YP.rotationDegrees((t * 4.5F)));
@@ -310,7 +333,7 @@ public final class Cosmetics {
 
 	/** Left and right wing, each turning around the spine: they beat open and closed. */
 	private static void wings(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, PlayerModel model,
-			Minecraft mc, String id, float t) {
+			Minecraft mc, String id, float t, boolean cape) {
 		float speed = id.equals("phoenix_wings") || id.equals("inferno_wings") || id.equals("plasma_wings") ? 0.32F : 0.22F;
 		float beat = (float) Math.sin(t * speed);
 		boolean flying = state.isFallFlying || state.isCrouching;
@@ -323,7 +346,7 @@ public final class Cosmetics {
 			model.root().translateAndRotate(pose);
 			model.body.translateAndRotate(pose);
 			// wing roots on the shoulder blades, just behind the back (also behind a chestplate)
-			pose.translate(0.0F, 0.6F, 0.2F);
+			pose.translate(0.0F, 0.6F, cape ? 0.3F : 0.2F); // with a cape: a bit further back, outside the cape
 			pose.mulPose(Axis.YP.rotationDegrees(180.0F));
 			pose.scale(0.62F, -0.62F, -0.62F);
 			// open backwards (away from the body): with the flips above the angle has to be negative,

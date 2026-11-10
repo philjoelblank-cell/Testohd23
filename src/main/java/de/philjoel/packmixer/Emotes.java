@@ -360,6 +360,16 @@ public final class Emotes {
 		if (WHOLE_BODY.contains(e.id)) state.showCape = false;
 	}
 
+	/** True while a whole-body emote (lying, spinning ...) is playing: no cape then. */
+	public static boolean hidesCape(int stateId, UUID uuid) {
+		Emote e = preview(stateId);
+		if (e == null) {
+			Active a = uuid == null ? null : active.get(uuid);
+			e = a == null ? null : a.emote;
+		}
+		return e != null && WHOLE_BODY.contains(e.id);
+	}
+
 	/** Prop held in the right hand: "card_yellow" / "card_red", or null. */
 	public static String prop(int stateId, UUID uuid) {
 		Emote e = preview(stateId);
