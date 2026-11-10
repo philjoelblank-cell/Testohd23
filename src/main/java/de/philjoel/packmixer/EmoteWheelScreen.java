@@ -59,7 +59,7 @@ public class EmoteWheelScreen extends Screen {
 		g.fill(0, 0, this.width, this.height, (int) (0x70 * in) << 24);
 		int hov = hovered(mouseX, mouseY);
 		double chord = 2 * radius() * Math.sin(Math.PI / Math.max(3, list().size()));
-		int w = (int) Math.min(58, chord - 4), h = (int) Math.min(36, w * 0.66);
+		int w = (int) Math.min(64, chord - 4), h = (int) Math.min(78, chord * 0.85);
 		java.util.List<Emotes.Emote> list = list();
 		for (int i = 0; i < list.size(); i++) {
 			Emotes.Emote e = list.get(i);
@@ -68,13 +68,18 @@ public class EmoteWheelScreen extends Screen {
 			boolean hv = i == hov;
 			g.fill(px - w / 2, py - h / 2, px + w / 2, py + h / 2, hv ? 0xC0A855F7 : 0xA0181424);
 			g.fill(px - w / 2, py + h / 2 - 1, px + w / 2, py + h / 2, hv ? 0xFFFFFFFF : 0xFF7A4BC8);
-			g.pose().pushMatrix();
-			g.pose().translate(px, py - 6);
-			g.pose().scale(2f, 2f);
-			g.drawString(this.font, e.glyph(), -this.font.width(e.glyph()) / 2, -4, hv ? 0xFFFFFFFF : 0xFFE6D6FF, true);
-			g.pose().popMatrix();
+			// the emote itself, played by a small you
+			int idx = Emotes.ALL.indexOf(e);
+			boolean drawn = Doll.draw(g, px - w / 2, py - h / 2 + 2, px + w / 2, py + h / 2 - 10, -(Emotes.PREVIEW + idx), 20f, 1.15f);
+			if (!drawn) {
+				g.pose().pushMatrix();
+				g.pose().translate(px, py - 6);
+				g.pose().scale(2f, 2f);
+				g.drawString(this.font, e.glyph(), -this.font.width(e.glyph()) / 2, -4, hv ? 0xFFFFFFFF : 0xFFE6D6FF, true);
+				g.pose().popMatrix();
+			}
 			String name = Component.translatable("packmixer.emote." + e.id()).getString();
-			Ui.small(g, name, px - Ui.smallWidth(name) / 2, py + 8, hv ? 0xFFFFFFFF : Ui.DIM);
+			Ui.small(g, name, px - Ui.smallWidth(name) / 2, py + h / 2 - 9, hv ? 0xFFFFFFFF : Ui.DIM);
 			Ui.small(g, String.valueOf(i + 1), px - w / 2 + 3, py - h / 2 + 3, Ui.FAINT);
 		}
 		if (pages() > 1) {

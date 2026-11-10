@@ -177,6 +177,19 @@ final class AutoTest {
 			step("cape load " + cape, 10, () -> { });
 			shot("views_" + cape);
 		}
+		for (String hat : new String[]{"space_helmet", "dragon_horns", "fox_beanie", "propeller_cap", "cowboy_hat", "chef_hat"}) {
+			step("wear " + hat, 10, () -> {
+				Cosmetics.Slot.CAPE.set("");
+				Cosmetics.Slot.HEAD.set(hat);
+				Cosmetics.Slot.FACE.set(hat.equals("space_helmet") ? "" : "neon_visor");
+				mc.setScreen(new TestViewScreen(0, 45, 90, 180));
+			});
+			shot("views_" + hat);
+		}
+		step("hats off", 2, () -> {
+			Cosmetics.Slot.HEAD.set("");
+			Cosmetics.Slot.FACE.set("");
+		});
 		step("cape + wings", 10, () -> Cosmetics.Slot.BACK.set("galaxy_wings"));
 		shot("views_cape_wings");
 		step("emotes start", 5, () -> {
@@ -185,17 +198,20 @@ final class AutoTest {
 			mc.setScreen(new EmoteWheelScreen());
 		});
 		shot("emote_wheel");
-		step("emote wheel page 2", 5, () -> {
-			EmoteWheelScreen.testPage(1);
-			mc.setScreen(new EmoteWheelScreen());
-		});
-		shot("emote_wheel_2");
+		for (int pg = 1; pg < 4; pg++) {
+			int page = pg;
+			step("emote wheel page " + page, 30, () -> {
+				EmoteWheelScreen.testPage(page);
+				mc.setScreen(new EmoteWheelScreen());
+			});
+			shot("emote_wheel_" + (page + 1));
+		}
 		for (Emotes.Emote e : Emotes.ALL) {
 			step("emote " + e.id(), 2, () -> {
 				mc.setScreen(null);
 				Emotes.play(e.id());
 			});
-			step("emote view " + e.id(), e.id().equals("basketball") ? 46 : 14, () -> mc.setScreen(new TestViewScreen(0, 30, 90)));
+			step("emote view " + e.id(), e.id().equals("basketball") ? 46 : e.id().equals("faint") || e.id().equals("ascend") ? 40 : 14, () -> mc.setScreen(new TestViewScreen(0, 30, 90)));
 			shot("emote_" + e.id());
 		}
 		step("tab list", 10, () -> {
