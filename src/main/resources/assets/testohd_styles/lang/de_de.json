@@ -499,5 +499,7 @@
   "packmixer.hat.trail_frost": "Frost-Wirbel",
   "packmixer.hat.trail_void": "Void-Wirbel",
   "packmixer.hat.trail_yinyang": "Yin & Yang",
-  "packmixer.hat.trail_rainbow": "Regenbogen-Ringe"
+  "packmixer.hat.trail_rainbow": "Regenbogen-Ringe",
+  "packmixer.badge.left": "Position: vor dem Namen",
+  "packmixer.badge.right": "Position: hinter dem Namen"
 }

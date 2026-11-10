@@ -230,6 +230,13 @@ public class PackMixerSettingsScreen extends Screen {
 				addRenderableWidget(slider(x, y, cw, tr("packmixer.fire_height"), s.fireOffset, 0, 0.5, v -> s.fireOffset = v,
 						v -> Math.round(v / 0.5 * 100) + "%")); y += 18;
 			}
+			case "badges" -> {
+				addRenderableWidget(Ui.glass(Component.translatable(s.badgeLeft ? "packmixer.badge.left" : "packmixer.badge.right"), b -> {
+					s.badgeLeft = !s.badgeLeft;
+					saved();
+					b.setMessage(Component.translatable(s.badgeLeft ? "packmixer.badge.left" : "packmixer.badge.right"));
+				}).bounds(x, y, cw, 14).build()); y += 18;
+			}
 			case "low_shield" -> {
 				addRenderableWidget(slider(x, y, cw, tr("packmixer.shield_height"), s.shieldOffset, 0, 0.5, v -> s.shieldOffset = v,
 						v -> Math.round(v / 0.5 * 100) + "%")); y += 18;

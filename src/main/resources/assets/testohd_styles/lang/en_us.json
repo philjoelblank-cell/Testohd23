@@ -499,5 +499,7 @@
   "packmixer.hat.trail_frost": "Frost Swirl",
   "packmixer.hat.trail_void": "Void Swirl",
   "packmixer.hat.trail_yinyang": "Yin & Yang",
-  "packmixer.hat.trail_rainbow": "Rainbow Rings"
+  "packmixer.hat.trail_rainbow": "Rainbow Rings",
+  "packmixer.badge.left": "Position: before the name",
+  "packmixer.badge.right": "Position: after the name"
 }
