@@ -64,6 +64,7 @@ public class PackMixerSettingsScreen extends Screen {
 		settingsEntries.add(new Entry("particles", "screen", Ui.icon(Items.BLAZE_POWDER), null, null,
 				() -> o.particles().get().caption().getString() + (s.particleSize < 0.999 ? " · " + Math.round(s.particleSize * 100) + "%" : "")));
 		settingsEntries.add(new Entry("low_fire", "screen", Ui.icon(Items.FIRE_CHARGE), () -> s.lowFire, v -> s.lowFire = v, null));
+		settingsEntries.add(new Entry("badges", "screen", Ui.icon(Items.NAME_TAG), () -> s.showBadges, v -> s.showBadges = v, null));
 		settingsEntries.add(new Entry("low_shield", "screen", Ui.icon(Items.SHIELD), () -> s.lowShield, v -> s.lowShield = v, null));
 		settingsEntries.add(new Entry("ancient_debris", "screen", Ui.icon(Items.ANCIENT_DEBRIS), () -> s.ancientDebris, v -> {
 			s.ancientDebris = v;

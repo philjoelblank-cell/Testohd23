@@ -457,5 +457,19 @@
   "packmixer.hat.thunder_wings": "Donnerflügel",
   "packmixer.hat.galaxy_wings": "Galaxieflügel",
   "packmixer.hat.toxic_wings": "Giftflügel",
-  "packmixer.hat.holo_wings": "Hologrammflügel"
+  "packmixer.hat.holo_wings": "Hologrammflügel",
+  "packmixer.hat.cape_sakura": "Sakura-Umhang",
+  "packmixer.hat.cape_ocean": "Ozean-Umhang",
+  "packmixer.emote.football": "Fußball",
+  "packmixer.emote.basketball": "Basketball",
+  "packmixer.emote.default_dance": "Default-Tanz",
+  "packmixer.emote.take_l": "Take the L",
+  "packmixer.emote.floss": "Floss",
+  "packmixer.emote.robot": "Roboter",
+  "packmixer.emote.headbang": "Headbang",
+  "packmixer.emote.bow": "Verbeugen",
+  "packmixer.emotes.scroll": "Scrollen oder ◀ ▶ für mehr",
+  "packmixer.changelog.1.9.0": "Neu in 1.9.0\n• Umhänge: 12 animierte HD-Capes (auch als Elytra)\n• Emotes mit B: 16 Emotes, u. a. Fußball, Basketball, Default-Tanz, Floss\n• \"T\" neben dem Namen von Spielern mit der Mod (Namensschild + Tab)\n• Neue Flügel und Effekte\n• Flügel sitzen jetzt richtig am Rücken\n• Low Shield",
+  "packmixer.feature.badges": "T-Abzeichen",
+  "packmixer.feature.badges.desc": "Zeigt ein T neben dem Namen von Spielern, die die Mod haben"
 }

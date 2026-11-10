@@ -66,7 +66,7 @@ public final class Cosmetics {
 			Map.entry("cape_plasma", Rarity.LEGENDARY), Map.entry("cape_inferno", Rarity.LEGENDARY), Map.entry("cape_void", Rarity.LEGENDARY),
 			Map.entry("cape_galaxy", Rarity.LEGENDARY), Map.entry("cape_rainbow", Rarity.LEGENDARY), Map.entry("cape_thunder", Rarity.LEGENDARY),
 			Map.entry("cape_holy", Rarity.EPIC), Map.entry("cape_energy", Rarity.EPIC), Map.entry("cape_frost", Rarity.EPIC),
-			Map.entry("cape_matrix", Rarity.EPIC),
+			Map.entry("cape_matrix", Rarity.EPIC), Map.entry("cape_sakura", Rarity.EPIC), Map.entry("cape_ocean", Rarity.EPIC),
 			Map.entry("fx_thunder", Rarity.LEGENDARY), Map.entry("fx_blackhole", Rarity.LEGENDARY), Map.entry("fx_holo", Rarity.LEGENDARY),
 			Map.entry("thunder_wings", Rarity.LEGENDARY), Map.entry("galaxy_wings", Rarity.LEGENDARY), Map.entry("holo_wings", Rarity.LEGENDARY),
 			Map.entry("toxic_wings", Rarity.LEGENDARY),
@@ -91,7 +91,7 @@ public final class Cosmetics {
 				"devil_wings", "backpack")),
 		EFFECT(List.of("fx_thunder", "fx_blackhole", "fx_holo", "fx_toxic", "fx_matrix", "fx_heartbeat", "fx_inferno", "fx_plasma", "fx_frost", "fx_energy", "fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
 				"fx_flames", "fx_snow", "fx_cherry", "fx_enchant", "fx_hearts", "fx_notes")),
-		CAPE(List.of("cape_plasma", "cape_inferno", "cape_void", "cape_energy", "cape_frost", "cape_holy", "cape_galaxy", "cape_rainbow", "cape_thunder", "cape_matrix"));
+		CAPE(List.of("cape_plasma", "cape_inferno", "cape_void", "cape_energy", "cape_frost", "cape_holy", "cape_galaxy", "cape_rainbow", "cape_thunder", "cape_matrix", "cape_sakura", "cape_ocean"));
 
 		public final List<String> items;
 
@@ -205,9 +205,27 @@ public final class Cosmetics {
 			if (mc.level == null) return;
 			net.minecraft.world.entity.Entity entity = mc.level.getEntity(state.id);
 			if (!(entity instanceof net.minecraft.world.entity.player.Player player)) return;
+			PlayerModel model = this.getParentModel();
+			float[] ball = Emotes.ball(player.getUUID());
+			if (ball != null) { // football / basketball emote
+				ItemStack bs = Ui.stack(Items.PAPER);
+				if (!bs.isEmpty()) {
+					bs.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, ball[3] == 0 ? "ball_football" : "ball_basketball"));
+					ItemStackRenderState item = new ItemStackRenderState();
+					mc.getItemModelResolver().updateForTopItem(item, bs, ItemDisplayContext.FIXED, mc.level, null, 0);
+					if (!item.isEmpty()) {
+						pose.pushPose();
+						model.root().translateAndRotate(pose);
+						pose.translate(ball[0], ball[1], ball[2]);
+						pose.mulPose(Axis.XP.rotationDegrees(state.ageInTicks * 25));
+						pose.scale(0.55F, 0.55F, 0.55F);
+						item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
+						pose.popPose();
+					}
+				}
+			}
 			Loadout loadout = of(player.getUUID());
 			if (loadout.isEmpty()) return;
-			PlayerModel model = this.getParentModel();
 			float t = state.ageInTicks;
 
 			String back = loadout.back();
@@ -283,11 +301,11 @@ public final class Cosmetics {
 		}
 	}
 
-	/** Animated capes: 16 frames (textures/cape/<name>_<frame>.png), 2 ticks each. */
-	static final int CAPE_FRAMES = 16;
+	/** Animated HD capes: 32 frames (textures/cape/<name>_<frame>.png), one per tick. */
+	static final int CAPE_FRAMES = 32;
 
 	public static Identifier capeTexture(String id, long gameTime) {
-		int frame = (int) Math.floorMod(gameTime / 2, CAPE_FRAMES);
+		int frame = (int) Math.floorMod(gameTime, CAPE_FRAMES);
 		return Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "textures/cape/" + id.substring(5) + "_" + frame + ".png");
 	}
 

@@ -457,5 +457,19 @@
   "packmixer.hat.thunder_wings": "Thunder Wings",
   "packmixer.hat.galaxy_wings": "Galaxy Wings",
   "packmixer.hat.toxic_wings": "Toxic Wings",
-  "packmixer.hat.holo_wings": "Hologram Wings"
+  "packmixer.hat.holo_wings": "Hologram Wings",
+  "packmixer.hat.cape_sakura": "Sakura Cape",
+  "packmixer.hat.cape_ocean": "Ocean Cape",
+  "packmixer.emote.football": "Football",
+  "packmixer.emote.basketball": "Basketball",
+  "packmixer.emote.default_dance": "Default Dance",
+  "packmixer.emote.take_l": "Take the L",
+  "packmixer.emote.floss": "Floss",
+  "packmixer.emote.robot": "Robot",
+  "packmixer.emote.headbang": "Headbang",
+  "packmixer.emote.bow": "Bow",
+  "packmixer.emotes.scroll": "Scroll or ◀ ▶ for more",
+  "packmixer.changelog.1.9.0": "New in 1.9.0\n• Capes: 12 animated HD capes (also as elytra)\n• Emotes with B: 16 emotes incl. football, basketball, default dance, floss\n• \"T\" next to the names of players with the mod (name tag + tab)\n• New wings and effects\n• Wings now sit right on the back\n• Low Shield",
+  "packmixer.feature.badges": "T badge",
+  "packmixer.feature.badges.desc": "Shows a T next to the names of players who have the mod"
 }
