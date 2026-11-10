@@ -158,7 +158,7 @@ final class AutoTest {
 		}
 		// ---- new cosmetics: wings from fixed angles (with chestplate), capes, emotes, auras, low shield
 		command("item replace entity @p armor.chest with netherite_chestplate");
-		for (String wing : new String[]{"thunder_wings", "angel_wings"}) {
+		for (String wing : new String[]{"thunder_wings", "galaxy_wings", "toxic_wings", "holo_wings", "angel_wings"}) {
 			step("wear " + wing, 10, () -> {
 				Cosmetics.Slot.HEAD.set("");
 				Cosmetics.Slot.CAPE.set("");
@@ -168,7 +168,7 @@ final class AutoTest {
 			});
 			shot("views_" + wing);
 		}
-		for (String cape : new String[]{"cape_plasma", "cape_galaxy", "cape_thunder"}) {
+		for (String cape : Cosmetics.Slot.CAPE.items) {
 			step("wear " + cape, 10, () -> {
 				Cosmetics.Slot.BACK.set("");
 				Cosmetics.Slot.CAPE.set(cape);
@@ -226,6 +226,10 @@ final class AutoTest {
 		shot("aura_thunder");
 		step("aura holo", 60, () -> Cosmetics.Slot.EFFECT.set("fx_holo"));
 		shot("aura_holo");
+		for (String fx : new String[]{"fx_toxic", "fx_matrix", "fx_heartbeat"}) {
+			step("aura " + fx, 60, () -> Cosmetics.Slot.EFFECT.set(fx));
+			shot("aura_" + fx.substring(3));
+		}
 		command("item replace entity @p weapon.offhand with shield");
 		step("low shield off", 20, () -> {
 			Cosmetics.Slot.EFFECT.set("");
