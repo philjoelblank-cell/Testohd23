@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 
 import java.util.UUID;
 
-/** The little Testohd "T" in front of the names of players who use the mod (name tag and tab list). */
+/** The little Testohd "T" next to the names of players who use the mod (name tag and tab list). */
 public final class Badge {
 	private static final FontDescription FONT = new FontDescription.Resource(Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "badge"));
 
@@ -21,9 +21,15 @@ public final class Badge {
 
 	public static Component prefix(Component name) {
 		if (name == null) return null;
-		if (name.getString().startsWith("")) return name;
-		MutableComponent b = Component.literal("").withStyle(s -> s.withFont(FONT).withColor(0xFFFFFF));
-		return Component.empty().append(b).append(Component.literal(" ")).append(name);
+		try {
+			if (name.getString().indexOf('') >= 0) return name;
+			MutableComponent b = Component.literal("").withStyle(s -> s.withFont(FONT).withColor(0xFFFFFF));
+			if (PackMixerConfig.settings().badgeLeft) return Component.empty().append(b).append(Component.literal(" ")).append(name);
+			// Default: behind the name, so client icons (NoRisk etc.) and tier tags in front stay untouched.
+			return Component.empty().append(name).append(Component.literal(" ")).append(b);
+		} catch (Throwable e) {
+			return name;
+		}
 	}
 
 	private Badge() {
