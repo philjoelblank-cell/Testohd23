@@ -35,7 +35,7 @@ public class EmoteWheelScreen extends Screen {
 	}
 
 	private int radius() {
-		return Math.max(70, Math.min(115, (int) (Math.min(this.width, this.height) / 2.6)));
+		return Math.max(50, Math.min(118, Math.min(this.width, this.height) / 2 - 50));
 	}
 
 	/** Centre of card i. */
@@ -84,9 +84,9 @@ public class EmoteWheelScreen extends Screen {
 		}
 		if (pages() > 1) {
 			String pg = "◀  " + (page + 1) + " / " + pages() + "  ▶";
-			Ui.small(g, pg, cx() - Ui.smallWidth(pg) / 2, cy() + radius() + 26, 0xFFFFFFFF);
+			Ui.small(g, pg, cx() - Ui.smallWidth(pg) / 2, this.height - 22, 0xFFFFFFFF);
 			String hint = Component.translatable("packmixer.emotes.scroll").getString();
-			Ui.small(g, hint, cx() - Ui.smallWidth(hint) / 2, cy() + radius() + 36, Ui.FAINT);
+			Ui.small(g, hint, cx() - Ui.smallWidth(hint) / 2, this.height - 12, Ui.FAINT);
 		}
 		String title = Component.translatable("packmixer.emotes").getString();
 		g.drawString(this.font, title, cx() - this.font.width(title) / 2, cy() - 4, 0xFFFFFFFF, true);
@@ -96,7 +96,7 @@ public class EmoteWheelScreen extends Screen {
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		int i = hovered(event.x(), event.y());
-		if (pages() > 1 && Math.abs(event.y() - (cy() + radius() + 30)) < 8) { // page arrows
+		if (pages() > 1 && event.y() > this.height - 26) { // page arrows
 			page += event.x() < cx() ? -1 : 1;
 			return true;
 		}
