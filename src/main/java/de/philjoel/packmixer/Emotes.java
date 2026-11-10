@@ -23,7 +23,7 @@ public final class Emotes {
 
 	public static final List<Emote> ALL = List.of(
 			new Emote("wave", "✋", 2.6f), new Emote("dance", "♫", 6f), new Emote("cheer", "★", 3f),
-			new Emote("dab", "➚", 2f), new Emote("salute", "⚑", 2.6f), new Emote("clap", "✦", 3f),
+			new Emote("dab", "➚", 2f), new Emote("shrug", "?", 2.6f), new Emote("clap", "✦", 3f),
 			new Emote("facepalm", "☹", 2.4f), new Emote("flex", "⚡", 3f),
 			new Emote("football", "⚽", 6f), new Emote("basketball", "●", 3.6f), new Emote("default_dance", "♪", 6f),
 			new Emote("take_l", "L", 5f), new Emote("floss", "≈", 5f), new Emote("robot", "⚙", 5f), new Emote("headbang", "♬", 4f),
@@ -110,6 +110,13 @@ public final class Emotes {
 	}
 
 	public static void pose(PlayerModel model, AvatarRenderState state) {
+		if (poseInner(model, state)) { // only while an emote plays (bows, crossbows ... stay vanilla)
+			guard(model.rightArm, 1f);
+			guard(model.leftArm, -1f);
+		}
+	}
+
+	private static boolean poseInner(PlayerModel model, AvatarRenderState state) {
 		Minecraft mc = Minecraft.getInstance();
 		Emote em;
 		float t;
@@ -118,18 +125,18 @@ public final class Emotes {
 			em = pv;
 			t = previewTime(pv);
 		} else {
-			if (mc.level == null || active.isEmpty()) return;
+			if (mc.level == null || active.isEmpty()) return false;
 			Entity e = mc.level.getEntity(state.id);
-			if (e == null) return;
+			if (e == null) return false;
 			Active a = active.get(e.getUUID());
-			if (a == null) return;
+			if (a == null) return false;
 			em = a.emote;
 			t = time(e.getUUID(), a);
 		}
 		float dur = em.seconds;
 		// blend in / out over 0.25 s (previews loop without)
 		float k = pv != null ? 1f : Math.min(1f, Math.min(t, dur - t) / 0.25f);
-		if (k <= 0) return;
+		if (k <= 0) return false;
 		float s = t * 20f; // ticks
 		ModelPart ra = model.rightArm, la = model.leftArm, rl = model.rightLeg, ll = model.leftLeg, head = model.head, body = model.body;
 		ModelPart root = model.root();
@@ -139,8 +146,8 @@ public final class Emotes {
 			}
 			case "dance" -> {
 				float b = (float) Math.sin(s * 0.45f);
-				set(ra, -1.6f - 1.0f * b, 0, 0.5f, k);
-				set(la, -1.6f + 1.0f * b, 0, -0.5f, k);
+				set(ra, -1.6f - 1.0f * b, 0, 0.9f, k);
+				set(la, -1.6f + 1.0f * b, 0, -0.9f, k);
 				set(rl, 0.45f * b, 0, 0.08f, k);
 				set(ll, -0.45f * b, 0, -0.08f, k);
 				set(body, 0, 0.35f * (float) Math.sin(s * 0.225f), 0, k);
@@ -157,9 +164,11 @@ public final class Emotes {
 				set(la, -1.75f, 0.95f, 0, k);         // across in front of the face
 				set(head, 0.55f, 0.4f, 0, k);
 			}
-			case "salute" -> {
-				set(ra, -2.25f, -0.45f, -0.75f, k);   // hand at the forehead
-				set(head, -0.1f, 0, 0, k);
+			case "shrug" -> { // "no idea": arms out, palms up, head tilted
+				float b = (float) Math.abs(Math.sin(Math.min(1f, t / 0.8f) * Math.PI / 2));
+				set(ra, -0.55f * b, 0.35f, 0.55f * b, k);
+				set(la, -0.55f * b, -0.35f, -0.55f * b, k);
+				set(head, 0, 0, 0.25f * b, k);
 			}
 			case "clap" -> {
 				float c = (float) Math.abs(Math.sin(s * 0.6f));
@@ -206,7 +215,7 @@ public final class Emotes {
 			}
 			case "take_l" -> { // "L" on the forehead, legs kicking out to the side
 				float b = (float) Math.sin(s * 0.5f);
-				set(la, -2.5f, 0.2f, -0.35f, k);
+				set(la, -2.95f, 0.5f, -0.75f, k);
 				set(ra, -0.3f, 0, 0.35f + 0.2f * b, k);
 				set(rl, 0, 0, 0.55f * Math.max(0, b), k);
 				set(ll, 0, 0, -0.55f * Math.max(0, -b), k);
@@ -279,8 +288,8 @@ public final class Emotes {
 				set(ll, -0.5f, 0, -0.35f, k);
 			}
 			case "yellow_card", "red_card" -> { // referee: card up high
-				float up = Math.min(1f, t / 0.35f);
-				set(ra, -2.95f * up, 0, 0.15f, k);
+				float up = Math.min(1f, t / 0.4f);
+				set(ra, -0.25f * up, 0, 2.95f * up, k); // raised over the side, never forward
 				set(head, -0.15f, 0, 0, k);
 				set(la, 0, 0, -0.2f, k);
 			}
@@ -313,6 +322,15 @@ public final class Emotes {
 			default -> {
 			}
 		}
+		return true;
+	}
+
+	/**
+	 * Safety: a straight arm pointing forward and up (with the arm not out to the side) looks like a forbidden
+	 * salute, also for a moment while an emote blends in. Such arms are always moved out to the side.
+	 */
+	private static void guard(ModelPart arm, float side) {
+		if (arm.xRot > -2.8f && arm.xRot < -1.55f && Math.abs(arm.yRot) < 0.6f && side * arm.zRot < 0.8f) arm.zRot = side * 0.8f;
 	}
 
 	/** Tilts the whole player by {@code angle} around the feet (lying on the back / front), feet stay on the ground. */

@@ -211,8 +211,12 @@ final class AutoTest {
 				mc.gui.setScreen(null);
 				Emotes.play(e.id());
 			});
-			step("emote view " + e.id(), e.id().equals("basketball") ? 46 : e.id().equals("faint") || e.id().equals("ascend") ? 40 : 14, () -> mc.gui.setScreen(new TestViewScreen(0, 30, 90)));
+			step("emote view " + e.id(), e.id().equals("basketball") ? 12 : e.id().equals("faint") || e.id().equals("ascend") ? 40 : 14, () -> mc.gui.setScreen(new TestViewScreen(0, 30, 90)));
 			shot("emote_" + e.id());
+			if (e.id().equals("basketball")) {
+				step("basketball throw", 24, () -> { });
+				shot("emote_basketball_throw");
+			}
 		}
 		step("tab list", 10, () -> {
 			mc.gui.setScreen(null);
@@ -247,9 +251,9 @@ final class AutoTest {
 		shot("aura_thunder");
 		step("aura holo", 60, () -> Cosmetics.Slot.EFFECT.set("fx_holo"));
 		shot("aura_holo");
-		for (String fx : new String[]{"fx_toxic", "fx_matrix", "fx_heartbeat"}) {
+		for (String fx : new String[]{"fx_toxic", "fx_matrix", "fx_heartbeat", "orb_ghosts", "orb_crystals", "orb_rings", "orb_wisps", "orb_hearts"}) {
 			step("aura " + fx, 60, () -> Cosmetics.Slot.EFFECT.set(fx));
-			shot("aura_" + fx.substring(3));
+			shot("aura_" + fx.substring(fx.indexOf('_') + 1));
 		}
 		command("item replace entity @p weapon.offhand with shield");
 		step("low shield off", 20, () -> {
