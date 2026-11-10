@@ -267,7 +267,7 @@ public final class Cosmetics {
 				pose.pushPose();
 				if (!state.chestEquipment.isEmpty()) pose.translate(0.0F, -0.053125F, 0.06875F); // over a chestplate
 				collector.submitModel(capeModel, state, pose, RenderTypes.entitySolid(capeTexture(capeId, mc.level.getGameTime())),
-						light, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
+						light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 				pose.popPose();
 			}
 			// with a helmet on, hats and glasses sit on the helmet instead of inside it

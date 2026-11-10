@@ -193,7 +193,7 @@ final class AutoTest {
 		step("cape + wings", 10, () -> {
 			Cosmetics.Slot.CAPE.set("cape_galaxy");
 			Cosmetics.Slot.BACK.set("galaxy_wings");
-			mc.setScreen(new TestViewScreen(0, 60, 120, 180));
+			mc.gui.setScreen(new TestViewScreen(0, 60, 120, 180));
 		});
 		shot("views_cape_wings");
 		command("item replace entity @p armor.head with diamond_helmet");
@@ -202,7 +202,7 @@ final class AutoTest {
 				Cosmetics.Slot.BACK.set("");
 				Cosmetics.Slot.HEAD.set(hat);
 				Cosmetics.Slot.FACE.set("neon_visor");
-				mc.setScreen(new TestViewScreen(0, 45, 90, 180));
+				mc.gui.setScreen(new TestViewScreen(0, 45, 90, 180));
 			});
 			shot("views_helmet_" + hat);
 		}
