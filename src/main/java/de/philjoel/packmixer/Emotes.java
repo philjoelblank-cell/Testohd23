@@ -104,7 +104,7 @@ public final class Emotes {
 		ModelPart ra = model.rightArm, la = model.leftArm, rl = model.rightLeg, ll = model.leftLeg, head = model.head, body = model.body;
 		switch (a.emote.id) {
 			case "wave" -> {
-				set(ra, -2.7f, 0, 0.25f + 0.45f * (float) Math.sin(s * 0.55f), k);
+				set(ra, -3.0f, 0, 0.55f + 0.4f * (float) Math.sin(s * 0.55f), k);
 			}
 			case "dance" -> {
 				float b = (float) Math.sin(s * 0.45f);
@@ -117,14 +117,14 @@ public final class Emotes {
 			}
 			case "cheer" -> {
 				float b = (float) Math.abs(Math.sin(s * 0.4f));
-				set(ra, -2.9f + 0.25f * b, 0, 0.35f, k);
-				set(la, -2.9f + 0.25f * b, 0, -0.35f, k);
+				set(ra, -3.0f + 0.2f * b, 0, 0.7f, k);
+				set(la, -3.0f + 0.2f * b, 0, -0.7f, k);
 				set(head, -0.35f, 0, 0, k);
 			}
 			case "dab" -> {
-				set(ra, -2.35f, 0, 1.05f, k);         // stretched up and out
-				set(la, -1.9f, 0.95f, 0.15f, k);      // bent in front of the face
-				set(head, 0.55f, 0.65f, 0, k);
+				set(ra, -0.2f, 0, 2.3f, k);           // stretched up and out to the side
+				set(la, -1.75f, 0.95f, 0, k);         // across in front of the face
+				set(head, 0.55f, 0.4f, 0, k);
 			}
 			case "salute" -> {
 				set(ra, -2.25f, -0.45f, -0.75f, k);   // hand at the forehead
@@ -141,8 +141,8 @@ public final class Emotes {
 			}
 			case "flex" -> {
 				float p = 0.1f * (float) Math.sin(s * 0.5f);
-				set(ra, -0.2f, 0, 1.45f + p, k);
-				set(la, -0.2f, 0, -1.45f - p, k);
+				set(ra, 0, 0, 2.2f + p, k);
+				set(la, 0, 0, -2.2f - p, k);
 			}
 			default -> {
 			}
