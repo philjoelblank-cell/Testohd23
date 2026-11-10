@@ -33,20 +33,8 @@ final class Doll {
 			Quaternionf rot = new Quaternionf().rotateZ((float) Math.PI).rotateX((float) Math.toRadians(-6))
 					.rotateY((float) Math.toRadians(yawDeg));
 			Vector3f translate = new Vector3f(0, state.boundingBoxHeight / 2.0F + 0.0625F, 0);
-			for (java.lang.reflect.Method m : g.getClass().getMethods()) {
-				Class<?>[] p = m.getParameterTypes();
-				if (p.length == 9 && p[0].isAssignableFrom(state.getClass()) && p[2] == Vector3f.class && p[3] == Quaternionf.class) {
-					m.invoke(g, state, (float) size, translate, rot, null, x0, y0, x1, y1);
-					return true;
-				}
-			}
-			if (!failedLogged) {
-				failedLogged = true;
-				StringBuilder sb = new StringBuilder();
-				for (java.lang.reflect.Method m : g.getClass().getMethods()) if (m.getParameterCount() >= 8) sb.append(m).append('\n');
-				PackMixerClient.LOGGER.warn("Doll: no entity method found. Candidates:\n{}", sb);
-			}
-			return false;
+			g.entity(state, (float) size, translate, rot, null, x0, y0, x1, y1);
+			return true;
 		} catch (Throwable e) {
 			if (!failedLogged) {
 				failedLogged = true;
