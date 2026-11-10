@@ -314,8 +314,8 @@ public final class Cosmetics {
 				model.root().translateAndRotate(pose);
 				pose.translate(0.0F, 0.75F + (float) Math.sin(t * 0.05F + i * Math.PI) * 0.35F, 0.0F);
 				pose.mulPose(Axis.YP.rotationDegrees(t * (i == 0 ? 3F : -2F)));
-				pose.mulPose(Axis.XP.rotationDegrees(i == 0 ? 12F : -10F));
-				pose.scale(1.6F, 1.6F, 1.6F);
+				pose.mulPose(Axis.XP.rotationDegrees(i == 0 ? 6F : -5F));
+				pose.scale(1.7F, 1.7F, 1.7F);
 				item.submit(pose, collector, bright, OverlayTexture.NO_OVERLAY, state.outlineColor);
 				pose.popPose();
 			}
@@ -327,10 +327,13 @@ public final class Cosmetics {
 			pose.pushPose();
 			model.root().translateAndRotate(pose);
 			pose.translate((float) (Math.cos(a) * 0.85), 0.55F + (float) Math.sin(t * 0.12F + i * 2) * 0.15F, (float) (Math.sin(a) * 0.85));
-			pose.mulPose(Axis.YP.rotationDegrees((float) Math.toDegrees(-a) + (id.equals("orb_crystals") ? t * 6F : 90F)));
+			// crystals tumble, flat ones (hearts, wisps) spin so you never only see their edge, ghosts look where they fly
+			float yaw = id.equals("orb_ghosts") ? (float) Math.toDegrees(-a) : t * 5F + i * 60F;
+			pose.mulPose(Axis.YP.rotationDegrees(yaw));
 			if (id.equals("orb_crystals")) pose.mulPose(Axis.XP.rotationDegrees(45F));
 			pose.mulPose(Axis.XP.rotationDegrees(180F)); // models are upright in item space, the model space has y down
-			pose.scale(0.45F, 0.45F, 0.45F);
+			float sc = id.equals("orb_ghosts") ? 0.62F : 0.5F;
+			pose.scale(sc, sc, sc);
 			item.submit(pose, collector, bright, OverlayTexture.NO_OVERLAY, state.outlineColor);
 			pose.popPose();
 		}

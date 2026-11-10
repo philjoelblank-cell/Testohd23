@@ -40,15 +40,16 @@ public class EmoteWheelScreen extends Screen {
 
 	/** Centre of card i. */
 	private int[] pos(int i) {
-		double a = -Math.PI / 2 + i * 2 * Math.PI / list().size();
+		int n = list().size();
+		double a = (n <= 2 ? Math.PI : -Math.PI / 2) + i * 2 * Math.PI / n; // 1-2 emotes: left / right
 		return new int[]{cx() + (int) (Math.cos(a) * radius()), cy() + (int) (Math.sin(a) * radius())};
 	}
 
 	private int hovered(double mx, double my) {
 		double d = Math.hypot(mx - cx(), my - cy());
 		if (d < 22) return -1;
-		double a = Math.atan2(my - cy(), mx - cx()) + Math.PI / 2;
 		int n = list().size();
+		double a = Math.atan2(my - cy(), mx - cx()) - (n <= 2 ? Math.PI : -Math.PI / 2);
 		int i = (int) Math.floor(((a / (2 * Math.PI)) * n + 0.5 + n) % n);
 		return i;
 	}
