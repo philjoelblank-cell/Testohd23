@@ -201,7 +201,9 @@ public class CosmeticsScreen extends Screen {
 			java.util.Map.entry("fx_energy", "◎"), java.util.Map.entry("fx_thunder", "⚡"), java.util.Map.entry("fx_blackhole", "◉"),
 			java.util.Map.entry("fx_holo", "◇"), java.util.Map.entry("fx_toxic", "☣"), java.util.Map.entry("fx_matrix", "▤"),
 			java.util.Map.entry("fx_heartbeat", "♥"), java.util.Map.entry("orb_ghosts", "☺"), java.util.Map.entry("orb_crystals", "◆"),
-			java.util.Map.entry("orb_rings", "◯"), java.util.Map.entry("orb_wisps", "✧"), java.util.Map.entry("orb_hearts", "♥"));
+			java.util.Map.entry("orb_rings", "◯"), java.util.Map.entry("orb_wisps", "✧"), java.util.Map.entry("orb_hearts", "♥"),
+			java.util.Map.entry("trail_plasma", "✺"), java.util.Map.entry("trail_inferno", "✹"), java.util.Map.entry("trail_frost", "❄"),
+			java.util.Map.entry("trail_void", "●"), java.util.Map.entry("trail_yinyang", "☯"), java.util.Map.entry("trail_rainbow", "◎"));
 	private static final java.util.Map<String, Integer> EFFECT_COLOR = java.util.Map.ofEntries(
 			java.util.Map.entry("fx_sparkle", 0xFFFFF4C0), java.util.Map.entry("fx_souls", 0xFF5FE6FF), java.util.Map.entry("fx_flames", 0xFFFF8A2A),
 			java.util.Map.entry("fx_snow", 0xFFDFF4FF), java.util.Map.entry("fx_cherry", 0xFFFFA8D8), java.util.Map.entry("fx_enchant", 0xFFB38CFF),
@@ -213,7 +215,9 @@ public class CosmeticsScreen extends Screen {
 			java.util.Map.entry("fx_blackhole", 0xFFB45CFF), java.util.Map.entry("fx_holo", 0xFF9FE8FF), java.util.Map.entry("fx_toxic", 0xFF45FF2A),
 			java.util.Map.entry("fx_matrix", 0xFF00FF66), java.util.Map.entry("fx_heartbeat", 0xFFFF1F5A),
 			java.util.Map.entry("orb_ghosts", 0xFFFFFFFF), java.util.Map.entry("orb_crystals", 0xFFB45CFF), java.util.Map.entry("orb_rings", 0xFFFFD23A),
-			java.util.Map.entry("orb_wisps", 0xFF2EC8FF), java.util.Map.entry("orb_hearts", 0xFFFF3A6A));
+			java.util.Map.entry("orb_wisps", 0xFF2EC8FF), java.util.Map.entry("orb_hearts", 0xFFFF3A6A),
+			java.util.Map.entry("trail_plasma", 0xFFFF6FE0), java.util.Map.entry("trail_inferno", 0xFFFF8A1F), java.util.Map.entry("trail_frost", 0xFF5FE0FF),
+			java.util.Map.entry("trail_void", 0xFF7A2BFF), java.util.Map.entry("trail_yinyang", 0xFFFFFFFF), java.util.Map.entry("trail_rainbow", 0xFFFFD23A));
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {

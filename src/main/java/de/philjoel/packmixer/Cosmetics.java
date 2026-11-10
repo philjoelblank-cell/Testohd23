@@ -2,7 +2,7 @@ package de.philjoel.packmixer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.player.PlayerModel;
@@ -73,6 +73,8 @@ public final class Cosmetics {
 			Map.entry("space_helmet", Rarity.LEGENDARY), Map.entry("dragon_horns", Rarity.LEGENDARY), Map.entry("fox_beanie", Rarity.EPIC),
 			Map.entry("propeller_cap", Rarity.EPIC), Map.entry("cowboy_hat", Rarity.RARE), Map.entry("chef_hat", Rarity.RARE),
 			Map.entry("neon_visor", Rarity.EPIC),
+			Map.entry("trail_plasma", Rarity.LEGENDARY), Map.entry("trail_inferno", Rarity.LEGENDARY), Map.entry("trail_frost", Rarity.LEGENDARY),
+			Map.entry("trail_void", Rarity.LEGENDARY), Map.entry("trail_yinyang", Rarity.LEGENDARY), Map.entry("trail_rainbow", Rarity.LEGENDARY),
 			Map.entry("orb_ghosts", Rarity.LEGENDARY), Map.entry("orb_crystals", Rarity.LEGENDARY), Map.entry("orb_rings", Rarity.LEGENDARY),
 			Map.entry("orb_wisps", Rarity.EPIC), Map.entry("orb_hearts", Rarity.EPIC),
 			Map.entry("fx_toxic", Rarity.EPIC), Map.entry("fx_matrix", Rarity.EPIC), Map.entry("fx_heartbeat", Rarity.EPIC));
@@ -94,7 +96,7 @@ public final class Cosmetics {
 		FACE(List.of("neon_visor", "sunglasses", "monocle", "mask")),
 		BACK(List.of("thunder_wings", "galaxy_wings", "holo_wings", "toxic_wings", "plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "phoenix_wings", "angel_wings",
 				"devil_wings", "backpack")),
-		EFFECT(List.of("orb_ghosts", "orb_crystals", "orb_rings", "orb_wisps", "orb_hearts", "fx_thunder", "fx_blackhole", "fx_holo", "fx_toxic", "fx_matrix", "fx_heartbeat", "fx_inferno", "fx_plasma", "fx_frost", "fx_energy", "fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
+		EFFECT(List.of("trail_plasma", "trail_inferno", "trail_frost", "trail_void", "trail_yinyang", "trail_rainbow", "orb_ghosts", "orb_crystals", "orb_rings", "orb_wisps", "orb_hearts", "fx_thunder", "fx_blackhole", "fx_holo", "fx_toxic", "fx_matrix", "fx_heartbeat", "fx_inferno", "fx_plasma", "fx_frost", "fx_energy", "fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
 				"fx_flames", "fx_snow", "fx_cherry", "fx_enchant", "fx_hearts", "fx_notes")),
 		CAPE(List.of("cape_plasma", "cape_inferno", "cape_void", "cape_energy", "cape_frost", "cape_holy", "cape_galaxy", "cape_rainbow", "cape_thunder", "cape_matrix", "cape_sakura", "cape_ocean"));
 
@@ -191,7 +193,7 @@ public final class Cosmetics {
 	}
 
 	static void init() {
-		LivingEntityRenderLayerRegistrationCallback.EVENT.register((entityType, entityRenderer, helper, context) -> {
+		LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, helper, context) -> {
 			if (entityRenderer instanceof AvatarRenderer<?> avatar) {
 				helper.register(new CosmeticLayer(avatar));
 			}
@@ -247,7 +249,7 @@ public final class Cosmetics {
 			Loadout loadout = of(uuid);
 			if (loadout.isEmpty()) return;
 			float t = state.ageInTicks;
-			if (loadout.effect().startsWith("orb_")) orbit(pose, collector, state, model, mc, loadout.effect(), t);
+			if (Auras3D.handles(loadout.effect())) Auras3D.render(pose, collector, state, model, mc, loadout.effect(), t);
 
 			String back = loadout.back();
 			if (WINGS.contains(back)) wings(pose, collector, light, state, model, mc, back, t);
@@ -293,49 +295,6 @@ public final class Cosmetics {
 				item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 				pose.popPose();
 			}
-		}
-	}
-
-	/** 3D aura: little models flying around you (ghosts, crystals, wisps, hearts) or rings turning around you. */
-	private static void orbit(PoseStack pose, SubmitNodeCollector collector, AvatarRenderState state, PlayerModel model, Minecraft mc,
-			String id, float t) {
-		ItemStackRenderState item = prop(mc, switch (id) {
-			case "orb_ghosts" -> "orb_ghost";
-			case "orb_crystals" -> "orb_crystal";
-			case "orb_rings" -> "orb_ring";
-			case "orb_wisps" -> "orb_wisp";
-			default -> "orb_heart";
-		});
-		if (item == null) return;
-		int bright = 15728880;
-		if (id.equals("orb_rings")) {
-			for (int i = 0; i < 2; i++) {
-				pose.pushPose();
-				model.root().translateAndRotate(pose);
-				pose.translate(0.0F, 0.75F + (float) Math.sin(t * 0.05F + i * Math.PI) * 0.35F, 0.0F);
-				pose.rotateDegrees(Axis.YP, t * (i == 0 ? 3F : -2F));
-				pose.rotateDegrees(Axis.XP, i == 0 ? 6F : -5F);
-				pose.scale(1.7F, 1.7F, 1.7F);
-				item.submit(pose, collector, bright, OverlayTexture.NO_OVERLAY, state.outlineColor);
-				pose.popPose();
-			}
-			return;
-		}
-		int n = id.equals("orb_hearts") ? 4 : 3;
-		for (int i = 0; i < n; i++) {
-			double a = t * 0.05 + i * Math.PI * 2 / n;
-			pose.pushPose();
-			model.root().translateAndRotate(pose);
-			pose.translate((float) (Math.cos(a) * 0.85), 0.55F + (float) Math.sin(t * 0.12F + i * 2) * 0.15F, (float) (Math.sin(a) * 0.85));
-			// crystals tumble, flat ones (hearts, wisps) spin so you never only see their edge, ghosts look where they fly
-			float yaw = id.equals("orb_ghosts") ? (float) Math.toDegrees(-a) : t * 5F + i * 60F;
-			pose.rotateDegrees(Axis.YP, yaw);
-			if (id.equals("orb_crystals")) pose.rotateDegrees(Axis.XP, 45F);
-			pose.rotateDegrees(Axis.XP, 180F); // models are upright in item space, the model space has y down
-			float sc = id.equals("orb_ghosts") ? 0.62F : 0.5F;
-			pose.scale(sc, sc, sc);
-			item.submit(pose, collector, bright, OverlayTexture.NO_OVERLAY, state.outlineColor);
-			pose.popPose();
 		}
 	}
 

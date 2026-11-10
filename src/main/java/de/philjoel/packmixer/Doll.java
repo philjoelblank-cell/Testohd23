@@ -23,7 +23,10 @@ final class Doll {
 			state.lightCoords = 15728880;
 			state.outlineColor = 0;
 			state.nameTag = null;
-			if (stateId != 0 && state instanceof net.minecraft.client.renderer.entity.state.AvatarRenderState av) av.id = stateId;
+			if (stateId != 0 && state instanceof net.minecraft.client.renderer.entity.state.AvatarRenderState av) {
+				av.id = stateId;
+				Emotes.fixCape(av, null);
+			}
 			if (state instanceof LivingEntityRenderState ls) {
 				ls.bodyRot = 180f;
 				ls.yRot = 0f;

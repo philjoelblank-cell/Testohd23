@@ -493,5 +493,13 @@
   "packmixer.hat.orb_crystals": "Crystal Orbit",
   "packmixer.hat.orb_rings": "Golden Rings",
   "packmixer.hat.orb_wisps": "Wisps",
-  "packmixer.hat.orb_hearts": "Heart Orbit"
+  "packmixer.hat.orb_hearts": "Heart Orbit",
+  "packmixer.hat.trail_plasma": "Plasma Swirl",
+  "packmixer.hat.trail_inferno": "Inferno Swirl",
+  "packmixer.hat.trail_frost": "Frost Swirl",
+  "packmixer.hat.trail_void": "Void Swirl",
+  "packmixer.hat.trail_yinyang": "Yin & Yang",
+  "packmixer.hat.trail_rainbow": "Rainbow Rings",
+  "packmixer.badge.left": "Position: before the name",
+  "packmixer.badge.right": "Position: after the name"
 }
