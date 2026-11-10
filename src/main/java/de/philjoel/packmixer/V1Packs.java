@@ -34,7 +34,15 @@ final class V1Packs {
 			new V1("Testohd23 V2 Sage", Element.TOXIC, "c2_sage", 0xDCE6D2, new V2Style.Palette(V2Style.Anim.RAIN, 0x1E261C, 0x6F8466, 0xDCE6D2)),
 			new V1("Testohd23 V2 Sand", Element.HOLY, "c2_sand", 0xF1E6D0, new V2Style.Palette(V2Style.Anim.LIGHTNING, 0x2B2218, 0xB49A74, 0xF1E6D0)),
 			new V1("Testohd23 V2 Bordeaux", Element.BLOOD, "c2_bordeaux", 0xE6C3C8, new V2Style.Palette(V2Style.Anim.HEARTBEAT, 0x24080E, 0x6E1A28, 0xE6C3C8)),
-			new V1("Testohd23 V2 Silver", Element.PLASMA, "c2_silver", 0xFFFFFF, new V2Style.Palette(V2Style.Anim.SHEEN, 0x6E737C, 0xC8CCD2, 0xFFFFFF)));
+			new V1("Testohd23 V2 Silver", Element.PLASMA, "c2_silver", 0xFFFFFF, new V2Style.Palette(V2Style.Anim.SHEEN, 0x6E737C, 0xC8CCD2, 0xFFFFFF)),
+			new V1("Testohd23 V3 Aurora", Element.ICE, "c3_aurora", 0x8B7CF6, new V2Style.Palette(V2Style.Anim.AURORA, 0x0B1730, 0x34D8B4, 0xE6FFF8, 0x8B7CF6)),
+			new V1("Testohd23 V3 Vortex", Element.GALAXY, "c3_vortex", 0xE59CF5, new V2Style.Palette(V2Style.Anim.VORTEX, 0x1B1238, 0x7C6CF2, 0xFFF1FF, 0xE59CF5)),
+			new V1("Testohd23 V3 Ember", Element.FIRE, "c3_ember", 0xFFB35C, new V2Style.Palette(V2Style.Anim.FLAME, 0x2B120E, 0xF2704F, 0xFFF1C9, 0xFFB35C)),
+			new V1("Testohd23 V3 Tide", Element.ICE, "c3_tide", 0x6FE3F2, new V2Style.Palette(V2Style.Anim.TIDE, 0x082432, 0x1487A8, 0xF0FEFF, 0x6FE3F2)),
+			new V1("Testohd23 V3 Prism", Element.TOXIC, "c3_prism", 0xB5F5DC, new V2Style.Palette(V2Style.Anim.PRISM, 0x12302A, 0x3CCB9B, 0xFFFFFF, 0xB5F5DC)),
+			new V1("Testohd23 V3 Rose", Element.SAKURA, "c3_rose", 0xFFC9DE, new V2Style.Palette(V2Style.Anim.TRACE, 0x2A1622, 0xEE7BAE, 0xFFFFFF, 0xFFC9DE)),
+			new V1("Testohd23 V3 Warp", Element.ENERGY, "c3_warp", 0xB9D8FF, new V2Style.Palette(V2Style.Anim.WARP, 0x0C1A3A, 0x5B9DF5, 0xFFFFFF, 0xB9D8FF)),
+			new V1("Testohd23 V3 Dream", Element.SAKURA, "c3_dream", 0xF47FB0, new V2Style.Palette(V2Style.Anim.DREAM, 0x2A1B3D, 0xFFB38A, 0xB9A6FF, 0xF47FB0)));
 
 	static V1 of(String name) {
 		if (name == null) return null;
