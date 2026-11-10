@@ -46,8 +46,7 @@ public final class CrystalPacks {
 			new Design("Kristall V3 Tide", "c3_tide", 0x1487A8, new int[]{0x082432, 0x1487A8, 0x6FE3F2, 0xF0FEFF}, 0x1487A8, 0xF0FEFF),
 			new Design("Kristall V3 Prism", "c3_prism", 0x3CCB9B, new int[]{0x12302A, 0x3CCB9B, 0xB5F5DC, 0xFFFFFF}, 0x3CCB9B, 0xFFFFFF),
 			new Design("Kristall V3 Rose", "c3_rose", 0xEE7BAE, new int[]{0x2A1622, 0xEE7BAE, 0xFFC9DE, 0xFFFFFF}, 0xEE7BAE, 0xFFFFFF),
-			new Design("Kristall V3 Warp", "c3_warp", 0x5B9DF5, new int[]{0x0C1A3A, 0x5B9DF5, 0xB9D8FF, 0xFFFFFF}, 0x5B9DF5, 0xFFFFFF),
-			new Design("Kristall V3 Dream", "c3_dream", 0xFFB38A, new int[]{0x2A1B3D, 0xFFB38A, 0xF47FB0, 0xB9A6FF}, 0xFFB38A, 0xB9A6FF));
+			new Design("Kristall V3 Warp", "c3_warp", 0x5B9DF5, new int[]{0x0C1A3A, 0x5B9DF5, 0xB9D8FF, 0xFFFFFF}, 0x5B9DF5, 0xFFFFFF));
 
 	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
 

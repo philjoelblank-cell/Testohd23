@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 18;
+	public static final int VERSION = 19;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO, V1XMAS;
@@ -306,7 +306,6 @@ public final class BuiltinPacks {
 			v1("Testohd23 V3 Prism", "v3_prism", "circle", Style.DUO, 0x3CCB9B, 0xB5F5DC),
 			v1("Testohd23 V3 Rose", "v3_rose", "circle", Style.DUO, 0xEE7BAE, 0xFFC9DE),
 			v1("Testohd23 V3 Warp", "v3_warp", "circle", Style.DUO, 0x5B9DF5, 0xB9D8FF),
-			v1("Testohd23 V3 Dream", "v3_dream", "circle", Style.DUO, 0xFFB38A, 0xF47FB0),
 			// ---- duo: clean colour + matching colour shift in the highlights
 			duo("Testohd Duo Lila Pink", "d_purplepink", "ring_dot", 0x7B2FE0, 0xFF7AD9),
 			duo("Testohd Duo Blau Cyan", "d_bluecyan", "small_plus", 0x1F4FE0, 0x5CF0FF),

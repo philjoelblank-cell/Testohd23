@@ -41,8 +41,7 @@ final class V1Packs {
 			new V1("Testohd23 V3 Tide", Element.ICE, "c3_tide", 0x6FE3F2, new V2Style.Palette(V2Style.Anim.TIDE, 0x082432, 0x1487A8, 0xF0FEFF, 0x6FE3F2)),
 			new V1("Testohd23 V3 Prism", Element.TOXIC, "c3_prism", 0xB5F5DC, new V2Style.Palette(V2Style.Anim.PRISM, 0x12302A, 0x3CCB9B, 0xFFFFFF, 0xB5F5DC)),
 			new V1("Testohd23 V3 Rose", Element.SAKURA, "c3_rose", 0xFFC9DE, new V2Style.Palette(V2Style.Anim.TRACE, 0x2A1622, 0xEE7BAE, 0xFFFFFF, 0xFFC9DE)),
-			new V1("Testohd23 V3 Warp", Element.ENERGY, "c3_warp", 0xB9D8FF, new V2Style.Palette(V2Style.Anim.WARP, 0x0C1A3A, 0x5B9DF5, 0xFFFFFF, 0xB9D8FF)),
-			new V1("Testohd23 V3 Dream", Element.SAKURA, "c3_dream", 0xF47FB0, new V2Style.Palette(V2Style.Anim.DREAM, 0x2A1B3D, 0xFFB38A, 0xB9A6FF, 0xF47FB0)));
+			new V1("Testohd23 V3 Warp", Element.ENERGY, "c3_warp", 0xB9D8FF, new V2Style.Palette(V2Style.Anim.WARP, 0x0C1A3A, 0x5B9DF5, 0xFFFFFF, 0xB9D8FF)));
 
 	static V1 of(String name) {
 		if (name == null) return null;
