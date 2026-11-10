@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class BuiltinPacks {
 	/** Bump to regenerate the packs after changes. */
-	public static final int VERSION = 17;
+	public static final int VERSION = 18;
 
 	enum Style {
 		NORMAL, CANDY, FROST, TREE, RAINBOW, GALAXY, GRADIENT, PATTERN, DUO, V1XMAS;
