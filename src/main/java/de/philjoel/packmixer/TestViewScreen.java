@@ -47,6 +47,12 @@ class TestViewScreen extends Screen {
 			} catch (Throwable ignored) {
 			}
 		}
+		// badge check: your name with the "T" in front
+		g.pose().pushMatrix();
+		g.pose().translate(10, 10);
+		g.pose().scale(3f, 3f);
+		g.drawString(this.font, Badge.prefix(mc.player.getName()), 0, 0, 0xFFFFFFFF, true);
+		g.pose().popMatrix();
 		super.render(g, mouseX, mouseY, delta);
 	}
 

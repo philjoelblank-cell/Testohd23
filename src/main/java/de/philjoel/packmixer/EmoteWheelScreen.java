@@ -35,7 +35,7 @@ public class EmoteWheelScreen extends Screen {
 	}
 
 	private int radius() {
-		return Math.max(52, Math.min(90, Math.min(this.width, this.height) / 3));
+		return Math.max(70, Math.min(115, (int) (Math.min(this.width, this.height) / 2.6)));
 	}
 
 	/** Centre of card i. */
