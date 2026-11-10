@@ -73,7 +73,7 @@ public final class CosmeticSync {
 	}
 
 	private static String line(UUID uuid, Cosmetics.Loadout l) {
-		return "ts1;" + uuid + ";" + l.head() + ";" + l.face() + ";" + l.back() + ";" + l.effect();
+		return "ts2;" + uuid + ";" + l.head() + ";" + l.face() + ";" + l.back() + ";" + l.effect() + ";" + l.cape();
 	}
 
 	private static void poll() throws Exception {
@@ -87,7 +87,7 @@ public final class CosmeticSync {
 			try {
 				JsonObject o = JsonParser.parseString(json).getAsJsonObject();
 				if (!o.has("message")) continue;
-				parse(o.get("message").getAsString());
+				parse(o.get("message").getAsString(), age(o));
 			} catch (Exception ignored) {
 			}
 		}
@@ -118,7 +118,7 @@ public final class CosmeticSync {
 								try {
 									JsonObject o = JsonParser.parseString(json).getAsJsonObject();
 									if (o.has("event") && o.get("event").getAsString().equals("message") && o.has("message"))
-										parse(o.get("message").getAsString());
+										parse(o.get("message").getAsString(), age(o));
 								} catch (Exception ignored) {
 								}
 							}
@@ -144,8 +144,20 @@ public final class CosmeticSync {
 
 	/** Strict check: only known cosmetic names are accepted. */
 	static void parse(String msg) {
+		parse(msg, 0);
+	}
+
+	/** @param ageSeconds how old the message is (from ntfy's time stamp) */
+	static void parse(String msg, long ageSeconds) {
 		String[] p = msg.trim().split(";", -1);
-		if (p.length != 6 || !p[0].equals("ts1")) return;
+		if (p.length == 3 && p[0].equals("te1")) { // emote (only fresh ones, not from the history)
+			if (ageSeconds <= 8) Emotes.received(p[1], p[2]);
+			return;
+		}
+		boolean v1 = p.length == 6 && p[0].equals("ts1"), v2 = p.length == 7 && p[0].equals("ts2");
+		if (!v1 && !v2) return;
+		String cape = v2 ? p[6] : "";
+		if (!Cosmetics.valid(Cosmetics.Slot.CAPE, cape)) return;
 		UUID uuid;
 		try {
 			uuid = UUID.fromString(p[1]);
@@ -154,9 +166,28 @@ public final class CosmeticSync {
 		}
 		if (!Cosmetics.valid(Cosmetics.Slot.HEAD, p[2]) || !Cosmetics.valid(Cosmetics.Slot.FACE, p[3])
 				|| !Cosmetics.valid(Cosmetics.Slot.BACK, p[4]) || !Cosmetics.valid(Cosmetics.Slot.EFFECT, p[5])) return;
-		Cosmetics.Loadout l = new Cosmetics.Loadout(p[2], p[3], p[4], p[5]);
+		Cosmetics.Loadout l = new Cosmetics.Loadout(p[2], p[3], p[4], p[5], cape);
 		if (l.isEmpty()) remote.remove(uuid);
 		else remote.put(uuid, l);
+	}
+
+	private static long age(JsonObject o) {
+		return o.has("time") ? System.currentTimeMillis() / 1000 - o.get("time").getAsLong() : 9999;
+	}
+
+	/** Sends one line right away (emotes). */
+	static void send(String line) {
+		Thread t = new Thread(() -> {
+			try {
+				HTTP.send(HttpRequest.newBuilder(URI.create(TOPIC_URL)).timeout(Duration.ofSeconds(10))
+						.header("User-Agent", "testohd-styles").POST(HttpRequest.BodyPublishers.ofString(line, StandardCharsets.UTF_8)).build(),
+						HttpResponse.BodyHandlers.discarding());
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.debug("Emote send: {}", e.toString());
+			}
+		}, "Testohd emote");
+		t.setDaemon(true);
+		t.start();
 	}
 
 	private interface Job {

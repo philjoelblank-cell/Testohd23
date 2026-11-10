@@ -64,6 +64,7 @@ public class PackMixerSettingsScreen extends Screen {
 		settingsEntries.add(new Entry("particles", "screen", Ui.icon(Items.BLAZE_POWDER), null, null,
 				() -> o.particles().get().caption().getString() + (s.particleSize < 0.999 ? " · " + Math.round(s.particleSize * 100) + "%" : "")));
 		settingsEntries.add(new Entry("low_fire", "screen", Ui.icon(Items.FIRE_CHARGE), () -> s.lowFire, v -> s.lowFire = v, null));
+		settingsEntries.add(new Entry("low_shield", "screen", Ui.icon(Items.SHIELD), () -> s.lowShield, v -> s.lowShield = v, null));
 		settingsEntries.add(new Entry("ancient_debris", "screen", Ui.icon(Items.ANCIENT_DEBRIS), () -> s.ancientDebris, v -> {
 			s.ancientDebris = v;
 			PackMixerConfig.saveSettings();
@@ -228,6 +229,10 @@ public class PackMixerSettingsScreen extends Screen {
 				addRenderableWidget(slider(x, y, cw, tr("packmixer.fire_height"), s.fireOffset, 0, 0.5, v -> s.fireOffset = v,
 						v -> Math.round(v / 0.5 * 100) + "%")); y += 18;
 			}
+			case "low_shield" -> {
+				addRenderableWidget(slider(x, y, cw, tr("packmixer.shield_height"), s.shieldOffset, 0, 0.5, v -> s.shieldOffset = v,
+						v -> Math.round(v / 0.5 * 100) + "%")); y += 18;
+			}
 			case "tt" -> {
 				addRenderableWidget(Ui.glass(Component.translatable("packmixer.tt.reset"), b -> { TotemTracker.reset(); saved(); })
 						.bounds(x, y, cw, 14).build()); y += 18;
@@ -353,6 +358,7 @@ public class PackMixerSettingsScreen extends Screen {
 				s.particleSize = 1.0;
 			}
 			case "low_fire" -> { s.lowFire = false; s.fireOffset = 0.3; }
+			case "low_shield" -> { s.lowShield = false; s.shieldOffset = 0.25; }
 			case "ancient_debris" -> { s.ancientDebris = false; PackBuilder.rebuildAndApply(); }
 			case "crystal_fx" -> { s.crystalFx = false; PackBuilder.rebuildAndApply(); }
 			case "tt" -> { s.totemTracker = true; TotemTracker.reset(); }

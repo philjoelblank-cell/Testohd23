@@ -62,7 +62,15 @@ public final class Cosmetics {
 			Map.entry("fx_energy", Rarity.EPIC),
 			Map.entry("inferno_crown", Rarity.LEGENDARY), Map.entry("plasma_crown", Rarity.LEGENDARY), Map.entry("frost_crown", Rarity.LEGENDARY),
 			Map.entry("void_crown", Rarity.LEGENDARY), Map.entry("energy_halo", Rarity.LEGENDARY), Map.entry("void_halo", Rarity.LEGENDARY),
-			Map.entry("divine_halo", Rarity.LEGENDARY));
+			Map.entry("divine_halo", Rarity.LEGENDARY),
+			Map.entry("cape_plasma", Rarity.LEGENDARY), Map.entry("cape_inferno", Rarity.LEGENDARY), Map.entry("cape_void", Rarity.LEGENDARY),
+			Map.entry("cape_galaxy", Rarity.LEGENDARY), Map.entry("cape_rainbow", Rarity.LEGENDARY), Map.entry("cape_thunder", Rarity.LEGENDARY),
+			Map.entry("cape_holy", Rarity.EPIC), Map.entry("cape_energy", Rarity.EPIC), Map.entry("cape_frost", Rarity.EPIC),
+			Map.entry("cape_matrix", Rarity.EPIC),
+			Map.entry("fx_thunder", Rarity.LEGENDARY), Map.entry("fx_blackhole", Rarity.LEGENDARY), Map.entry("fx_holo", Rarity.LEGENDARY),
+			Map.entry("thunder_wings", Rarity.LEGENDARY), Map.entry("galaxy_wings", Rarity.LEGENDARY), Map.entry("holo_wings", Rarity.LEGENDARY),
+			Map.entry("toxic_wings", Rarity.LEGENDARY),
+			Map.entry("fx_toxic", Rarity.EPIC), Map.entry("fx_matrix", Rarity.EPIC), Map.entry("fx_heartbeat", Rarity.EPIC));
 
 	/** Textured, glowing cosmetics: no enchantment shimmer on top. */
 	static final java.util.Set<String> TEXTURED = java.util.Set.of("inferno_crown", "plasma_crown", "frost_crown", "void_crown",
@@ -70,7 +78,7 @@ public final class Cosmetics {
 
 	/** Big textured wings (left + right model, beating for real). */
 	static final java.util.Set<String> WINGS = java.util.Set.of("angel_wings", "devil_wings", "phoenix_wings", "plasma_wings",
-			"inferno_wings", "void_wings", "energy_wings", "frost_wings");
+			"inferno_wings", "void_wings", "energy_wings", "frost_wings", "thunder_wings", "galaxy_wings", "toxic_wings", "holo_wings");
 
 	public static Rarity rarity(String id) {
 		return RARITY.getOrDefault(id, Rarity.COMMON);
@@ -79,10 +87,11 @@ public final class Cosmetics {
 	public enum Slot {
 		HEAD(List.of("inferno_crown", "plasma_crown", "frost_crown", "void_crown", "energy_halo", "void_halo", "divine_halo", "crown", "halo", "wizard_hat", "viking_helmet", "top_hat", "santa_hat", "horns", "headphones", "straw_hat", "cat_ears")),
 		FACE(List.of("sunglasses", "monocle", "mask")),
-		BACK(List.of("plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "phoenix_wings", "angel_wings",
+		BACK(List.of("thunder_wings", "galaxy_wings", "holo_wings", "toxic_wings", "plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "phoenix_wings", "angel_wings",
 				"devil_wings", "backpack")),
-		EFFECT(List.of("fx_inferno", "fx_plasma", "fx_frost", "fx_energy", "fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
-				"fx_flames", "fx_snow", "fx_cherry", "fx_enchant", "fx_hearts", "fx_notes"));
+		EFFECT(List.of("fx_thunder", "fx_blackhole", "fx_holo", "fx_toxic", "fx_matrix", "fx_heartbeat", "fx_inferno", "fx_plasma", "fx_frost", "fx_energy", "fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
+				"fx_flames", "fx_snow", "fx_cherry", "fx_enchant", "fx_hearts", "fx_notes")),
+		CAPE(List.of("cape_plasma", "cape_inferno", "cape_void", "cape_energy", "cape_frost", "cape_holy", "cape_galaxy", "cape_rainbow", "cape_thunder", "cape_matrix"));
 
 		public final List<String> items;
 
@@ -97,6 +106,7 @@ public final class Cosmetics {
 				case FACE -> s.face;
 				case BACK -> s.back;
 				case EFFECT -> s.effect;
+				case CAPE -> s.cape;
 			};
 			return v == null ? "" : v;
 		}
@@ -108,6 +118,7 @@ public final class Cosmetics {
 				case FACE -> s.face = id;
 				case BACK -> s.back = id;
 				case EFFECT -> s.effect = id;
+				case CAPE -> s.cape = id;
 			}
 			PackMixerConfig.saveSettings();
 			CosmeticSync.publishSoon();
@@ -115,8 +126,8 @@ public final class Cosmetics {
 	}
 
 	/** What one player wears. */
-	public record Loadout(String head, String face, String back, String effect) {
-		public static final Loadout NONE = new Loadout("", "", "", "");
+	public record Loadout(String head, String face, String back, String effect, String cape) {
+		public static final Loadout NONE = new Loadout("", "", "", "", "");
 
 		public String get(Slot slot) {
 			return switch (slot) {
@@ -124,18 +135,19 @@ public final class Cosmetics {
 				case FACE -> face;
 				case BACK -> back;
 				case EFFECT -> effect;
+				case CAPE -> cape;
 			};
 		}
 
 		public boolean isEmpty() {
-			return head.isEmpty() && face.isEmpty() && back.isEmpty() && effect.isEmpty();
+			return head.isEmpty() && face.isEmpty() && back.isEmpty() && effect.isEmpty() && cape.isEmpty();
 		}
 	}
 
 	/** Your own cosmetics. */
 	public static Loadout own() {
 		if (!PackMixerConfig.settings().cosmeticsEnabled) return Loadout.NONE;
-		return new Loadout(Slot.HEAD.get(), Slot.FACE.get(), Slot.BACK.get(), Slot.EFFECT.get());
+		return new Loadout(Slot.HEAD.get(), Slot.FACE.get(), Slot.BACK.get(), Slot.EFFECT.get(), Slot.CAPE.get());
 	}
 
 	/** Cosmetics of any player: yours from the settings, other mod users' from {@link CosmeticSync}. */
@@ -155,6 +167,7 @@ public final class Cosmetics {
 
 	/** Item used to render a cosmetic; legendary ones get the enchantment shimmer. */
 	public static ItemStack hatStack(String id) {
+		if (id.startsWith("cape_")) return ItemStack.EMPTY; // capes: texture on the player, picture in menus
 		ItemStack stack = Ui.stack(Items.PAPER);
 		if (stack.isEmpty()) return stack;
 		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "hat_" + id));
@@ -165,6 +178,7 @@ public final class Cosmetics {
 
 	/** Card preview: the item on a small dark bust (models/item/card_*.json). */
 	public static ItemStack cardStack(String id) {
+		if (id.startsWith("cape_")) return ItemStack.EMPTY;
 		ItemStack stack = Ui.stack(Items.PAPER);
 		if (stack.isEmpty()) return stack;
 		stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "card_" + id));
@@ -257,13 +271,24 @@ public final class Cosmetics {
 			pose.pushPose();
 			model.root().translateAndRotate(pose);
 			model.body.translateAndRotate(pose);
-			pose.translate(0.0F, 0.6F, 0.17F); // wing roots on the shoulder blades
-			pose.rotateDegrees(Axis.YP, (180.0F));
+			// wing roots on the shoulder blades, just behind the back (also behind a chestplate)
+			pose.translate(0.0F, 0.6F, 0.2F);
+			pose.rotateDegrees(Axis.YP, 180.0F);
 			pose.scale(0.62F, -0.62F, -0.62F);
-			pose.rotateDegrees(Axis.YP, (side * open));
+			// open backwards (away from the body): with the flips above the angle has to be negative,
+			// otherwise the wings fold forward through the body
+			pose.rotateDegrees(Axis.YP, -side * open);
 			item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 			pose.popPose();
 		}
+	}
+
+	/** Animated capes: 16 frames (textures/cape/<name>_<frame>.png), 2 ticks each. */
+	static final int CAPE_FRAMES = 16;
+
+	public static Identifier capeTexture(String id, long gameTime) {
+		int frame = (int) Math.floorMod(gameTime / 2, CAPE_FRAMES);
+		return Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "textures/cape/" + id.substring(5) + "_" + frame + ".png");
 	}
 
 	private Cosmetics() {

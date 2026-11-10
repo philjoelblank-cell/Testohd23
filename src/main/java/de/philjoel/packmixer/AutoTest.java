@@ -156,6 +156,73 @@ final class AutoTest {
 			step("look " + pk, 60, () -> { });
 			shot("switch_" + pk.replace(" ", "_"));
 		}
+		// ---- new cosmetics: wings from fixed angles (with chestplate), capes, emotes, auras, low shield
+		command("item replace entity @p armor.chest with netherite_chestplate");
+		for (String wing : new String[]{"thunder_wings", "angel_wings"}) {
+			step("wear " + wing, 10, () -> {
+				Cosmetics.Slot.HEAD.set("");
+				Cosmetics.Slot.CAPE.set("");
+				Cosmetics.Slot.EFFECT.set("");
+				Cosmetics.Slot.BACK.set(wing);
+				mc.gui.setScreen(new TestViewScreen(0, 60, 120, 180));
+			});
+			shot("views_" + wing);
+		}
+		for (String cape : new String[]{"cape_plasma", "cape_galaxy", "cape_thunder"}) {
+			step("wear " + cape, 10, () -> {
+				Cosmetics.Slot.BACK.set("");
+				Cosmetics.Slot.CAPE.set(cape);
+				mc.gui.setScreen(new TestViewScreen(0, 60, 120, 180));
+			});
+			step("cape load " + cape, 10, () -> { });
+			shot("views_" + cape);
+		}
+		step("cape + wings", 10, () -> Cosmetics.Slot.BACK.set("galaxy_wings"));
+		shot("views_cape_wings");
+		step("emotes start", 5, () -> {
+			Cosmetics.Slot.BACK.set("");
+			Cosmetics.Slot.CAPE.set("cape_rainbow");
+			mc.gui.setScreen(new EmoteWheelScreen());
+		});
+		shot("emote_wheel");
+		for (Emotes.Emote e : Emotes.ALL) {
+			step("emote " + e.id(), 2, () -> {
+				mc.gui.setScreen(null);
+				Emotes.play(e.id());
+			});
+			step("emote view " + e.id(), 14, () -> mc.gui.setScreen(new TestViewScreen(0, 30, 90)));
+			shot("emote_" + e.id());
+		}
+		step("emote ingame", 5, () -> {
+			mc.gui.setScreen(null);
+			Emotes.play("dance");
+		});
+		step("emote ingame wait", 30, () -> { });
+		shot("emote_ingame_dance");
+		step("aura blackhole", 60, () -> {
+			mc.gui.setScreen(null);
+			Cosmetics.Slot.EFFECT.set("fx_blackhole");
+			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+		});
+		shot("aura_blackhole");
+		step("aura thunder", 60, () -> Cosmetics.Slot.EFFECT.set("fx_thunder"));
+		shot("aura_thunder");
+		step("aura holo", 60, () -> Cosmetics.Slot.EFFECT.set("fx_holo"));
+		shot("aura_holo");
+		command("item replace entity @p weapon.offhand with shield");
+		step("low shield off", 20, () -> {
+			Cosmetics.Slot.EFFECT.set("");
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+			mc.player.setXRot(0);
+			PackMixerConfig.settings().lowShield = false;
+		});
+		shot("lowshield_off");
+		step("low shield on", 10, () -> PackMixerConfig.settings().lowShield = true);
+		shot("lowshield_on");
+		step("low shield reset", 2, () -> {
+			PackMixerConfig.settings().lowShield = false;
+			Cosmetics.Slot.CAPE.set("");
+		});
 		// sky by day, looking at a corner of the sky box (seams between the faces)
 		command("time set 6000");
 		command("weather clear");

@@ -34,6 +34,13 @@ public final class CosmeticEffects {
 		}
 	}
 
+	/** Pastel rainbow colour for hue 0..1. */
+	private static int hue(double h) {
+		double r = 0.5 + 0.5 * Math.cos(2 * Math.PI * h), g = 0.5 + 0.5 * Math.cos(2 * Math.PI * (h - 1 / 3.0)),
+				b = 0.5 + 0.5 * Math.cos(2 * Math.PI * (h - 2 / 3.0));
+		return ((int) (155 + r * 100) << 16) | ((int) (155 + g * 100) << 8) | (int) (155 + b * 100);
+	}
+
 	private static DustParticleOptions dust(int rgb, float size) {
 		return new DustParticleOptions(rgb, size);
 	}
@@ -189,6 +196,50 @@ public final class CosmeticEffects {
 						level.addParticle(dust(k == 0 ? 0xE6FFFC : 0x35F2DD, 0.7f), x + Math.cos(a) * 0.65, y + ry, z + Math.sin(a) * 0.65, mx, my, mz);
 					}
 				}
+			}
+			case "fx_thunder" -> { // golden sparks around you, now and then a flash from above
+				for (int i = 0; i < 2; i++) {
+					double a = r.nextDouble() * Math.PI * 2, ry = r.nextDouble() * h;
+					level.addParticle(dust(i == 0 ? 0xFFB800 : 0xFFF7C2, 0.6f), x + Math.cos(a) * 0.7, y + ry, z + Math.sin(a) * 0.7, mx, my, mz);
+				}
+				if (t % 30 == 0) for (int k = 0; k < 12; k++)
+					level.addParticle(ParticleTypes.ELECTRIC_SPARK, x + (r.nextDouble() - 0.5) * 0.3, y + h + 0.6 - k * 0.12, z + (r.nextDouble() - 0.5) * 0.3, 0, 0, 0);
+			}
+			case "fx_toxic" -> { // acid bubbles rising from a green puddle
+				double a = t * 0.3;
+				level.addParticle(dust(0x45FF2A, 0.9f), x + Math.cos(a) * 0.55, y + 0.05, z + Math.sin(a) * 0.55, mx, 0, mz);
+				if (t % 3 == 0) level.addParticle(dust(t % 6 == 0 ? 0xD8FFB0 : 0x7A2BC8, 0.7f),
+						x + (r.nextDouble() - 0.5) * 0.9, y + 0.1, z + (r.nextDouble() - 0.5) * 0.9, 0, 0.06, 0);
+			}
+			case "fx_matrix" -> { // green code falling around you
+				for (int i = 0; i < 2; i++) {
+					int col = (int) (r.nextDouble() * 10);
+					double a = col * Math.PI * 2 / 10;
+					level.addParticle(dust(i == 0 ? 0x00FF66 : 0xD6FFE6, 0.55f), x + Math.cos(a) * 0.75, y + h + 0.3, z + Math.sin(a) * 0.75, 0, -0.12, 0);
+				}
+			}
+			case "fx_heartbeat" -> { // a pink ring pulses out from your feet ("ba-dum")
+				int beat = t % 30;
+				if (beat == 0 || beat == 7) for (int k = 0; k < 16; k++) {
+					double a = k * Math.PI * 2 / 16;
+					level.addParticle(dust(beat == 0 ? 0xFF1F5A : 0xFFD0DE, 0.8f), x + Math.cos(a) * 0.3, y + 0.1, z + Math.sin(a) * 0.3,
+							Math.cos(a) * 0.12, 0, Math.sin(a) * 0.12);
+				}
+			}
+			case "fx_holo" -> { // rainbow hologram ring scanning up and down
+				double ry = (Math.sin(t * 0.07) * 0.5 + 0.5) * h;
+				for (int k = 0; k < 4; k++) {
+					double a = t * 0.15 + k * Math.PI / 2;
+					level.addParticle(dust(hue((t * 0.01 + k * 0.25) % 1.0), 0.6f), x + Math.cos(a) * 0.7, y + ry, z + Math.sin(a) * 0.7, mx, my, mz);
+				}
+			}
+			case "fx_blackhole" -> { // dark spiral pulled into a point above your head
+				for (int i = 0; i < 2; i++) {
+					double ph = ((t * 0.02 + i * 0.5) % 1.0), a = t * 0.4 + i * Math.PI;
+					double rad = 0.9 * (1 - ph);
+					level.addParticle(dust(i == 0 ? 0x2A0F45 : 0xB45CFF, 0.8f), x + Math.cos(a) * rad, y + h + 0.5 - rad * 0.3, z + Math.sin(a) * rad, mx, my, mz);
+				}
+				if (t % 10 == 0) level.addParticle(ParticleTypes.REVERSE_PORTAL, x, y + h + 0.5, z, 0, 0, 0);
 			}
 			default -> {
 			}
