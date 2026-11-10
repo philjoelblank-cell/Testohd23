@@ -23,6 +23,7 @@ class TestViewScreen extends Screen {
 		g.fill(0, 0, this.width, this.height, 0xFF5A7FA8);
 		g.fill(0, 0, this.width, this.height, 0xFF5A7FA8);
 		g.fill(0, 0, this.width, this.height, 0xFF5A7FA8);
+		g.fill(0, 0, this.width, this.height, 0xFF5A7FA8);
 		Minecraft mc = this.minecraft;
 		if (mc.player == null) return;
 		int n = yaws.length, cw = this.width / n;
