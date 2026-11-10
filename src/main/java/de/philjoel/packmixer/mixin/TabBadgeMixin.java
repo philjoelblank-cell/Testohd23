@@ -12,8 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /** Testohd "T" in front of the names of mod users in the tab list. */
 @Mixin(PlayerTabOverlay.class)
 public abstract class TabBadgeMixin {
-	@Inject(method = "getNameForDisplay", at = @At("RETURN"), cancellable = true)
+	@Inject(method = "getNameForDisplay", at = @At("RETURN"), cancellable = true, require = 0)
 	private void packmixer$badge(PlayerInfo info, CallbackInfoReturnable<Component> cir) {
-		if (Badge.has(info.getProfile().id())) cir.setReturnValue(Badge.prefix(cir.getReturnValue()));
+		try {
+			if (Badge.has(info.getProfile().id())) cir.setReturnValue(Badge.prefix(cir.getReturnValue()));
+		} catch (Throwable ignored) { // other client mods (NoRisk, tier taggers ...) must keep working
+		}
 	}
 }

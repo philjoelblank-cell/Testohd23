@@ -184,13 +184,16 @@ public final class Emotes {
 				set(ra, 0, 0, 2.2f + p, k);
 				set(la, 0, 0, -2.2f - p, k);
 			}
-			case "football" -> { // keepy-uppy: the right foot kicks the ball up again and again
-				float u = (s / 12f) % 1f;
-				float kick = Math.max(0, 1 - u * 4);
-				set(rl, -0.75f * kick, 0, 0, k);
-				set(ra, 0, 0, 0.45f, k);
-				set(la, 0, 0, -0.45f, k);
-				set(head, 0.45f, 0, 0, k);
+			case "football" -> { // keepy-uppy: the right foot comes up to meet the ball and kicks it up again
+				float u = (s / 14f) % 1f;
+				float d = Math.min(u, 1 - u); // distance to the kick
+				float kick = Math.max(0, 1 - d / 0.24f);
+				kick = kick * kick * (3 - 2 * kick);
+				set(rl, -0.85f * kick, 0, 0, k);
+				set(ll, 0.08f * kick, 0, 0, k);
+				set(ra, 0.15f * kick, 0, 0.45f, k);
+				set(la, -0.15f * kick, 0, -0.45f, k);
+				set(head, 0.5f, 0, 0, k);
 			}
 			case "basketball" -> {
 				if (t < 1.6f) { // dribbling
@@ -340,6 +343,23 @@ public final class Emotes {
 		root.z -= 24f * (float) Math.sin(angle);
 	}
 
+	/** Emotes that move or tilt the whole body (the vanilla cape can't follow those). */
+	private static final java.util.Set<String> WHOLE_BODY = java.util.Set.of("sit", "faint", "superman", "ascend", "spin", "worship", "vibe", "bow");
+
+	/** During an emote the cape hangs straight (no flapping); when the whole body moves, the cape is hidden. */
+	public static void fixCape(AvatarRenderState state, UUID uuid) {
+		Emote e = preview(state.id);
+		if (e == null) {
+			Active a = uuid == null ? null : active.get(uuid);
+			e = a == null ? null : a.emote;
+		}
+		if (e == null) return;
+		state.capeFlap = 0;
+		state.capeLean = 0;
+		state.capeLean2 = 0;
+		if (WHOLE_BODY.contains(e.id)) state.showCape = false;
+	}
+
 	/** Prop held in the right hand: "card_yellow" / "card_red", or null. */
 	public static String prop(int stateId, UUID uuid) {
 		Emote e = preview(stateId);
@@ -368,10 +388,10 @@ public final class Emotes {
 			t = time(uuid, a);
 		}
 		float s = t * 20f;
-		if (e.id.equals("football")) {
-			float u = (s / 12f) % 1f;
-			float h = 4 * u * (1 - u); // up and down between two kicks
-			return new float[]{-0.12f, 1.2f - 0.95f * h, -0.5f, 0};
+		if (e.id.equals("football")) { // touches the foot at the kick (u = 0), flies up and comes back down
+			float u = (s / 14f) % 1f;
+			float h = 4 * u * (1 - u);
+			return new float[]{-0.12f, 1.0f - 0.95f * h, -0.56f, 0};
 		}
 		if (e.id.equals("basketball")) {
 			if (t < 1.6f) {

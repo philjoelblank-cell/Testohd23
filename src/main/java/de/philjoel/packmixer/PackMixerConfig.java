@@ -189,6 +189,7 @@ public final class PackMixerConfig {
 		// Cosmetics of other players
 		public boolean shareCosmetics = true;      // let other mod users see yours
 		public boolean showBadges = true;          // "T" next to the names of mod users
+		public boolean badgeLeft = false;          // T in front of the name instead of behind it
 		public boolean emoteCamera = true;         // third person while your emote plays
 		public boolean showOthersCosmetics = true; // see theirs
 

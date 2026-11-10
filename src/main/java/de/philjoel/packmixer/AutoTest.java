@@ -251,7 +251,8 @@ final class AutoTest {
 		shot("aura_thunder");
 		step("aura holo", 60, () -> Cosmetics.Slot.EFFECT.set("fx_holo"));
 		shot("aura_holo");
-		for (String fx : new String[]{"fx_toxic", "fx_matrix", "fx_heartbeat", "orb_ghosts", "orb_crystals", "orb_rings", "orb_wisps", "orb_hearts"}) {
+		for (String fx : new String[]{"trail_plasma", "trail_inferno", "trail_frost", "trail_void", "trail_yinyang", "trail_rainbow",
+				"orb_ghosts", "orb_crystals", "orb_rings", "orb_wisps", "orb_hearts"}) {
 			step("aura " + fx, 60, () -> Cosmetics.Slot.EFFECT.set(fx));
 			shot("aura_" + fx.substring(fx.indexOf('_') + 1));
 		}

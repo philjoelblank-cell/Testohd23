@@ -14,11 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(AvatarRenderer.class)
 public abstract class AvatarCapeMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
-			at = @At("TAIL"))
+			at = @At("TAIL"), require = 0)
 	private void packmixer$cape(Avatar avatar, AvatarRenderState state, float partialTick, CallbackInfo ci) {
 		if (avatar instanceof Entity e) {
 			Capes.apply(e, state);
-			if (state.nameTag != null && de.philjoel.packmixer.Badge.has(e.getUUID())) state.nameTag = de.philjoel.packmixer.Badge.prefix(state.nameTag);
+			de.philjoel.packmixer.Emotes.fixCape(state, e.getUUID());
+			try {
+				if (state.nameTag != null && de.philjoel.packmixer.Badge.has(e.getUUID())) state.nameTag = de.philjoel.packmixer.Badge.prefix(state.nameTag);
+			} catch (Throwable ignored) {
+			}
 		}
 	}
 }
