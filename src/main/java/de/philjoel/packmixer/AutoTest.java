@@ -170,8 +170,9 @@ final class AutoTest {
 			Cosmetics.Slot.CAPE.set("cape_galaxy");
 		});
 		step("auras rec", 2, () -> startVideo(mc, "t07_auras"));
-		for (String a : new String[]{"orb_ghosts", "orb_rings", "orb_crystals", "orb_wisps", "fx_blackhole", "fx_thunder"})
-			step("aura " + a, 50, () -> Cosmetics.Slot.EFFECT.set(a));
+		for (String a : new String[]{"trail_plasma", "trail_inferno", "trail_yinyang", "trail_frost", "trail_rainbow", "trail_void",
+				"orb_ghosts", "orb_crystals", "orb_wisps", "orb_rings"})
+			step("aura " + a, 55, () -> Cosmetics.Slot.EFFECT.set(a));
 		step("auras stop", 10, AutoTest::stopVideo);
 		// 8: badge
 		step("badge prep", 5, () -> {
