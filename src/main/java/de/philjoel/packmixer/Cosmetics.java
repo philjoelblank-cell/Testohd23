@@ -2,7 +2,7 @@ package de.philjoel.packmixer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.player.PlayerModel;
@@ -70,6 +70,9 @@ public final class Cosmetics {
 			Map.entry("fx_thunder", Rarity.LEGENDARY), Map.entry("fx_blackhole", Rarity.LEGENDARY), Map.entry("fx_holo", Rarity.LEGENDARY),
 			Map.entry("thunder_wings", Rarity.LEGENDARY), Map.entry("galaxy_wings", Rarity.LEGENDARY), Map.entry("holo_wings", Rarity.LEGENDARY),
 			Map.entry("toxic_wings", Rarity.LEGENDARY),
+			Map.entry("space_helmet", Rarity.LEGENDARY), Map.entry("dragon_horns", Rarity.LEGENDARY), Map.entry("fox_beanie", Rarity.EPIC),
+			Map.entry("propeller_cap", Rarity.EPIC), Map.entry("cowboy_hat", Rarity.RARE), Map.entry("chef_hat", Rarity.RARE),
+			Map.entry("neon_visor", Rarity.EPIC),
 			Map.entry("fx_toxic", Rarity.EPIC), Map.entry("fx_matrix", Rarity.EPIC), Map.entry("fx_heartbeat", Rarity.EPIC));
 
 	/** Textured, glowing cosmetics: no enchantment shimmer on top. */
@@ -85,8 +88,8 @@ public final class Cosmetics {
 	}
 
 	public enum Slot {
-		HEAD(List.of("inferno_crown", "plasma_crown", "frost_crown", "void_crown", "energy_halo", "void_halo", "divine_halo", "crown", "halo", "wizard_hat", "viking_helmet", "top_hat", "santa_hat", "horns", "headphones", "straw_hat", "cat_ears")),
-		FACE(List.of("sunglasses", "monocle", "mask")),
+		HEAD(List.of("space_helmet", "dragon_horns", "fox_beanie", "propeller_cap", "cowboy_hat", "chef_hat", "inferno_crown", "plasma_crown", "frost_crown", "void_crown", "energy_halo", "void_halo", "divine_halo", "crown", "halo", "wizard_hat", "viking_helmet", "top_hat", "santa_hat", "horns", "headphones", "straw_hat", "cat_ears")),
+		FACE(List.of("neon_visor", "sunglasses", "monocle", "mask")),
 		BACK(List.of("thunder_wings", "galaxy_wings", "holo_wings", "toxic_wings", "plasma_wings", "inferno_wings", "void_wings", "energy_wings", "frost_wings", "phoenix_wings", "angel_wings",
 				"devil_wings", "backpack")),
 		EFFECT(List.of("fx_thunder", "fx_blackhole", "fx_holo", "fx_toxic", "fx_matrix", "fx_heartbeat", "fx_inferno", "fx_plasma", "fx_frost", "fx_energy", "fx_lightwings", "fx_rainbow", "fx_galaxy", "fx_totem", "fx_sparkle", "fx_souls", "fx_lightning", "fx_void",
@@ -186,7 +189,7 @@ public final class Cosmetics {
 	}
 
 	static void init() {
-		LivingEntityRenderLayerRegistrationCallback.EVENT.register((entityType, entityRenderer, helper, context) -> {
+		LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, helper, context) -> {
 			if (entityRenderer instanceof AvatarRenderer<?> avatar) {
 				helper.register(new CosmeticLayer(avatar));
 			}
@@ -203,28 +206,43 @@ public final class Cosmetics {
 			if (state.isInvisible) return;
 			Minecraft mc = Minecraft.getInstance();
 			if (mc.level == null) return;
-			net.minecraft.world.entity.Entity entity = mc.level.getEntity(state.id);
-			if (!(entity instanceof net.minecraft.world.entity.player.Player player)) return;
+			java.util.UUID uuid;
+			if (Emotes.preview(state.id) != null) { // doll in the emote wheel = you
+				if (mc.player == null) return;
+				uuid = mc.player.getUUID();
+			} else {
+				net.minecraft.world.entity.Entity entity = mc.level.getEntity(state.id);
+				if (!(entity instanceof net.minecraft.world.entity.player.Player player)) return;
+				uuid = player.getUUID();
+			}
 			PlayerModel model = this.getParentModel();
-			float[] ball = Emotes.ball(player.getUUID());
-			if (ball != null) { // football / basketball emote
-				ItemStack bs = Ui.stack(Items.PAPER);
-				if (!bs.isEmpty()) {
-					bs.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, ball[3] == 0 ? "ball_football" : "ball_basketball"));
-					ItemStackRenderState item = new ItemStackRenderState();
-					mc.getItemModelResolver().updateForTopItem(item, bs, ItemDisplayContext.FIXED, mc.level, null, 0);
-					if (!item.isEmpty()) {
-						pose.pushPose();
-						model.root().translateAndRotate(pose);
-						pose.translate(ball[0], ball[1], ball[2]);
-						pose.rotateDegrees(Axis.XP, state.ageInTicks * 25);
-						pose.scale(0.55F, 0.55F, 0.55F);
-						item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
-						pose.popPose();
-					}
+			float[] ball = Emotes.ball(state.id, uuid);
+			if (ball != null) { // football / basketball emote: a big ball
+				ItemStackRenderState item = prop(mc, ball[3] == 0 ? "ball_football" : "ball_basketball");
+				if (item != null) {
+					pose.pushPose();
+					model.root().translateAndRotate(pose);
+					pose.translate(ball[0], ball[1], ball[2]);
+					pose.rotateDegrees(Axis.XP, state.ageInTicks * 25);
+					pose.scale(1.4F, 1.4F, 1.4F);
+					item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
+					pose.popPose();
 				}
 			}
-			Loadout loadout = of(player.getUUID());
+			String held = Emotes.prop(state.id, uuid);
+			if (held != null) { // referee card in the right hand
+				ItemStackRenderState item = prop(mc, held);
+				if (item != null) {
+					pose.pushPose();
+					model.root().translateAndRotate(pose);
+					model.rightArm.translateAndRotate(pose);
+					pose.translate(-0.0625F, 0.72F, -0.02F);
+					pose.scale(0.9F, 0.9F, 0.9F);
+					item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
+					pose.popPose();
+				}
+			}
+			Loadout loadout = of(uuid);
 			if (loadout.isEmpty()) return;
 			float t = state.ageInTicks;
 
@@ -243,7 +261,7 @@ public final class Cosmetics {
 					model.body.translateAndRotate(pose);
 					// a bit behind the back, so a chestplate never covers the wings
 					pose.translate(0.0F, 0.375F, id.endsWith("wings") ? 0.11F : 0.0F);
-					pose.rotateDegrees(Axis.YP, (180.0F));
+					pose.rotateDegrees(Axis.YP, 180.0F);
 					pose.scale(0.625F, -0.625F, -0.625F);
 					if (id.endsWith("wings")) {
 						// wing flap (phoenix wings beat faster)
@@ -256,23 +274,33 @@ public final class Cosmetics {
 					CustomHeadLayer.translateToHead(pose, CustomHeadLayer.Transforms.DEFAULT);
 					if (id.endsWith("_halo")) { // V1 halos: float higher and turn faster
 						pose.translate(0.0F, (float) Math.sin(t * 0.14F) * 0.04F + 0.03F, 0.0F);
-						pose.rotateDegrees(Axis.YP, (t * 4.5F));
+						pose.rotateDegrees(Axis.YP, t * 4.5F);
 					} else if (id.endsWith("_crown")) {
 						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.012F, 0.0F);
 					} else if (id.equals("halo")) {
 						// floating, slowly spinning halo
 						pose.translate(0.0F, (float) Math.sin(t * 0.12F) * 0.03F, 0.0F);
-						pose.rotateDegrees(Axis.YP, (t * 3.0F));
+						pose.rotateDegrees(Axis.YP, t * 3.0F);
 					} else if (id.equals("crown")) {
 						pose.translate(0.0F, (float) Math.sin(t * 0.1F) * 0.008F, 0.0F);
 					} else if (id.equals("wizard_hat")) {
-						pose.rotateDegrees(Axis.ZP, ((float) Math.sin(t * 0.08F) * 2.5F));
+						pose.rotateDegrees(Axis.ZP, (float) Math.sin(t * 0.08F) * 2.5F);
 					}
 				}
 				item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 				pose.popPose();
 			}
 		}
+	}
+
+	/** Item model of a prop (ball, card), or null. */
+	private static ItemStackRenderState prop(Minecraft mc, String model) {
+		ItemStack bs = Ui.stack(Items.PAPER);
+		if (bs.isEmpty()) return null;
+		bs.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, model));
+		ItemStackRenderState item = new ItemStackRenderState();
+		mc.getItemModelResolver().updateForTopItem(item, bs, ItemDisplayContext.FIXED, mc.level, null, 0);
+		return item.isEmpty() ? null : item;
 	}
 
 	/** Left and right wing, each turning around the spine: they beat open and closed. */

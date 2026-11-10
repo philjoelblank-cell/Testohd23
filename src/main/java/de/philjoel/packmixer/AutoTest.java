@@ -158,7 +158,7 @@ final class AutoTest {
 		}
 		// ---- new cosmetics: wings from fixed angles (with chestplate), capes, emotes, auras, low shield
 		command("item replace entity @p armor.chest with netherite_chestplate");
-		for (String wing : new String[]{"thunder_wings", "angel_wings"}) {
+		for (String wing : new String[]{"thunder_wings", "galaxy_wings", "toxic_wings", "holo_wings", "angel_wings"}) {
 			step("wear " + wing, 10, () -> {
 				Cosmetics.Slot.HEAD.set("");
 				Cosmetics.Slot.CAPE.set("");
@@ -168,7 +168,7 @@ final class AutoTest {
 			});
 			shot("views_" + wing);
 		}
-		for (String cape : new String[]{"cape_plasma", "cape_galaxy", "cape_thunder"}) {
+		for (String cape : Cosmetics.Slot.CAPE.items) {
 			step("wear " + cape, 10, () -> {
 				Cosmetics.Slot.BACK.set("");
 				Cosmetics.Slot.CAPE.set(cape);
@@ -177,6 +177,19 @@ final class AutoTest {
 			step("cape load " + cape, 10, () -> { });
 			shot("views_" + cape);
 		}
+		for (String hat : new String[]{"space_helmet", "dragon_horns", "fox_beanie", "propeller_cap", "cowboy_hat", "chef_hat"}) {
+			step("wear " + hat, 10, () -> {
+				Cosmetics.Slot.CAPE.set("");
+				Cosmetics.Slot.HEAD.set(hat);
+				Cosmetics.Slot.FACE.set(hat.equals("space_helmet") ? "" : "neon_visor");
+				mc.gui.setScreen(new TestViewScreen(0, 45, 90, 180));
+			});
+			shot("views_" + hat);
+		}
+		step("hats off", 2, () -> {
+			Cosmetics.Slot.HEAD.set("");
+			Cosmetics.Slot.FACE.set("");
+		});
 		step("cape + wings", 10, () -> Cosmetics.Slot.BACK.set("galaxy_wings"));
 		shot("views_cape_wings");
 		step("emotes start", 5, () -> {
@@ -185,17 +198,20 @@ final class AutoTest {
 			mc.gui.setScreen(new EmoteWheelScreen());
 		});
 		shot("emote_wheel");
-		step("emote wheel page 2", 5, () -> {
-			EmoteWheelScreen.testPage(1);
-			mc.gui.setScreen(new EmoteWheelScreen());
-		});
-		shot("emote_wheel_2");
+		for (int pg = 1; pg < 4; pg++) {
+			int page = pg;
+			step("emote wheel page " + page, 30, () -> {
+				EmoteWheelScreen.testPage(page);
+				mc.gui.setScreen(new EmoteWheelScreen());
+			});
+			shot("emote_wheel_" + (page + 1));
+		}
 		for (Emotes.Emote e : Emotes.ALL) {
 			step("emote " + e.id(), 2, () -> {
 				mc.gui.setScreen(null);
 				Emotes.play(e.id());
 			});
-			step("emote view " + e.id(), e.id().equals("basketball") ? 46 : 14, () -> mc.gui.setScreen(new TestViewScreen(0, 30, 90)));
+			step("emote view " + e.id(), e.id().equals("basketball") ? 46 : e.id().equals("faint") || e.id().equals("ascend") ? 40 : 14, () -> mc.gui.setScreen(new TestViewScreen(0, 30, 90)));
 			shot("emote_" + e.id());
 		}
 		step("tab list", 10, () -> {
@@ -216,9 +232,14 @@ final class AutoTest {
 		});
 		step("emote ingame wait", 30, () -> { });
 		shot("emote_ingame_dance");
+		// open platform high up, so the effects are not hidden by trees / grass
+		command("fill ~-8 199 ~-8 ~8 199 ~8 white_concrete");
+		command("tp @p ~ 200 ~");
 		step("aura blackhole", 60, () -> {
 			mc.gui.setScreen(null);
 			Cosmetics.Slot.EFFECT.set("fx_blackhole");
+			Cosmetics.Slot.CAPE.set("");
+			mc.player.setXRot(15);
 			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
 		});
 		shot("aura_blackhole");
@@ -226,6 +247,10 @@ final class AutoTest {
 		shot("aura_thunder");
 		step("aura holo", 60, () -> Cosmetics.Slot.EFFECT.set("fx_holo"));
 		shot("aura_holo");
+		for (String fx : new String[]{"fx_toxic", "fx_matrix", "fx_heartbeat"}) {
+			step("aura " + fx, 60, () -> Cosmetics.Slot.EFFECT.set(fx));
+			shot("aura_" + fx.substring(3));
+		}
 		command("item replace entity @p weapon.offhand with shield");
 		step("low shield off", 20, () -> {
 			Cosmetics.Slot.EFFECT.set("");
