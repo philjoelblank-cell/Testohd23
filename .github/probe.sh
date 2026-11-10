@@ -1,8 +1,7 @@
 set +e
 f(){ find . -name "$1.java" | head -1; }
-echo "### SKIN"; sed -n 1,80p $(f PlayerSkin)
-echo "### AVR"; sed -n 1,40p $(f AvatarRenderer) | grep -n "class\|import"
-sed -n 190,215p $(f AvatarRenderer)
-echo "### AVATAR"; f Avatar
-echo "### HM"; sed -n 95,130p $(f HumanoidModel)
-echo "### PMS"; sed -n 105,140p $(f PlayerModel)
+echo "### STYLE"; grep -n "public Style withFont\|FontDescription" $(f Style) | head
+echo "### FD"; f FontDescription; grep -n "record\|interface\|static" $(f FontDescription) | head
+echo "### TAB"; grep -n "getNameForDisplay\|private Component decorateName" $(f PlayerTabOverlay) | head
+echo "### NT"; grep -n "nameTag" $(f EntityRenderState) $(f EntityRenderer) | head
+echo "### ITEMCTX"; grep -n "FIXED\|HEAD\|NONE" $(f ItemDisplayContext) | head -5
