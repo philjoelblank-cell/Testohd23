@@ -217,7 +217,7 @@ public final class Cosmetics {
 						pose.pushPose();
 						model.root().translateAndRotate(pose);
 						pose.translate(ball[0], ball[1], ball[2]);
-						pose.mulPose(Axis.XP.rotationDegrees(state.ageInTicks * 25));
+						pose.rotateDegrees(Axis.XP, state.ageInTicks * 25);
 						pose.scale(0.55F, 0.55F, 0.55F);
 						item.submit(pose, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 						pose.popPose();
