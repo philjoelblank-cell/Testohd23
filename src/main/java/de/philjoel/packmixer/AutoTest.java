@@ -216,9 +216,14 @@ final class AutoTest {
 		});
 		step("emote ingame wait", 30, () -> { });
 		shot("emote_ingame_dance");
+		// open platform high up, so the effects are not hidden by trees / grass
+		command("fill ~-8 199 ~-8 ~8 199 ~8 white_concrete");
+		command("tp @p ~ 200 ~");
 		step("aura blackhole", 60, () -> {
 			mc.setScreen(null);
 			Cosmetics.Slot.EFFECT.set("fx_blackhole");
+			Cosmetics.Slot.CAPE.set("");
+			mc.player.setXRot(15);
 			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
 		});
 		shot("aura_blackhole");
