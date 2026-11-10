@@ -58,7 +58,8 @@ public class EmoteWheelScreen extends Screen {
 		float in = Math.min(1f, (System.currentTimeMillis() - openedAt) / 150f);
 		g.fill(0, 0, this.width, this.height, (int) (0x70 * in) << 24);
 		int hov = hovered(mouseX, mouseY);
-		int w = 58, h = 36;
+		double chord = 2 * radius() * Math.sin(Math.PI / Math.max(3, list().size()));
+		int w = (int) Math.min(58, chord - 4), h = (int) Math.min(36, w * 0.66);
 		java.util.List<Emotes.Emote> list = list();
 		for (int i = 0; i < list.size(); i++) {
 			Emotes.Emote e = list.get(i);
