@@ -48,7 +48,160 @@ final class AutoTest {
 		});
 	}
 
+	/** Branch test/trailer: only record the clips for the update trailer. */
+	static final boolean TRAILER = true;
+
+	private static void clip(Minecraft mc, String name, int ticks, Runnable setup) {
+		step("clip setup " + name, 15, setup);
+		step("clip start " + name, ticks, () -> startVideo(mc, name));
+		step("clip stop " + name, 10, AutoTest::stopVideo);
+	}
+
+	private static void trailer(Minecraft mc) {
+		when("game ready", () -> mc.getOverlay() == null && mc.screen != null
+				&& PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
+		step("pack", 5, () -> {
+			Map<String, String> sel = new LinkedHashMap<>();
+			for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, "Testohd23 V1 Purple");
+			PackMixerConfig.saveSelection(sel);
+			PackBuilder.rebuildAndApply();
+			mc.options.guiScale().set(3);
+			mc.resizeDisplay();
+		});
+		when("reload", () -> mc.getOverlay() == null, () -> { });
+		step("create world", 40, () -> CreateWorldScreen.openFresh(mc, () -> { }));
+		when("create screen", () -> mc.screen instanceof CreateWorldScreen, () -> {
+			try {
+				var m = CreateWorldScreen.class.getDeclaredMethod("onCreate");
+				m.setAccessible(true);
+				m.invoke(mc.screen);
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.error("autotest: could not create world", e);
+			}
+		});
+		when("in world", () -> mc.player != null && mc.level != null && mc.screen == null, () -> {
+			mc.options.renderDistance().set(6);
+			mc.options.hideGui = false;
+		});
+		command("gamerule announceAdvancements false");
+		command("time set 1000");
+		command("weather clear");
+		command("gamemode creative @p");
+		command("fill ~-10 149 ~-10 ~10 149 ~10 grass_block");
+		command("fill ~-10 150 ~-10 ~10 160 ~10 air");
+		command("tp @p ~ 150 ~ 0 0");
+		command("item replace entity @p armor.chest with netherite_chestplate");
+		step("settle", 60, () -> {
+			Cosmetics.Slot.HEAD.set("");
+			Cosmetics.Slot.FACE.set("");
+			Cosmetics.Slot.EFFECT.set("");
+			Cosmetics.Slot.BACK.set("galaxy_wings");
+			Cosmetics.Slot.CAPE.set("cape_galaxy");
+			mc.getToastManager().clear();
+		});
+		// 1: showcase turning (wings + cape)
+		clip(mc, "t01_showcase", 120, () -> mc.setScreen(new ShowcaseScreen(60f)));
+		// 2: capes one after the other
+		String[] capes = Cosmetics.Slot.CAPE.items.toArray(new String[0]);
+		step("capes prep", 5, () -> {
+			Cosmetics.Slot.BACK.set("");
+			Cosmetics.Slot.CAPE.set(capes[0]);
+			mc.setScreen(new ShowcaseScreen(0f) {
+			});
+		});
+		step("capes rot", 10, () -> mc.setScreen(new ShowcaseScreen(25f)));
+		step("capes rec", 2, () -> startVideo(mc, "t02_capes"));
+		for (String c : capes) step("cape " + c, 14, () -> Cosmetics.Slot.CAPE.set(c));
+		step("capes stop", 10, AutoTest::stopVideo);
+		// 3: wings
+		step("wings prep", 10, () -> Cosmetics.Slot.CAPE.set(""));
+		step("wings rec", 2, () -> startVideo(mc, "t03_wings"));
+		for (String w : new String[]{"thunder_wings", "galaxy_wings", "holo_wings", "toxic_wings", "plasma_wings", "inferno_wings"})
+			step("wing " + w, 22, () -> Cosmetics.Slot.BACK.set(w));
+		step("wings stop", 10, AutoTest::stopVideo);
+		// 4: hats
+		step("hats prep", 10, () -> Cosmetics.Slot.BACK.set(""));
+		step("hats rec", 2, () -> startVideo(mc, "t04_hats"));
+		for (String hat : new String[]{"space_helmet", "dragon_horns", "fox_beanie", "propeller_cap", "cowboy_hat", "chef_hat"})
+			step("hat " + hat, 22, () -> {
+				Cosmetics.Slot.HEAD.set(hat);
+				Cosmetics.Slot.FACE.set(hat.equals("space_helmet") ? "" : "neon_visor");
+			});
+		step("hats stop", 10, AutoTest::stopVideo);
+		// 5: emote wheel
+		step("wheel prep", 10, () -> {
+			Cosmetics.Slot.HEAD.set("");
+			Cosmetics.Slot.FACE.set("");
+			Cosmetics.Slot.CAPE.set("cape_plasma");
+			mc.setScreen(null);
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+			mc.player.setYRot(0);
+			mc.player.setXRot(0);
+		});
+		step("wheel rec", 2, () -> {
+			startVideo(mc, "t05_wheel");
+			EmoteWheelScreen.testPage(0);
+			mc.setScreen(new EmoteWheelScreen());
+		});
+		step("wheel p2", 50, () -> EmoteWheelScreen.testPage(1));
+		step("wheel p3", 40, () -> EmoteWheelScreen.testPage(2));
+		step("wheel stop", 40, AutoTest::stopVideo);
+		// 6: emotes in the world (camera in front of you)
+		step("emotes prep", 10, () -> {
+			mc.setScreen(null);
+			PackMixerConfig.settings().emoteCamera = false;
+			mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+		});
+		step("emotes rec", 2, () -> startVideo(mc, "t06_emotes"));
+		for (String[] e : new String[][]{{"football", "70"}, {"basketball", "72"}, {"default_dance", "60"}, {"superman", "60"},
+				{"yellow_card", "45"}, {"floss", "50"}, {"spin", "55"}, {"faint", "60"}}) {
+			step("emote " + e[0], Integer.parseInt(e[1]), () -> Emotes.play(e[0]));
+		}
+		step("emotes stop", 10, AutoTest::stopVideo);
+		// 7: 3D auras (camera behind)
+		step("auras prep", 30, () -> {
+			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+			mc.player.setXRot(20);
+			Cosmetics.Slot.CAPE.set("cape_galaxy");
+		});
+		step("auras rec", 2, () -> startVideo(mc, "t07_auras"));
+		for (String a : new String[]{"orb_ghosts", "orb_rings", "orb_crystals", "orb_wisps", "fx_blackhole", "fx_thunder"})
+			step("aura " + a, 50, () -> Cosmetics.Slot.EFFECT.set(a));
+		step("auras stop", 10, AutoTest::stopVideo);
+		// 8: badge
+		step("badge prep", 5, () -> {
+			Cosmetics.Slot.EFFECT.set("");
+			mc.setScreen(new TestViewScreen(0, 90, 180));
+		});
+		clip(mc, "t08_badge", 50, () -> { });
+		// 9: low shield
+		step("shield prep", 10, () -> {
+			mc.setScreen(null);
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+			mc.player.setXRot(5);
+			PackMixerConfig.settings().lowShield = false;
+		});
+		command("item replace entity @p weapon.offhand with shield");
+		command("item replace entity @p weapon.mainhand with netherite_sword");
+		step("shield rec", 30, () -> startVideo(mc, "t09_shield"));
+		step("shield low", 40, () -> PackMixerConfig.settings().lowShield = true);
+		step("shield stop", 10, AutoTest::stopVideo);
+		// 10: cosmetics menu, cape tab
+		clip(mc, "t10_menu", 70, () -> {
+			CosmeticsScreen.lastSlot = Cosmetics.Slot.CAPE;
+			mc.setScreen(new CosmeticsScreen(null));
+		});
+		step("quit", 40, () -> {
+			mc.setScreen(null);
+			mc.stop();
+		});
+	}
+
 	private static void plan(Minecraft mc) {
+		if (TRAILER) {
+			trailer(mc);
+			return;
+		}
 		when("game ready", () -> mc.getOverlay() == null && mc.screen != null
 				&& PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
 		for (int scale : new int[]{2, 3, 4}) {
@@ -593,14 +746,14 @@ final class AutoTest {
 
 	private static void startVideo(Minecraft mc, String name) {
 		try {
-			vw = mc.getMainRenderTarget().width / 2;
-			vh = mc.getMainRenderTarget().height / 2;
+			vw = mc.getMainRenderTarget().width / (TRAILER ? 1 : 2);
+			vh = mc.getMainRenderTarget().height / (TRAILER ? 1 : 2);
 			vw -= vw % 2;
 			vh -= vh % 2;
 			java.nio.file.Path out = mc.gameDirectory.toPath().resolve("screenshots").resolve(name + ".mp4");
 			java.nio.file.Files.createDirectories(out.getParent());
 			video = new ProcessBuilder("ffmpeg", "-y", "-loglevel", "warning", "-f", "rawvideo", "-pix_fmt", "rgba",
-					"-s", vw + "x" + vh, "-r", "20", "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+					"-s", vw + "x" + vh, "-r", "20", "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", TRAILER ? "16" : "22",
 					"-pix_fmt", "yuv420p", out.toString()).redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
 			videoIn = new java.io.BufferedOutputStream(video.getOutputStream(), 1 << 20);
 			Thread t = new Thread(() -> {
@@ -625,7 +778,7 @@ final class AutoTest {
 	}
 
 	private static void captureFrame(Minecraft mc) {
-		Screenshot.takeScreenshot(mc.getMainRenderTarget(), 2, img -> {
+		Screenshot.takeScreenshot(mc.getMainRenderTarget(), TRAILER ? 1 : 2, img -> {
 			try {
 				if (video == null) return;
 				byte[] buf = new byte[vw * vh * 4];
