@@ -55,7 +55,7 @@ public class EmoteWheelScreen extends Screen {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
-		float in = Math.min(1f, (System.currentTimeMillis() - openedAt) / 150f);
+		float in = 1f; // no fly-in (some versions draw the screen only once)
 		g.fill(0, 0, this.width, this.height, (int) (0x70 * in) << 24);
 		int hov = hovered(mouseX, mouseY);
 		double chord = 2 * radius() * Math.sin(Math.PI / Math.max(3, list().size()));
