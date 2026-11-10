@@ -1,7 +1,7 @@
 set +e
 f(){ find . -name "$1.java" | head -1; }
-echo "### STYLE"; grep -n "public Style withFont\|FontDescription" $(f Style) | head
-echo "### FD"; f FontDescription; grep -n "record\|interface\|static" $(f FontDescription) | head
-echo "### TAB"; grep -n "getNameForDisplay\|private Component decorateName" $(f PlayerTabOverlay) | head
-echo "### NT"; grep -n "nameTag" $(f EntityRenderState) $(f EntityRenderer) | head
-echo "### ITEMCTX"; grep -n "FIXED\|HEAD\|NONE" $(f ItemDisplayContext) | head -5
+echo "### CAPELAYER"; cat $(f CapeLayer)
+echo "### CAPEMODEL"; sed -n 1,200p $(f PlayerCapeModel)
+echo "### ARMORLAYER"; grep -n "class\|HEAD\|submit\|renderArmorPiece\|EquipmentSlot" $(f HumanoidArmorLayer) | head -30
+echo "### AVATARRENDERER"; grep -n "addLayer\|new .*Layer" $(f AvatarRenderer) | head -20
+echo "### ARS"; grep -n "headEquipment\|chestEquipment\|ItemStack" $(f HumanoidRenderState) $(f AvatarRenderState) | head
