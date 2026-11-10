@@ -447,7 +447,6 @@
   "packmixer.emote.dance": "Dance",
   "packmixer.emote.cheer": "Cheer",
   "packmixer.emote.dab": "Dab",
-  "packmixer.emote.salute": "Salute",
   "packmixer.emote.clap": "Clap",
   "packmixer.emote.facepalm": "Facepalm",
   "packmixer.emote.flex": "Flex",
@@ -488,5 +487,11 @@
   "packmixer.emote.red_card": "Red Card",
   "packmixer.emote.worship": "Worship",
   "packmixer.emote.six_seven": "67",
-  "packmixer.emote.vibe": "Vibe"
+  "packmixer.emote.vibe": "Vibe",
+  "packmixer.emote.shrug": "Shrug",
+  "packmixer.hat.orb_ghosts": "Ghost Parade",
+  "packmixer.hat.orb_crystals": "Crystal Orbit",
+  "packmixer.hat.orb_rings": "Golden Rings",
+  "packmixer.hat.orb_wisps": "Wisps",
+  "packmixer.hat.orb_hearts": "Heart Orbit"
 }
