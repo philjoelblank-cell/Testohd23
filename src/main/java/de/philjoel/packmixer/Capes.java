@@ -37,7 +37,7 @@ public final class Capes {
 		for (String id : wanted) {
 			if (loaded.contains(id)) continue;
 			try {
-				for (int f = 0; f < Cosmetics.CAPE_FRAMES; f++) mc.getTextureManager().getTexture(Cosmetics.capeTexture(id, f * 2L));
+				for (int f = 0; f < Cosmetics.CAPE_FRAMES; f++) mc.getTextureManager().getTexture(Cosmetics.capeTexture(id, f));
 				loaded.add(id);
 			} catch (Exception ex) {
 				PackMixerClient.LOGGER.warn("Cape {} could not be loaded", id, ex);

@@ -185,14 +185,31 @@ final class AutoTest {
 			mc.gui.setScreen(new EmoteWheelScreen());
 		});
 		shot("emote_wheel");
+		step("emote wheel page 2", 5, () -> {
+			EmoteWheelScreen.testPage(1);
+			mc.gui.setScreen(new EmoteWheelScreen());
+		});
+		shot("emote_wheel_2");
 		for (Emotes.Emote e : Emotes.ALL) {
 			step("emote " + e.id(), 2, () -> {
 				mc.gui.setScreen(null);
 				Emotes.play(e.id());
 			});
-			step("emote view " + e.id(), 14, () -> mc.gui.setScreen(new TestViewScreen(0, 30, 90)));
+			step("emote view " + e.id(), e.id().equals("basketball") ? 46 : 14, () -> mc.gui.setScreen(new TestViewScreen(0, 30, 90)));
 			shot("emote_" + e.id());
 		}
+		step("tab list", 10, () -> {
+			mc.gui.setScreen(null);
+			mc.options.keyPlayerList.setDown(true);
+		});
+		shot("badge_tab");
+		step("tab list off", 2, () -> mc.options.keyPlayerList.setDown(false));
+		step("emote football ingame", 5, () -> {
+			mc.gui.setScreen(null);
+			Emotes.play("football");
+		});
+		step("emote football wait", 25, () -> { });
+		shot("emote_ingame_football");
 		step("emote ingame", 5, () -> {
 			mc.gui.setScreen(null);
 			Emotes.play("dance");

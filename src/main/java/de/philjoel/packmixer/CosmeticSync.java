@@ -27,6 +27,12 @@ public final class CosmeticSync {
 	private static final long POLL_MS = 120_000, REPUBLISH_MS = 3 * 3600_000L;
 
 	private static final Map<UUID, Cosmetics.Loadout> remote = new ConcurrentHashMap<>();
+	/** Everybody who posted a line (= uses the mod), also without cosmetics. */
+	private static final java.util.Set<UUID> users = ConcurrentHashMap.newKeySet();
+
+	public static boolean isUser(UUID uuid) {
+		return users.contains(uuid);
+	}
 	private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
 	private static volatile boolean busy, streaming;
 	private static Thread streamThread;
@@ -157,13 +163,14 @@ public final class CosmeticSync {
 		boolean v1 = p.length == 6 && p[0].equals("ts1"), v2 = p.length == 7 && p[0].equals("ts2");
 		if (!v1 && !v2) return;
 		String cape = v2 ? p[6] : "";
-		if (!Cosmetics.valid(Cosmetics.Slot.CAPE, cape)) return;
 		UUID uuid;
 		try {
 			uuid = UUID.fromString(p[1]);
 		} catch (IllegalArgumentException e) {
 			return;
 		}
+		users.add(uuid); // uses the mod -> "T" badge
+		if (!Cosmetics.valid(Cosmetics.Slot.CAPE, cape)) return;
 		if (!Cosmetics.valid(Cosmetics.Slot.HEAD, p[2]) || !Cosmetics.valid(Cosmetics.Slot.FACE, p[3])
 				|| !Cosmetics.valid(Cosmetics.Slot.BACK, p[4]) || !Cosmetics.valid(Cosmetics.Slot.EFFECT, p[5])) return;
 		Cosmetics.Loadout l = new Cosmetics.Loadout(p[2], p[3], p[4], p[5], cape);
