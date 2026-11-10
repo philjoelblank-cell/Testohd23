@@ -197,6 +197,40 @@ public final class CosmeticEffects {
 					}
 				}
 			}
+			case "trail_plasma" -> {
+				if (t % 2 == 0) level.addParticle(dust(r.nextBoolean() ? 0xFF6FE0 : 0xFFD6FF, 0.6f), x + (r.nextDouble() - 0.5) * 1.8, y + r.nextDouble() * h, z + (r.nextDouble() - 0.5) * 1.8, 0, 0.01, 0);
+			}
+			case "trail_inferno" -> {
+				if (t % 2 == 0) level.addParticle(ParticleTypes.FLAME, x + (r.nextDouble() - 0.5) * 1.6, y + r.nextDouble() * h, z + (r.nextDouble() - 0.5) * 1.6, 0, 0.02, 0);
+				if (t % 6 == 0) level.addParticle(ParticleTypes.LAVA, x, y + 0.1, z, 0, 0, 0);
+			}
+			case "trail_frost" -> {
+				if (t % 2 == 0) level.addParticle(ParticleTypes.SNOWFLAKE, x + (r.nextDouble() - 0.5) * 1.8, y + h + 0.3, z + (r.nextDouble() - 0.5) * 1.8, 0, -0.03, 0);
+			}
+			case "trail_void" -> {
+				if (t % 2 == 0) level.addParticle(ParticleTypes.REVERSE_PORTAL, x + (r.nextDouble() - 0.5) * 1.6, y + r.nextDouble() * h, z + (r.nextDouble() - 0.5) * 1.6, 0, 0, 0);
+			}
+			case "trail_yinyang" -> {
+				if (t % 4 == 0) level.addParticle(ParticleTypes.END_ROD, x + (r.nextDouble() - 0.5) * 1.8, y + 0.8, z + (r.nextDouble() - 0.5) * 1.8, 0, 0.01, 0);
+			}
+			case "trail_rainbow" -> {
+				if (t % 2 == 0) level.addParticle(dust(hue(t * 0.02), 0.7f), x + (r.nextDouble() - 0.5) * 1.6, y + h + 0.5, z + (r.nextDouble() - 0.5) * 1.6, 0, -0.02, 0);
+			}
+			case "orb_ghosts" -> {
+				if (t % 5 == 0) level.addParticle(ParticleTypes.SOUL, x + (r.nextDouble() - 0.5) * 1.8, y + 0.4 + r.nextDouble(), z + (r.nextDouble() - 0.5) * 1.8, 0, 0.02, 0);
+			}
+			case "orb_crystals" -> {
+				if (t % 4 == 0) level.addParticle(ParticleTypes.END_ROD, x + (r.nextDouble() - 0.5) * 1.8, y + 0.4 + r.nextDouble(), z + (r.nextDouble() - 0.5) * 1.8, 0, 0.01, 0);
+			}
+			case "orb_wisps" -> {
+				if (t % 3 == 0) level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x + (r.nextDouble() - 0.5) * 1.8, y + 0.4 + r.nextDouble(), z + (r.nextDouble() - 0.5) * 1.8, 0, 0.01, 0);
+			}
+			case "orb_rings" -> {
+				if (t % 3 == 0) level.addParticle(dust(0xFFD23A, 0.6f), x + (r.nextDouble() - 0.5) * 1.8, y + r.nextDouble() * h, z + (r.nextDouble() - 0.5) * 1.8, 0, 0, 0);
+			}
+			case "orb_hearts" -> {
+				if (t % 10 == 0) level.addParticle(ParticleTypes.HEART, x + (r.nextDouble() - 0.5) * 1.6, y + h + 0.2, z + (r.nextDouble() - 0.5) * 1.6, 0, 0, 0);
+			}
 			case "fx_thunder" -> { // golden sparks around you, now and then a flash from above
 				for (int i = 0; i < 2; i++) {
 					double a = r.nextDouble() * Math.PI * 2, ry = r.nextDouble() * h;

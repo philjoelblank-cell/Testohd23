@@ -18,6 +18,7 @@ public abstract class AvatarCapeMixin {
 	private void packmixer$cape(Avatar avatar, AvatarRenderState state, float partialTick, CallbackInfo ci) {
 		if (avatar instanceof Entity e) {
 			Capes.apply(e, state);
+			de.philjoel.packmixer.Emotes.fixCape(state, e.getUUID());
 			if (state.nameTag != null && de.philjoel.packmixer.Badge.has(e.getUUID())) state.nameTag = de.philjoel.packmixer.Badge.prefix(state.nameTag);
 		}
 	}

@@ -493,5 +493,11 @@
   "packmixer.hat.orb_crystals": "Kristall-Orbit",
   "packmixer.hat.orb_rings": "Goldringe",
   "packmixer.hat.orb_wisps": "Irrlichter",
-  "packmixer.hat.orb_hearts": "Herz-Orbit"
+  "packmixer.hat.orb_hearts": "Herz-Orbit",
+  "packmixer.hat.trail_plasma": "Plasma-Wirbel",
+  "packmixer.hat.trail_inferno": "Feuer-Wirbel",
+  "packmixer.hat.trail_frost": "Frost-Wirbel",
+  "packmixer.hat.trail_void": "Void-Wirbel",
+  "packmixer.hat.trail_yinyang": "Yin & Yang",
+  "packmixer.hat.trail_rainbow": "Regenbogen-Ringe"
 }
