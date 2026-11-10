@@ -292,6 +292,13 @@ public final class BuiltinPacks {
 			v1("Testohd23 V1 Turquoise", "v1_turquoise", "circle", Style.DUO, 0x0E9C92, 0xB8FFF6),
 			v1("Testohd Christmas V1 Turquoise", "v1_xmas", "snowflake", Style.V1XMAS, 0x18A8A4, 0xE6FFFC),
 			v1("Testohd23 V1 White", "v1_white", "circle", Style.DUO, 0xE2DCCB, 0xFFE27A),
+			v1("Testohd23 V2 Thunder Gold", "v2_thunder", "circle", Style.DUO, 0xFFB800, 0xFFF7C2),
+			v1("Testohd23 V2 Toxic Lagoon", "v2_toxic", "circle", Style.DUO, 0x45FF2A, 0xD8FFB0),
+			v1("Testohd23 V2 Cyber Lime", "v2_cyber", "circle", Style.DUO, 0xB6FF00, 0x00F0FF),
+			v1("Testohd23 V2 Midnight Galaxy", "v2_galaxy", "circle", Style.DUO, 0xFF2BD6, 0xBFE6FF),
+			v1("Testohd23 V2 Matrix", "v2_matrix", "circle", Style.DUO, 0x00FF66, 0xD6FFE6),
+			v1("Testohd23 V2 Cherry Pulse", "v2_cherry", "circle", Style.DUO, 0xFF1F5A, 0xFFD0DE),
+			v1("Testohd23 V2 Hologram", "v2_holo", "circle", Style.DUO, 0xD38CFF, 0xFFFFFF),
 			// ---- duo: clean colour + matching colour shift in the highlights
 			duo("Testohd Duo Lila Pink", "d_purplepink", "ring_dot", 0x7B2FE0, 0xFF7AD9),
 			duo("Testohd Duo Blau Cyan", "d_bluecyan", "small_plus", 0x1F4FE0, 0x5CF0FF),
@@ -401,6 +408,7 @@ public final class BuiltinPacks {
 		PackExtras.clearFields();
 		frostAnim = false;
 		V1Packs.current = null;
+		V2Style.current = null;
 	}
 
 	private static void deleteDir(Path dir) throws java.io.IOException {
@@ -417,6 +425,7 @@ public final class BuiltinPacks {
 		frostAnim = th.style == Style.FROST;
 		V1Packs.V1 v1 = V1Packs.of(th.name);
 		V1Packs.current = v1 == null ? null : v1.element();
+		V2Style.current = v1 == null ? null : v1.v2();
 		Path a = root.resolve("assets/minecraft/textures");
 		Files.createDirectories(a);
 
@@ -546,6 +555,7 @@ public final class BuiltinPacks {
 			if (design != null) safe(() -> CrystalPacks.writeInto(design, a));
 		}
 		V1Packs.current = null;
+		V2Style.current = null;
 
 		// ---- pack.mcmeta + icon
 		Files.writeString(root.resolve("pack.mcmeta"), """
