@@ -158,6 +158,9 @@ public final class PackMixerConfig {
 		// Low fire
 		public boolean lowFire = false;
 		public double fireOffset = 0.3;                // 0 .. 0.5
+		// Low shield
+		public boolean lowShield = false;
+		public double shieldOffset = 0.25;             // 0 .. 0.5
 
 		// Cosmetics
 		public String hat = "";                        // "" = none
@@ -165,6 +168,7 @@ public final class PackMixerConfig {
 		public String back = "";
 		public boolean cosmeticsEnabled = true;
 		public String effect = "";                     // particle aura
+		public String cape = "";                       // animated cape
 		public boolean effectsFirstPerson = false;     // also show auras in first person
 
 		// TT (Totem-Tracker) + ancient debris highlight
@@ -184,6 +188,7 @@ public final class PackMixerConfig {
 
 		// Cosmetics of other players
 		public boolean shareCosmetics = true;      // let other mod users see yours
+		public boolean emoteCamera = true;         // third person while your emote plays
 		public boolean showOthersCosmetics = true; // see theirs
 
 		// Enchantment glint only on tools / weapons / armor
