@@ -484,6 +484,7 @@
   "packmixer.emotes.scroll": "Scroll or ◀ ▶ for more",
   "packmixer.changelog.1.9.0": "New in 1.9.0\n• Capes: 12 animated HD capes (also as elytra)\n• 26 emotes with B, the wheel shows them playing (football, basketball, cards, superman ...)\n• \"T\" next to the names of players with the mod\n• New hats, wings and effects\n• Wings now sit right on the back\n• Low Shield",
   "packmixer.changelog.1.10.0": "New in 1.10.0\n• 7 new V2 packs in clean colours: Mono, Graphite, Navy, Sage, Sand, Bordeaux, Silver\n• Every V2 pack has its own animation (stars, flicker, flow, rain, lightning, heartbeat, metal sheen)\n• Matching V2 crystals for every pack",
+  "packmixer.changelog.1.10.1": "New in 1.10.1\n• The 7 new V2 packs (Mono, Graphite, Navy, Sage, Sand, Bordeaux, Silver) are now generated and show up in the pack list",
   "packmixer.feature.badges": "T badge",
   "packmixer.feature.badges.desc": "Shows a T next to the names of players who have the mod",
   "packmixer.hat.space_helmet": "Space Helmet",
