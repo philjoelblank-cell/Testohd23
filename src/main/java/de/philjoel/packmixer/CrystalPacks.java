@@ -31,7 +31,15 @@ public final class CrystalPacks {
 			new Design("Kristall Tuerkis", "c_teal", 0x40E8D8, new int[]{0x04201E, 0x0E9C92, 0x35F2DD, 0xB8FFF6},
 					0x35F2DD, 0xE6FFFC),
 			new Design("Kristall Holy", "c_holy", 0xFFF2C8, new int[]{0x8A7A50, 0xE8D8A0, 0xFFF6D8, 0xFFFFFF},
-					0xFFE680, 0xFFFFFF));
+					0xFFE680, 0xFFFFFF),
+			// V2 crystals: the animation of their pack
+			new Design("Kristall V2 Mono", "c2_mono", 0x5A5A60, new int[]{0x0E0E10, 0x5A5A60, 0xF2F2F2, 0xFFFFFF}, 0x5A5A60, 0xF2F2F2),
+			new Design("Kristall V2 Graphite", "c2_graphite", 0x4B5059, new int[]{0x1B1D21, 0x4B5059, 0xC9CDD3, 0xFFFFFF}, 0x4B5059, 0xC9CDD3),
+			new Design("Kristall V2 Navy", "c2_navy", 0x2E4A7A, new int[]{0x0B1630, 0x2E4A7A, 0xB8C8E0, 0xFFFFFF}, 0x2E4A7A, 0xB8C8E0),
+			new Design("Kristall V2 Sage", "c2_sage", 0x6F8466, new int[]{0x1E261C, 0x6F8466, 0xDCE6D2, 0xFFFFFF}, 0x6F8466, 0xDCE6D2),
+			new Design("Kristall V2 Sand", "c2_sand", 0xB49A74, new int[]{0x2B2218, 0xB49A74, 0xF1E6D0, 0xFFFFFF}, 0xB49A74, 0xF1E6D0),
+			new Design("Kristall V2 Bordeaux", "c2_bordeaux", 0x6E1A28, new int[]{0x24080E, 0x6E1A28, 0xE6C3C8, 0xFFFFFF}, 0x6E1A28, 0xE6C3C8),
+			new Design("Kristall V2 Silver", "c2_silver", 0xC8CCD2, new int[]{0x6E737C, 0xC8CCD2, 0xFFFFFF, 0xFFFFFF}, 0xC8CCD2, 0xFFFFFF));
 
 	static final String STRIP_NAME = "end_crystal_testohd_anim.png";
 
@@ -156,6 +164,8 @@ public final class CrystalPacks {
 		double ph = f / (double) FRAMES * Math.PI * 2;
 		double r = Math.hypot(u - 7.5, v - 7.5), ang = Math.atan2(v - 7.5, u - 7.5);
 		int iu = (int) u, iv = (int) v;
+		V2Style.Palette v2 = V2Style.ofCrystal(d.key);
+		if (v2 != null) return V2Style.effColor(V2Style.effect(v2, u, v, f, FRAMES, l, 7)); // V2: the pack's own animation
 		switch (d.key) {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 10, 2) / 2.2)
@@ -214,6 +224,8 @@ public final class CrystalPacks {
 	static int coreColor(Design d, int f, double u, double v, boolean glyph, int faceSeed) {
 		double ph = f / (double) FRAMES * Math.PI * 2;
 		double r = Math.hypot(u - 7.5, v - 7.5), ang = Math.atan2(v - 7.5, u - 7.5);
+		V2Style.Palette v2c = V2Style.ofCrystal(d.key);
+		if (v2c != null) return glyph ? v2c.glow() : V2Style.effColor(V2Style.effect(v2c, u, v, f, FRAMES, 0.55, 13 + faceSeed));
 		switch (d.key) {
 			case "c_frost" -> {
 				double ring = Math.exp(-Math.pow(r - (f / (double) FRAMES) * 11, 2) / 3);
