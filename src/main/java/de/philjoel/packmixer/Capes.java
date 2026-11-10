@@ -22,8 +22,13 @@ public final class Capes {
 		Identifier tex = Cosmetics.capeTexture(id, mc.level.getGameTime());
 		ClientAsset.ResourceTexture asset = new ClientAsset.ResourceTexture(tex, tex);
 		PlayerSkin s = state.skin;
-		state.skin = new PlayerSkin(s.body(), asset, asset, s.model(), s.secure());
-		state.showCape = true;
+		// the cape itself is drawn by Cosmetics.CosmeticLayer; the skin only carries it as elytra texture
+		// (cape = null, so the vanilla cape layer doesn't draw a second one)
+		state.skin = new PlayerSkin(s.body(), null, asset, s.model(), s.secure());
+	}
+
+	static boolean ready(String id) {
+		return loaded.contains(id);
 	}
 
 	/** Loads the frames of every cape that is being worn (outside of rendering). */
