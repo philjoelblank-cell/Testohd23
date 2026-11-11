@@ -94,9 +94,16 @@ final class AutoTest {
 	}
 
 	private static void memPlan(Minecraft mc) {
-		when("game ready", () -> mc.getOverlay() == null && mc.screen != null
-				&& PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
+		when("title", () -> mc.getOverlay() == null && mc.screen != null, () -> { });
+		step("settle title", 200, () -> { });
+		mem("title, nothing generated yet");
+		step("settle title", 200, () -> { });
+		mem("title, nothing generated yet (again)");
+		step("generate", 5, () -> BuiltinPacks.generateIfNeeded(() -> { }));
+		when("generated", () -> PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
 		mem("title, packs generated");
+		step("settle title", 400, () -> { });
+		mem("title, 20s after generation");
 		step("create world", 40, () -> CreateWorldScreen.openFresh(mc, () -> { }));
 		when("create screen", () -> mc.screen instanceof CreateWorldScreen, () -> {
 			try {
