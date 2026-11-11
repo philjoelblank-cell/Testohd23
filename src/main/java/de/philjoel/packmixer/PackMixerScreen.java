@@ -393,12 +393,19 @@ public class PackMixerScreen extends Screen {
 	}
 
 	private boolean waitedForPacks;
+	private int seenPacks;
 
 	private void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		// the Testohd packs are still being created (first start after an update): show it, reload them when done
 		if (BuiltinPacks.generating) {
 			waitedForPacks = true;
-			setStatus(Component.translatable("packmixer.generating").getString());
+			int done = BuiltinPacks.genDone;
+			setStatus(Component.translatable("packmixer.generating").getString() + " " + done + "/" + BuiltinPacks.genTotal);
+			if (done != seenPacks) { // every finished pack shows up right away
+				seenPacks = done;
+				rescan();
+				rebuildWidgets();
+			}
 		} else if (waitedForPacks) {
 			waitedForPacks = false;
 			rescan();

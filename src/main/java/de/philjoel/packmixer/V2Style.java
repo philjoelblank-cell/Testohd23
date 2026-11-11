@@ -22,7 +22,6 @@ final class V2Style {
 	}
 
 	/** Palette of the pack being generated right now (null = not a V2 pack). */
-	static Palette current;
 
 	static final int FRAMES = V1Packs.FRAMES;
 

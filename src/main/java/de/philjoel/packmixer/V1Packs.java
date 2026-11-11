@@ -74,7 +74,6 @@ final class V1Packs {
 	}
 
 	/** Element of the pack being generated right now (null = no animation). */
-	static Element current;
 
 	static final int FRAMES = 40;
 
@@ -106,7 +105,7 @@ final class V1Packs {
 	}
 
 	static NativeImage animate(NativeImage img, Element el, int seed, Mode mode) {
-		if (V2Style.current != null) return V2Style.animate(img, V2Style.current, seed, mode);
+		if (BuiltinPacks.ctx().palette != null) return V2Style.animate(img, BuiltinPacks.ctx().palette, seed, mode);
 		int w = img.getWidth(), h = img.getHeight();
 		double u = w / 16.0; // pixel size of one "art pixel"
 		boolean[] solid = new boolean[w * h];
@@ -173,7 +172,7 @@ final class V1Packs {
 	 * @param grid art pixels per row (16 for blocks, 64 for entity textures)
 	 */
 	static NativeImage animateBlock(NativeImage img, Element el, int seed, int grid) {
-		if (V2Style.current != null) return V2Style.animateBlock(img, V2Style.current, seed, grid);
+		if (BuiltinPacks.ctx().palette != null) return V2Style.animateBlock(img, BuiltinPacks.ctx().palette, seed, grid);
 		int w = img.getWidth(), h = img.getHeight();
 		double u = Math.max(1, w / (double) grid);
 		int gw = (int) Math.round(w / u), gh = (int) Math.round(h / u);
