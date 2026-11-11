@@ -502,6 +502,7 @@
   "packmixer.changelog.1.10.2": "New in 1.10.2\n• Capes always show now, also with other clients like NoRisk\n• Wear a cape and wings at the same time\n• Hats and glasses sit on top of helmets instead of inside them",
   "packmixer.changelog.1.11.0": "New in 1.11.0\n• 7 new V3 packs with brand new animations: Aurora (northern lights), Vortex (spiral), Ember (fire), Tide (water), Prism (crystal), Rose (light trail), Warp (hyperspace)\n• Matching V3 crystals for every pack\n• A missing built-in pack is generated again automatically on start",
   "packmixer.changelog.1.11.1": "New in 1.11.1\n• Less RAM and less lag: only missing or outdated packs are generated (before: all of them on every start)\n• Textures are only reloaded afterwards if you use one of the new packs\n• The pack menu needs far less memory\n• Missing V2 and V3 packs are caught up, a single error no longer stops everything",
+  "packmixer.changelog.1.11.2": "New in 1.11.2\n• New packs are there much faster after an update: they are made first and several at a time\n• Every finished pack shows up in the menu right away, with progress (e.g. 12/70)\n• A pack only appears once it is complete",
   "packmixer.feature.badges": "T badge",
   "packmixer.feature.badges.desc": "Shows a T next to the names of players who have the mod",
   "packmixer.hat.space_helmet": "Space Helmet",
