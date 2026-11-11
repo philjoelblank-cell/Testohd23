@@ -48,20 +48,22 @@ final class AutoTest {
 		});
 	}
 
+	static void memNow(String label) {
+		System.gc();
+		System.gc();
+		Runtime rt = Runtime.getRuntime();
+		long rss = -1;
+		try {
+			for (String l : java.nio.file.Files.readAllLines(java.nio.file.Path.of("/proc/self/status")))
+				if (l.startsWith("VmRSS:")) rss = Long.parseLong(l.replaceAll("[^0-9]", "")) / 1024;
+		} catch (Exception ignored) {
+		}
+		PackMixerClient.LOGGER.info("autotest: MEM {} heap={}MB rss={}MB previews={}/{}MB", label,
+				(rt.totalMemory() - rt.freeMemory()) >> 20, rss, PreviewCache.liveTextures, PreviewCache.liveBytes >> 20);
+	}
+
 	private static void mem(String label) {
-		step("mem " + label, 20, () -> {
-			System.gc();
-			System.gc();
-			Runtime rt = Runtime.getRuntime();
-			long rss = -1;
-			try {
-				for (String l : java.nio.file.Files.readAllLines(java.nio.file.Path.of("/proc/self/status")))
-					if (l.startsWith("VmRSS:")) rss = Long.parseLong(l.replaceAll("[^0-9]", "")) / 1024;
-			} catch (Exception ignored) {
-			}
-			PackMixerClient.LOGGER.info("autotest: MEM {} heap={}MB rss={}MB previews={}/{}MB", label,
-					(rt.totalMemory() - rt.freeMemory()) >> 20, rss, PreviewCache.liveTextures, PreviewCache.liveBytes >> 20);
-		});
+		step("mem " + label, 20, () -> memNow(label));
 	}
 
 	private static void usePack(Minecraft mc, String pk) {
@@ -110,9 +112,14 @@ final class AutoTest {
 		mem("world, no pack");
 		step("settle", 200, () -> { });
 		mem("world, no pack (again)");
+		for (int i = 1; i <= 5; i++) { // control: plain reloads without any pack
+			step("plain reload " + i, 5, () -> mc.reloadResourcePacks());
+			step("wait", 40, () -> { });
+			when("reloaded", () -> mc.getOverlay() == null, () -> { });
+			step("look", 100, () -> { });
+			mem("plain reload " + i + " (no pack)");
+		}
 		menuTour(mc, "1st");
-		menuTour(mc, "2nd");
-		menuTour(mc, "3rd");
 		for (Cosmetics.Slot slot : Cosmetics.Slot.values()) {
 			step("cosmetics " + slot, 20, () -> {
 				CosmeticsScreen.lastSlot = slot;

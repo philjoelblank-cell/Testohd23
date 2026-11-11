@@ -354,7 +354,9 @@ public final class BuiltinPacks {
 		generating = true;
 		Thread t = new Thread(() -> {
 			try {
+				if (AutoTest.ENABLED) AutoTest.memNow("before generation");
 				generateAll();
+				if (AutoTest.ENABLED) AutoTest.memNow("after generation");
 				s.builtinPacksVersion = VERSION;
 				PackMixerConfig.saveSettings();
 				Minecraft.getInstance().execute(whenDone);
