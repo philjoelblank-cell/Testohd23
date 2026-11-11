@@ -99,11 +99,42 @@ final class AutoTest {
 		mem("title, nothing generated yet");
 		step("settle title", 200, () -> { });
 		mem("title, nothing generated yet (again)");
-		step("generate", 5, () -> BuiltinPacks.generateIfNeeded(() -> { }));
-		when("generated", () -> PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
+		step("generate", 5, () -> BuiltinPacks.generateIfNeeded(w -> PackMixerClient.LOGGER.info("autotest: GEN first start wrote {} packs", w.size())));
+		when("generated", () -> PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION && !BuiltinPacks.generating, () -> { });
 		mem("title, packs generated");
-		step("settle title", 400, () -> { });
-		mem("title, 20s after generation");
+		// second "start": nothing to do
+		step("generate again", 40, () -> BuiltinPacks.generateIfNeeded(w -> PackMixerClient.LOGGER.info("autotest: GEN second start wrote {} packs (should not happen)", w.size())));
+		step("check", 40, () -> PackMixerClient.LOGGER.info("autotest: GEN second start generating={}", BuiltinPacks.generating));
+		// a pack folder got lost, another one has no marker (like packs made by 1.11.0): only the lost one is written
+		step("lose one", 5, () -> {
+			try {
+				java.nio.file.Path packs = PackMixerConfig.packsDir();
+				try (var walk = java.nio.file.Files.walk(packs.resolve("Testohd23 V3 Tide"))) {
+					for (java.nio.file.Path p : walk.sorted(java.util.Comparator.reverseOrder()).toList()) java.nio.file.Files.delete(p);
+				}
+				java.nio.file.Files.delete(packs.resolve("Testohd23 V2 Navy").resolve(".testohd_version"));
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.error("autotest: lose failed", e);
+			}
+			BuiltinPacks.generateIfNeeded(w -> PackMixerClient.LOGGER.info("autotest: GEN after losing one wrote {}", w));
+		});
+		step("wait", 100, () -> { });
+		when("regenerated", () -> !BuiltinPacks.generating, () -> PackMixerClient.LOGGER.info("autotest: GEN tide back={} navy marker={}",
+				java.nio.file.Files.isDirectory(PackMixerConfig.packsDir().resolve("Testohd23 V3 Tide")),
+				java.nio.file.Files.exists(PackMixerConfig.packsDir().resolve("Testohd23 V2 Navy").resolve(".testohd_version"))));
+		// an update with a new VERSION: everything again, also after being interrupted
+		step("old version", 5, () -> {
+			try {
+				PackMixerConfig.settings().builtinPacksVersion = BuiltinPacks.VERSION - 1;
+				for (String n : new String[]{"Testohd23 V3 Warp", "Galaxie"}) java.nio.file.Files.writeString(PackMixerConfig.packsDir().resolve(n).resolve(".testohd_version"), "1");
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.error("autotest: old version failed", e);
+			}
+			BuiltinPacks.generateIfNeeded(w -> PackMixerClient.LOGGER.info("autotest: GEN after version bump wrote {}", w));
+		});
+		step("wait", 100, () -> { });
+		when("regenerated", () -> !BuiltinPacks.generating, () -> { });
+		mem("title, after partial regeneration");
 		step("create world", 40, () -> CreateWorldScreen.openFresh(mc, () -> { }));
 		when("create screen", () -> mc.screen instanceof CreateWorldScreen, () -> {
 			try {

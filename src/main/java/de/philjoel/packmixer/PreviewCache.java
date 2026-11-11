@@ -269,8 +269,25 @@ public final class PreviewCache {
 		}
 	}
 
+	/** Previews are drawn small: nothing wider than this is kept in memory (a sky is 1536 px wide = 6 MB each). */
+	private static final int MAX_WIDTH = 128;
+
+	/** Smaller copy of a big texture (whole-number factor, so animation strips keep their frame layout). */
+	private static NativeImage shrink(NativeImage image) {
+		int w = image.getWidth(), h = image.getHeight();
+		int f = w / MAX_WIDTH;
+		while (f >= 2 && (w % f != 0 || h % f != 0)) f--;
+		if (f < 2) return image;
+		int nw = w / f, nh = h / f;
+		NativeImage small = new NativeImage(nw, nh, true);
+		for (int y = 0; y < nh; y++)
+			for (int x = 0; x < nw; x++) small.setPixel(x, y, image.getPixel(x * f + f / 2, y * f + f / 2));
+		image.close();
+		return small;
+	}
+
 	private Preview upload(byte[] png, String path) throws Exception {
-		NativeImage image = NativeImage.read(new ByteArrayInputStream(png));
+		NativeImage image = shrink(NativeImage.read(new ByteArrayInputStream(png)));
 		int w = image.getWidth();
 		int h = image.getHeight();
 		Identifier id = Identifier.fromNamespaceAndPath(PackMixerClient.MOD_ID, "preview/" + (counter++));
