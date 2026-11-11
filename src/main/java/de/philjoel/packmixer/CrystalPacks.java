@@ -79,12 +79,12 @@ public final class CrystalPacks {
 
 	/** Writes the animated crystal (item, placed crystal, explosion) into a pack's textures folder. */
 	static void writeInto(Design d, Path a) throws Exception {
-		BuiltinPacks.Theme keep = BuiltinPacks.current;
-		V1Packs.Element keepEl = V1Packs.current;
-		BuiltinPacks.current = null;
-		V1Packs.current = null;
-		boolean keepFrost = BuiltinPacks.frostAnim;
-		BuiltinPacks.frostAnim = false;
+		BuiltinPacks.Theme keep = BuiltinPacks.ctx().current;
+		V1Packs.Element keepEl = BuiltinPacks.ctx().element;
+		BuiltinPacks.ctx().current = null;
+		BuiltinPacks.ctx().element = null;
+		boolean keepFrost = BuiltinPacks.ctx().frostAnim;
+		BuiltinPacks.ctx().frostAnim = false;
 		try {
 			// ---- item: animated strip
 			NativeImage item = BuiltinPacks.vanilla("item/end_crystal.png");
@@ -137,9 +137,9 @@ public final class CrystalPacks {
 				BuiltinPacks.save(img, a.resolve(path));
 			}
 		} finally {
-			BuiltinPacks.current = keep;
-			V1Packs.current = keepEl;
-			BuiltinPacks.frostAnim = keepFrost;
+			BuiltinPacks.ctx().current = keep;
+			BuiltinPacks.ctx().element = keepEl;
+			BuiltinPacks.ctx().frostAnim = keepFrost;
 		}
 	}
 

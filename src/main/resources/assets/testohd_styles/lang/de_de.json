@@ -502,6 +502,7 @@
   "packmixer.changelog.1.10.2": "Neu in 1.10.2\n• Capes werden jetzt immer angezeigt, auch mit anderen Clients wie NoRisk\n• Cape und Flügel kannst du gleichzeitig tragen\n• Hüte und Brillen sitzen auf dem Helm statt darin",
   "packmixer.changelog.1.11.0": "Neu in 1.11.0\n• 7 neue V3-Packs mit komplett neuen Animationen: Aurora (Nordlicht), Vortex (Spirale), Ember (Feuer), Tide (Wasser), Prism (Kristall), Rose (Lichtschweif), Warp (Hyperraum)\n• Passende V3-Kristalle zu jedem Pack\n• Fehlt ein eingebautes Pack, wird es beim Start automatisch neu erstellt",
   "packmixer.changelog.1.11.1": "Neu in 1.11.1\n• Weniger RAM und weniger Lags: Es werden nur noch die Packs erstellt, die fehlen oder veraltet sind (vorher alle bei jedem Start)\n• Die Texturen werden danach nur neu geladen, wenn du eins der neuen Packs benutzt\n• Das Pack-Menü braucht viel weniger Speicher\n• Fehlende V2- und V3-Packs werden nachgeholt, ein einzelner Fehler stoppt nicht mehr alles",
+  "packmixer.changelog.1.11.2": "Neu in 1.11.2\n• Neue Packs sind nach einem Update viel schneller da: sie werden zuerst und mehrere gleichzeitig erstellt\n• Im Menü erscheint jedes fertige Pack sofort, mit Fortschritt (z. B. 12/70)\n• Ein Pack taucht erst auf, wenn es komplett ist",
   "packmixer.feature.badges": "T-Abzeichen",
   "packmixer.feature.badges.desc": "Zeigt ein T neben dem Namen von Spielern, die die Mod haben",
   "packmixer.hat.space_helmet": "Raumhelm",

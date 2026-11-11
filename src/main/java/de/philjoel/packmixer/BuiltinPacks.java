@@ -342,6 +342,23 @@ public final class BuiltinPacks {
 	/** True while the built-in packs are being (re)written - the menu waits and reloads them afterwards. */
 	public static volatile boolean generating;
 
+	/** What the generator is working on. One per thread, so several packs can be written at the same time. */
+	static final class Ctx {
+		Theme current;
+		boolean frostAnim;
+		V1Packs.Element element;
+		V2Style.Palette palette;
+	}
+
+	private static final ThreadLocal<Ctx> CTX = ThreadLocal.withInitial(Ctx::new);
+
+	static Ctx ctx() {
+		return CTX.get();
+	}
+
+	/** Progress of the running generation (for the menu). */
+	public static volatile int genDone, genTotal;
+
 	/** Small file inside every generated pack: the VERSION it was made with. */
 	private static final String MARKER = ".testohd_version";
 
@@ -386,29 +403,65 @@ public final class BuiltinPacks {
 			else todo.add(t);
 		}
 		if (todo.isEmpty() && unmarked.isEmpty() && current) return;
+		// packs that don't exist yet first (the new ones of an update), then the outdated ones
+		todo.sort(java.util.Comparator.comparing(th -> Files.isDirectory(PackMixerConfig.packsDir().resolve(folder(th)))));
 		generating = !todo.isEmpty();
+		genDone = 0;
+		genTotal = todo.size();
 		Thread t = new Thread(() -> {
 			try {
 				for (Path dir : unmarked) writeMarker(dir);
 				if (!current) cleanupOldPacks();
-				if (!todo.isEmpty()) PackMixerClient.LOGGER.info("Generating {} of {} built-in packs", todo.size(), THEMES.size());
-				java.util.Set<String> done = new java.util.LinkedHashSet<>();
-				for (Theme theme : todo) {
-					Path dir = PackMixerConfig.packsDir().resolve(folder(theme));
-					try {
-						generate(theme, dir);
-						writeMarker(dir);
-						done.add(folder(theme));
-					} catch (Throwable e) { // one broken texture / locked file must never stop the rest
-						PackMixerClient.LOGGER.error("Built-in pack {} failed", theme.name, e);
-					}
+				if (todo.isEmpty()) return;
+				// several packs at once, but always leave cores for the game itself
+				int workers = Math.max(1, Math.min(4, Runtime.getRuntime().availableProcessors() / 2));
+				PackMixerClient.LOGGER.info("Generating {} of {} built-in packs ({} at a time)", todo.size(), THEMES.size(), workers);
+				long start = System.currentTimeMillis();
+				java.util.Set<String> done = java.util.concurrent.ConcurrentHashMap.newKeySet();
+				java.util.concurrent.ConcurrentLinkedQueue<Theme> queue = new java.util.concurrent.ConcurrentLinkedQueue<>(todo);
+				List<Thread> pool = new ArrayList<>();
+				for (int i = 0; i < workers; i++) {
+					Thread w = new Thread(() -> {
+						Theme theme;
+						while ((theme = queue.poll()) != null) {
+							Path dir = PackMixerConfig.packsDir().resolve(folder(theme));
+							Path tmp = PackMixerConfig.packsDir().resolve(folder(theme) + TMP);
+							try {
+								// written next to the real folder and swapped in when complete: the menu never sees half a pack
+								deleteDir(tmp);
+								generate(theme, tmp);
+								writeMarker(tmp);
+								deleteDir(dir);
+								try {
+									Files.move(tmp, dir);
+								} catch (Exception e) { // old folder could not be removed completely (file in use): write over it
+									copyTree(tmp, dir);
+									deleteDir(tmp);
+								}
+								done.add(folder(theme));
+							} catch (Throwable e) { // one broken texture / locked file must never stop the rest
+								PackMixerClient.LOGGER.error("Built-in pack {} failed", theme.name, e);
+							} finally {
+								endGeneration();
+								synchronized (BuiltinPacks.class) {
+									genDone++;
+								}
+							}
+						}
+					}, "PackMixer pack generator " + (i + 1));
+					w.setDaemon(true);
+					w.setPriority(Thread.NORM_PRIORITY - 1);
+					pool.add(w);
+					w.start();
 				}
-				endGeneration();
+				for (Thread w : pool) w.join();
+				PackExtras.clearFields();
+				PackMixerClient.LOGGER.info("Built-in packs: {} written in {} s", done.size(), (System.currentTimeMillis() - start) / 1000);
 				if (done.size() == todo.size()) {
 					s.builtinPacksVersion = VERSION;
 					PackMixerConfig.saveSettings();
 				}
-				if (!done.isEmpty()) Minecraft.getInstance().execute(() -> whenDone.accept(done));
+				if (!done.isEmpty()) Minecraft.getInstance().execute(() -> whenDone.accept(new java.util.LinkedHashSet<>(done)));
 			} catch (Throwable e) {
 				PackMixerClient.LOGGER.error("Could not generate built-in packs", e);
 			} finally {
@@ -416,9 +469,9 @@ public final class BuiltinPacks {
 			}
 		}, "PackMixer pack generator");
 		t.setDaemon(true);
-		t.setPriority(Thread.MIN_PRIORITY);
 		t.start();
 	}
+
 
 	/** Folder / display name of a built-in pack: without the "Testohd" in front. */
 	public static String folder(Theme th) {
@@ -452,13 +505,16 @@ public final class BuiltinPacks {
 			}
 		}
 		endGeneration();
+		PackExtras.clearFields();
 	}
 
+	/** Forget what this thread was working on. */
 	private static void endGeneration() {
-		PackExtras.clearFields();
-		frostAnim = false;
-		V1Packs.current = null;
-		V2Style.current = null;
+		Ctx c = ctx();
+		c.current = null;
+		c.frostAnim = false;
+		c.element = null;
+		c.palette = null;
 	}
 
 	private static void cleanupOldPacks() {
@@ -486,6 +542,19 @@ public final class BuiltinPacks {
 		if (selChanged) PackMixerConfig.saveSelection(sel);
 	}
 
+	/** Ending of the folder a pack is written to while it is not complete yet. */
+	static final String TMP = ".tmp";
+
+	private static void copyTree(Path from, Path to) throws java.io.IOException {
+		try (var walk = Files.walk(from)) {
+			for (Path p : walk.toList()) {
+				Path target = to.resolve(from.relativize(p).toString());
+				if (Files.isDirectory(p)) Files.createDirectories(target);
+				else Files.copy(p, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			}
+		}
+	}
+
 	private static void deleteDir(Path dir) {
 		if (!Files.isDirectory(dir)) return;
 		try (var walk = Files.walk(dir)) {
@@ -498,11 +567,11 @@ public final class BuiltinPacks {
 	// ======================================================================= generation
 
 	private static void generate(Theme th, Path root) throws Exception {
-		current = th;
-		frostAnim = th.style == Style.FROST;
+		ctx().current = th;
+		ctx().frostAnim = th.style == Style.FROST;
 		V1Packs.V1 v1 = V1Packs.of(th.name);
-		V1Packs.current = v1 == null ? null : v1.element();
-		V2Style.current = v1 == null ? null : v1.v2();
+		ctx().element = v1 == null ? null : v1.element();
+		ctx().palette = v1 == null ? null : v1.v2();
 		Path a = root.resolve("assets/minecraft/textures");
 		Files.createDirectories(a);
 
@@ -529,10 +598,10 @@ public final class BuiltinPacks {
 			if (img == null) continue;
 			if (item.equals("totem_of_undying")) { // normal totem, only the eyes get the colour of the pack
 				totemEyes(img, eyeColor(th));
-				Theme keep = current;
-				current = null;
+				Theme keep = ctx().current;
+				ctx().current = null;
 				save(img, a.resolve(path));
-				current = keep;
+				ctx().current = keep;
 				continue;
 			}
 			if (item.startsWith("bow") || item.equals("mace")) recolorTool(img, th, true, 0);
@@ -631,8 +700,8 @@ public final class BuiltinPacks {
 			CrystalPacks.Design design = d;
 			if (design != null) safe(() -> CrystalPacks.writeInto(design, a));
 		}
-		V1Packs.current = null;
-		V2Style.current = null;
+		ctx().element = null;
+		ctx().palette = null;
 
 		// ---- pack.mcmeta + icon
 		Files.writeString(root.resolve("pack.mcmeta"), """
@@ -691,44 +760,43 @@ public final class BuiltinPacks {
 	}
 
 	/** Theme being generated right now (for rainbow / galaxy post effects). */
-	static Theme current;
 
 	static void save(NativeImage img, Path out) throws Exception {
 		String path = out.toString().replace('\\', '/');
 		boolean styled = path.contains("/item/") || path.contains("/block/") || path.contains("/entity/")
 				|| path.contains("/hud/food") || path.contains("/hud/hotbar");
-		if (current != null && styled && !path.contains("/environment/")) {
-			if (current.style == Style.RAINBOW) rainbow(img);
-			else if (current.style == Style.GALAXY) galaxy(img);
+		if (ctx().current != null && styled && !path.contains("/environment/")) {
+			if (ctx().current.style == Style.RAINBOW) rainbow(img);
+			else if (ctx().current.style == Style.GALAXY) galaxy(img);
 		}
-		if (current != null && path.contains("/heart/")) { // hearts follow rainbow / galaxy / gradient too
-			if (current.style == Style.RAINBOW) rainbow(img);
-			else if (current.style == Style.GALAXY) galaxy(img);
+		if (ctx().current != null && path.contains("/heart/")) { // hearts follow rainbow / galaxy / gradient too
+			if (ctx().current.style == Style.RAINBOW) rainbow(img);
+			else if (ctx().current.style == Style.GALAXY) galaxy(img);
 		}
-		if (current != null && (styled || path.contains("/heart/"))) {
-			if (current.style == Style.GRADIENT) gradient(img, GRADIENTS.get(current.name));
-			else if (current.style == Style.PATTERN) pattern(img, PATTERNS.get(current.name));
-			else if (current.style == Style.DUO || current.style == Style.V1XMAS) duo(img, GRADIENTS.get(current.name)[0], GRADIENTS.get(current.name)[1]);
+		if (ctx().current != null && (styled || path.contains("/heart/"))) {
+			if (ctx().current.style == Style.GRADIENT) gradient(img, GRADIENTS.get(ctx().current.name));
+			else if (ctx().current.style == Style.PATTERN) pattern(img, PATTERNS.get(ctx().current.name));
+			else if (ctx().current.style == Style.DUO || ctx().current.style == Style.V1XMAS) duo(img, GRADIENTS.get(ctx().current.name)[0], GRADIENTS.get(ctx().current.name)[1]);
 		}
 		Files.createDirectories(out.getParent());
-		if (V1Packs.current != null && path.contains("/entity/equipment/humanoid")) { // worn armor stays normal in V1
+		if (ctx().element != null && path.contains("/entity/equipment/humanoid")) { // worn armor stays normal in V1
 			NativeImage orig = vanilla(path.substring(path.indexOf("/textures/") + 10));
 			if (orig != null) {
 				img.close();
 				img = orig;
 			}
 		}
-		if (V1Packs.current != null && img.getWidth() == img.getHeight() && (path.endsWith("/block/obsidian.png")
+		if (ctx().element != null && img.getWidth() == img.getHeight() && (path.endsWith("/block/obsidian.png")
 				|| path.endsWith("/block/glowstone.png") || path.endsWith("/block/cobweb.png")
 				|| (path.contains("/block/respawn_anchor_") && !path.endsWith("_top.png")))) {
-			NativeImage strip = V1Packs.animateBlock(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973), 16);
+			NativeImage strip = V1Packs.animateBlock(img, ctx().element, Math.floorMod(path.hashCode(), 9973), 16);
 			img.close();
 			strip.writeToFile(out);
 			strip.close();
 			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
 			return;
 		}
-		if (V1Packs.current != null && img.getWidth() == img.getHeight() && path.contains("/textures/item/")) {
+		if (ctx().element != null && img.getWidth() == img.getHeight() && path.contains("/textures/item/")) {
 			V1Packs.Mode mode = V1Packs.mode(path);
 			if (mode == V1Packs.Mode.TOOL) { // weapons / tools: original colours from vanilla
 				NativeImage orig = vanilla(path.substring(path.indexOf("/textures/") + 10));
@@ -737,14 +805,14 @@ public final class BuiltinPacks {
 					img = orig;
 				} else if (orig != null) orig.close();
 			}
-			NativeImage strip = V1Packs.animate(img, V1Packs.current, Math.floorMod(path.hashCode(), 9973), mode);
+			NativeImage strip = V1Packs.animate(img, ctx().element, Math.floorMod(path.hashCode(), 9973), mode);
 			img.close();
 			strip.writeToFile(out);
 			strip.close();
 			Files.writeString(out.resolveSibling(out.getFileName() + ".mcmeta"), "{\"animation\": {\"frametime\": 2}}\n", StandardCharsets.UTF_8);
 			return;
 		}
-		if (frostAnim && img.getWidth() == img.getHeight() && (path.contains("/textures/item/")
+		if (ctx().frostAnim && img.getWidth() == img.getHeight() && (path.contains("/textures/item/")
 				|| path.endsWith("/block/obsidian.png") || path.endsWith("/block/glowstone.png"))) {
 			NativeImage strip = frostStrip(img, path.hashCode());
 			img.close();
@@ -758,7 +826,6 @@ public final class BuiltinPacks {
 	}
 
 	/** Frost pack is animated: an icy shine runs over every item, with small twinkles. */
-	static boolean frostAnim;
 
 	static NativeImage frostStrip(NativeImage img, int seed) {
 		int w = img.getWidth(), h = img.getHeight(), n = 16;
