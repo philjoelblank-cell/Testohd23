@@ -266,7 +266,7 @@ public class PackMixerSettingsScreen extends Screen {
 				addRenderableWidget(Ui.glass(Component.translatable("packmixer.builtin.regenerate"), b -> {
 					b.active = false;
 					s.builtinPacksVersion = 0;
-					BuiltinPacks.generateIfNeeded(() -> { b.active = true; saved(); PackBuilder.rebuildAndApply(); });
+					BuiltinPacks.generateIfNeeded(written -> { b.active = true; saved(); PackBuilder.rebuildAndApply(); }, true);
 				}).bounds(x, y, cw, 14).build()); y += 18;
 			}
 			case "background" -> { // little pictures to click on, two per row

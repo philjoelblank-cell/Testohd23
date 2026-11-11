@@ -13,6 +13,9 @@ import java.util.Set;
 /** Animated Testohd capes (also used as elytra texture). */
 public final class Capes {
 	private static final Set<String> loaded = new HashSet<>();
+	/** Capes nobody wears any more: tick they were last seen, their textures are freed after a while. */
+	private static final java.util.Map<String, Long> lastWorn = new java.util.HashMap<>();
+	private static long ticks;
 
 	public static void apply(Entity e, AvatarRenderState state) {
 		Minecraft mc = Minecraft.getInstance();
@@ -38,6 +41,18 @@ public final class Capes {
 		for (var p : mc.level.players()) {
 			String id = Cosmetics.of(p.getUUID()).cape();
 			if (id != null && !id.isEmpty()) wanted.add(id);
+		}
+		ticks++;
+		for (String id : wanted) lastWorn.put(id, ticks);
+		// free the 32 frames of a cape that hasn't been worn by anyone for 30 seconds
+		if (ticks % 100 == 0) {
+			for (var it = loaded.iterator(); it.hasNext(); ) {
+				String id = it.next();
+				if (wanted.contains(id) || ticks - lastWorn.getOrDefault(id, 0L) < 600) continue;
+				for (int f = 0; f < Cosmetics.CAPE_FRAMES; f++) mc.getTextureManager().release(Cosmetics.capeTexture(id, f));
+				it.remove();
+				lastWorn.remove(id);
+			}
 		}
 		for (String id : wanted) {
 			if (loaded.contains(id)) continue;

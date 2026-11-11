@@ -286,6 +286,7 @@ public class PackMixerScreen extends Screen {
 	}
 
 	private void selectCategory(int index) {
+		if (index != category) previews.clear(); // the pictures of the other category are not needed any more
 		category = index;
 		lastCategory = index;
 		rowOffset = 0;
