@@ -89,7 +89,7 @@ final class PackExtras {
 				int col = mix(0x000000, mix(tint, 0xFFFFFF, core), v);
 				img.setPixel(x, y, 0xFF000000 | col);
 			}
-		BuiltinPacks.current = null;
+		BuiltinPacks.ctx().current = null;
 		save(img, a.resolve("environment/celestial/sun.png"));
 	}
 
@@ -156,10 +156,10 @@ final class PackExtras {
 					}
 			}
 			base.close();
-			BuiltinPacks.Theme keep = BuiltinPacks.current;
-			BuiltinPacks.current = null; // already coloured
+			BuiltinPacks.Theme keep = BuiltinPacks.ctx().current;
+			BuiltinPacks.ctx().current = null; // already coloured
 			save(strip, file);
-			BuiltinPacks.current = keep;
+			BuiltinPacks.ctx().current = keep;
 			Files.writeString(file.resolveSibling(file.getFileName() + ".mcmeta"),
 					"{\"animation\": {\"frametime\": 2, \"interpolate\": true}}\n", StandardCharsets.UTF_8);
 		}
@@ -262,7 +262,7 @@ final class PackExtras {
 				base[y * w + x] = (al << 24) | c;
 			}
 		img.close();
-		boolean animate = path.contains("entity/shield/") && V1Packs.current == null;
+		boolean animate = path.contains("entity/shield/") && BuiltinPacks.ctx().element == null;
 		int frames = animate ? 16 : 1;
 		NativeImage out = new NativeImage(w, h * frames, true);
 		for (int f = 0; f < frames; f++) {
@@ -332,7 +332,7 @@ final class PackExtras {
 	}
 
 	/** Noise fields are the same for every pack (only the colours differ): computed once, then reused. */
-	private static final java.util.Map<String, float[]> FIELDS = new java.util.HashMap<>();
+	private static final java.util.Map<String, float[]> FIELDS = new java.util.concurrent.ConcurrentHashMap<>();
 
 	static synchronized float[] field(String key, Field f) {
 		float[] cached = FIELDS.get(key);
@@ -488,7 +488,7 @@ final class PackExtras {
 				double len = Math.sqrt(x * x + y * y + z * z);
 				dot(space, x / len, y / len, z / len, rg.nextInt(5) == 0 ? 0xFFCFF6FF : 0xFFFFFFFF, 1 + (rg.nextInt(3) == 0 ? 1 : 0) + (rg.nextInt(25) == 0 ? 1 : 0));
 			}
-			BuiltinPacks.current = null;
+			BuiltinPacks.ctx().current = null;
 			save(space, dir.resolve("sky1.png"));
 		smoothTexture(dir.resolve("sky1.png"));
 			Files.writeString(dir.resolve("sky1.properties"), """
@@ -526,7 +526,7 @@ final class PackExtras {
 			}
 			return 0xFF000000 | sky;
 		});
-		BuiltinPacks.current = null; // no item post effects on the sky
+		BuiltinPacks.ctx().current = null; // no item post effects on the sky
 		save(day, dir.resolve("sky1.png"));
 		smoothTexture(dir.resolve("sky1.png"));
 		Files.writeString(dir.resolve("sky1.properties"), """

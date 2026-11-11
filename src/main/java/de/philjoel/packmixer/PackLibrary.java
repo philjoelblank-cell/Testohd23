@@ -37,6 +37,7 @@ public final class PackLibrary {
 		entries.sort(Comparator.comparing(p -> p.getFileName().toString().toLowerCase()));
 		for (Path p : entries) {
 			if (p.getFileName().toString().equals(PackMixerConfig.OUTPUT_PACK_NAME)) continue;
+			if (p.getFileName().toString().endsWith(BuiltinPacks.TMP)) continue; // a Testohd pack that is still being written
 			SourcePack pack = SourcePack.open(p);
 			if (pack != null && !packs.containsKey(pack.name)) {
 				packs.put(pack.name, pack);
