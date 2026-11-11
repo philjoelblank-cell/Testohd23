@@ -40,7 +40,7 @@ public class PackMixerClient implements ClientModInitializer {
 		// create the built-in "Made by Testohd23" packs once the game has loaded its textures
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> Updater.checkAsync());
 		net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> ChangelogScreen.maybeShow(screen));
-		ClientLifecycleEvents.CLIENT_STARTED.register(client -> BuiltinPacks.generateIfNeeded(() -> {
+		ClientLifecycleEvents.CLIENT_STARTED.register(client -> BuiltinPacks.generateIfNeeded(written -> {
 			// new pack versions were written: re-apply your saved choices so nothing you picked gets lost
 			java.util.Map<String, String> sel = PackMixerConfig.loadSelection();
 			String full = sel.get(DefaultCategories.FULL_PACK);
@@ -52,7 +52,10 @@ public class PackMixerClient implements ClientModInitializer {
 				}
 				if (changed) PackMixerConfig.saveSelection(sel);
 			}
-			if (!sel.isEmpty() || PackMixerConfig.settings().ancientDebris) PackBuilder.rebuildAndApply();
+			// reload the game's textures only if a pack you actually use was written again
+			boolean used = false;
+			for (String name : sel.values()) if (written.contains(name)) used = true;
+			if (used) PackBuilder.rebuildAndApply();
 		}));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {

@@ -342,22 +342,73 @@ public final class BuiltinPacks {
 	/** True while the built-in packs are being (re)written - the menu waits and reloads them afterwards. */
 	public static volatile boolean generating;
 
-	/** Generates the packs once per VERSION (in a background thread). */
-	public static void generateIfNeeded(Runnable whenDone) {
+	/** Small file inside every generated pack: the VERSION it was made with. */
+	private static final String MARKER = ".testohd_version";
+
+	private static boolean hasMarker(Path dir) {
+		try {
+			Path m = dir.resolve(MARKER);
+			return Files.isRegularFile(m) && Files.readString(m).trim().equals(String.valueOf(VERSION));
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private static void writeMarker(Path dir) {
+		try {
+			Files.writeString(dir.resolve(MARKER), String.valueOf(VERSION));
+		} catch (Exception e) {
+			PackMixerClient.LOGGER.debug("Could not write pack marker in {}", dir, e);
+		}
+	}
+
+	/**
+	 * Generates (in a background thread) only the packs that are missing or were made by an older VERSION.
+	 * Every finished pack is marked, so closing the game in between never starts everything again.
+	 * {@code whenDone} gets the folder names of the packs that were written (only called if there were any).
+	 */
+	public static void generateIfNeeded(java.util.function.Consumer<java.util.Set<String>> whenDone) {
+		generateIfNeeded(whenDone, false);
+	}
+
+	/** @param force write every pack again (settings button) */
+	public static void generateIfNeeded(java.util.function.Consumer<java.util.Set<String>> whenDone, boolean force) {
 		PackMixerConfig.Settings s = PackMixerConfig.settings();
 		if (generating) return;
-		// also when a pack folder is missing (new pack in an update, deleted by hand, failed last time)
-		boolean missing = false;
-		for (Theme t : THEMES) if (!Files.isDirectory(PackMixerConfig.packsDir().resolve(folder(t)))) { missing = true; break; }
-		if (s.builtinPacksVersion >= VERSION && !missing) return;
-		if (missing) PackMixerClient.LOGGER.info("Built-in packs missing, generating them");
-		generating = true;
+		boolean current = !force && s.builtinPacksVersion >= VERSION; // packs written by this VERSION before the markers existed
+		List<Theme> todo = new ArrayList<>();
+		List<Path> unmarked = new ArrayList<>();
+		for (Theme t : THEMES) {
+			Path dir = PackMixerConfig.packsDir().resolve(folder(t));
+			if (force || !Files.isDirectory(dir)) todo.add(t);
+			else if (hasMarker(dir)) continue;
+			else if (current) unmarked.add(dir);
+			else todo.add(t);
+		}
+		if (todo.isEmpty() && unmarked.isEmpty() && current) return;
+		generating = !todo.isEmpty();
 		Thread t = new Thread(() -> {
 			try {
-				generateAll();
-				s.builtinPacksVersion = VERSION;
-				PackMixerConfig.saveSettings();
-				Minecraft.getInstance().execute(whenDone);
+				for (Path dir : unmarked) writeMarker(dir);
+				if (!current) cleanupOldPacks();
+				if (!todo.isEmpty()) PackMixerClient.LOGGER.info("Generating {} of {} built-in packs", todo.size(), THEMES.size());
+				java.util.Set<String> done = new java.util.LinkedHashSet<>();
+				for (Theme theme : todo) {
+					Path dir = PackMixerConfig.packsDir().resolve(folder(theme));
+					try {
+						generate(theme, dir);
+						writeMarker(dir);
+						done.add(folder(theme));
+					} catch (Throwable e) { // one broken texture / locked file must never stop the rest
+						PackMixerClient.LOGGER.error("Built-in pack {} failed", theme.name, e);
+					}
+				}
+				endGeneration();
+				if (done.size() == todo.size()) {
+					s.builtinPacksVersion = VERSION;
+					PackMixerConfig.saveSettings();
+				}
+				if (!done.isEmpty()) Minecraft.getInstance().execute(() -> whenDone.accept(done));
 			} catch (Throwable e) {
 				PackMixerClient.LOGGER.error("Could not generate built-in packs", e);
 			} finally {
@@ -365,6 +416,7 @@ public final class BuiltinPacks {
 			}
 		}, "PackMixer pack generator");
 		t.setDaemon(true);
+		t.setPriority(Thread.MIN_PRIORITY);
 		t.start();
 	}
 
@@ -386,8 +438,31 @@ public final class BuiltinPacks {
 		return builtinNames.contains(packName);
 	}
 
+	/** Everything again (settings button / tests). */
 	public static void generateAll() throws Exception {
-		// 1) old folders ("Testohd …" names, removed pattern packs) go away, your choices move to the new names
+		cleanupOldPacks();
+		// (re)generate every pack; one broken texture must never stop the rest
+		for (Theme theme : THEMES) {
+			Path dir = PackMixerConfig.packsDir().resolve(folder(theme));
+			try {
+				generate(theme, dir);
+				writeMarker(dir);
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.error("Built-in pack {} failed", theme.name, e);
+			}
+		}
+		endGeneration();
+	}
+
+	private static void endGeneration() {
+		PackExtras.clearFields();
+		frostAnim = false;
+		V1Packs.current = null;
+		V2Style.current = null;
+	}
+
+	private static void cleanupOldPacks() {
+		// old folders ("Testohd …" names, removed pattern packs) go away, your choices move to the new names
 		java.util.Map<String, String> sel = PackMixerConfig.loadSelection();
 		List<String> favs = PackMixerConfig.settings().favorites;
 		boolean selChanged = false;
@@ -409,24 +484,14 @@ public final class BuiltinPacks {
 		sel.values().removeIf(java.util.Objects::isNull);
 		favs.removeIf(java.util.Objects::isNull);
 		if (selChanged) PackMixerConfig.saveSelection(sel);
-		// 2) (re)generate every pack; one broken texture must never stop the rest
-		for (Theme theme : THEMES) {
-			try {
-				generate(theme, PackMixerConfig.packsDir().resolve(folder(theme)));
-			} catch (Exception e) {
-				PackMixerClient.LOGGER.error("Built-in pack {} failed", theme.name, e);
-			}
-		}
-		PackExtras.clearFields();
-		frostAnim = false;
-		V1Packs.current = null;
-		V2Style.current = null;
 	}
 
-	private static void deleteDir(Path dir) throws java.io.IOException {
+	private static void deleteDir(Path dir) {
 		if (!Files.isDirectory(dir)) return;
 		try (var walk = Files.walk(dir)) {
 			for (Path p : walk.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(p);
+		} catch (Exception e) { // e.g. a file that Windows still has open: leave it, never stop the generation
+			PackMixerClient.LOGGER.warn("Could not remove old pack folder {}: {}", dir, e.toString());
 		}
 	}
 
