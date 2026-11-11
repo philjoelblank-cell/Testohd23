@@ -23,6 +23,9 @@ public final class PreviewCache {
 
 	private final Map<String, Preview> cache = new HashMap<>();
 	private final List<Identifier> registered = new ArrayList<>();
+	static int liveTextures; // for the memory test
+	static long liveBytes;
+	private final List<Long> sizes = new ArrayList<>();
 	private static int counter; // shared by all caches, so two caches never use the same texture id
 
 	/** Flat icon of a category. @param pack null = vanilla */
@@ -240,6 +243,7 @@ public final class PreviewCache {
 		DynamicTexture texture = new DynamicTexture(() -> "packmixer preview " + id, image);
 		Minecraft.getInstance().getTextureManager().register(id, texture);
 		registered.add(id);
+		liveTextures++; liveBytes += (long) image.getWidth() * image.getHeight() * 4; sizes.add((long) image.getWidth() * image.getHeight() * 4);
 		return new Preview(id, image.getWidth(), image.getHeight(), path);
 	}
 
@@ -273,6 +277,7 @@ public final class PreviewCache {
 		DynamicTexture texture = new DynamicTexture(() -> "packmixer preview " + id, image);
 		Minecraft.getInstance().getTextureManager().register(id, texture);
 		registered.add(id);
+		liveTextures++; liveBytes += (long) w * h * 4; sizes.add((long) w * h * 4);
 		return new Preview(id, w, h, path);
 	}
 
@@ -280,6 +285,7 @@ public final class PreviewCache {
 		var tm = Minecraft.getInstance().getTextureManager();
 		for (Identifier id : registered) tm.release(id);
 		registered.clear();
+		liveTextures -= sizes.size(); for (long b : sizes) liveBytes -= b; sizes.clear();
 		cache.clear();
 	}
 }

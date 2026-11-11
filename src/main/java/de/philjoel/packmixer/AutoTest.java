@@ -48,7 +48,113 @@ final class AutoTest {
 		});
 	}
 
+	private static void mem(String label) {
+		step("mem " + label, 20, () -> {
+			System.gc();
+			System.gc();
+			Runtime rt = Runtime.getRuntime();
+			long rss = -1;
+			try {
+				for (String l : java.nio.file.Files.readAllLines(java.nio.file.Path.of("/proc/self/status")))
+					if (l.startsWith("VmRSS:")) rss = Long.parseLong(l.replaceAll("[^0-9]", "")) / 1024;
+			} catch (Exception ignored) {
+			}
+			PackMixerClient.LOGGER.info("autotest: MEM {} heap={}MB rss={}MB previews={}/{}MB", label,
+					(rt.totalMemory() - rt.freeMemory()) >> 20, rss, PreviewCache.liveTextures, PreviewCache.liveBytes >> 20);
+		});
+	}
+
+	private static void usePack(Minecraft mc, String pk) {
+		step("pack " + pk, 5, () -> {
+			Map<String, String> sel = new LinkedHashMap<>();
+			if (pk != null) for (Category c : PackMixerConfig.loadCategories()) sel.put(c.id, pk);
+			PackMixerConfig.saveSelection(sel);
+			PackBuilder.rebuildAndApply();
+		});
+		step("wait " + pk, 40, () -> { });
+		when("reloaded " + pk, () -> mc.getOverlay() == null, () -> { });
+		step("look " + pk, 100, () -> { });
+		mem("world pack " + pk);
+	}
+
+	private static void menuTour(Minecraft mc, String label) {
+		step("open menu", 30, () -> mc.setScreen(new PackMixerScreen(null)));
+		int n = PackMixerConfig.loadCategories().size();
+		for (int i = 0; i < n; i++) {
+			int index = i;
+			step("category " + i, 12, () -> {
+				if (mc.screen instanceof PackMixerScreen s) s.testSelect(index);
+			});
+		}
+		mem(label + " menu open, all categories seen");
+		step("close menu", 20, () -> mc.setScreen(null));
+		mem(label + " menu closed");
+	}
+
+	private static void memPlan(Minecraft mc) {
+		when("game ready", () -> mc.getOverlay() == null && mc.screen != null
+				&& PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
+		mem("title, packs generated");
+		step("create world", 40, () -> CreateWorldScreen.openFresh(mc, () -> { }));
+		when("create screen", () -> mc.screen instanceof CreateWorldScreen, () -> {
+			try {
+				var m = CreateWorldScreen.class.getDeclaredMethod("onCreate");
+				m.setAccessible(true);
+				m.invoke(mc.screen);
+			} catch (Exception e) {
+				PackMixerClient.LOGGER.error("autotest: could not create world", e);
+			}
+		});
+		when("in world", () -> mc.player != null && mc.level != null && mc.screen == null, () -> mc.options.renderDistance().set(4));
+		step("settle", 300, () -> { });
+		mem("world, no pack");
+		step("settle", 200, () -> { });
+		mem("world, no pack (again)");
+		menuTour(mc, "1st");
+		menuTour(mc, "2nd");
+		menuTour(mc, "3rd");
+		for (Cosmetics.Slot slot : Cosmetics.Slot.values()) {
+			step("cosmetics " + slot, 20, () -> {
+				CosmeticsScreen.lastSlot = slot;
+				mc.setScreen(new CosmeticsScreen(null));
+			});
+		}
+		mem("cosmetics menu, all tabs seen");
+		step("close", 20, () -> mc.setScreen(null));
+		mem("cosmetics menu closed");
+		usePack(mc, "Testohd23 V3 Aurora");
+		usePack(mc, "Testohd23 V1 Purple");
+		usePack(mc, "Testohd23 V2 Navy");
+		usePack(mc, "Galaxie");
+		usePack(mc, "Testohd23 V3 Aurora");
+		usePack(mc, "Testohd23 V1 Purple");
+		usePack(mc, "Testohd23 V3 Aurora");
+		usePack(mc, "Testohd23 V1 Purple");
+		usePack(mc, null);
+		step("cosmetics on", 5, () -> {
+			Cosmetics.Slot.HEAD.set("crown");
+			Cosmetics.Slot.BACK.set("galaxy_wings");
+			Cosmetics.Slot.CAPE.set("cape_galaxy");
+			Cosmetics.Slot.EFFECT.set("trail_plasma");
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+		});
+		step("wear", 200, () -> { });
+		mem("world, cosmetics worn");
+		for (String cape : new String[]{"cape_plasma", "cape_inferno", "cape_void", "cape_energy", "cape_frost", "cape_holy"}) step("cape " + cape, 30, () -> Cosmetics.Slot.CAPE.set(cape));
+		mem("world, 7 capes worn one after another");
+		step("idle", 1200, () -> { });
+		mem("world, 1 minute later");
+		step("quit", 40, () -> {
+			mc.setScreen(null);
+			mc.stop();
+		});
+	}
+
 	private static void plan(Minecraft mc) {
+		if (true) {
+			memPlan(mc);
+			return;
+		}
 		when("game ready", () -> mc.getOverlay() == null && mc.screen != null
 				&& PackMixerConfig.settings().builtinPacksVersion >= BuiltinPacks.VERSION, () -> { });
 		for (int scale : new int[]{2, 3, 4}) {
