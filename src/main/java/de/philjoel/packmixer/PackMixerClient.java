@@ -25,6 +25,7 @@ public class PackMixerClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		PackMixerConfig.ensureDirs();
 		PackMixerConfig.loadCategories(); // writes categories.json on first start
+		DurabilityGuard.register();
 
 		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
 		openKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(

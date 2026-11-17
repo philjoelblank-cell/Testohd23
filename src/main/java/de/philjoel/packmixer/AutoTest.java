@@ -66,7 +66,7 @@ final class AutoTest {
 				shot("menu_s" + scale + "_" + String.format("%02d", i));
 				if (scale != 3) break; // all categories once, the other scales only the first one
 			}
-			for (String entry : new String[]{"item_position", "packmixer", "tt", "background"}) {
+			for (String entry : new String[]{"item_position", "durability", "packmixer", "tt", "background"}) {
 				step("settings " + entry, 20, () -> {
 					PackMixerSettingsScreen.lastSelected = entry;
 					mc.gui.setScreen(new PackMixerSettingsScreen(null));
@@ -289,6 +289,72 @@ final class AutoTest {
 			PackMixerConfig.settings().lowShield = false;
 			Cosmetics.Slot.CAPE.set("");
 		});
+		// ---- durability protection: rules, then really mining with an almost broken pickaxe
+		step("durability rules", 2, () -> {
+			PackMixerConfig.Settings st = PackMixerConfig.settings();
+			net.minecraft.world.item.ItemStack p = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE);
+			int max = p.getMaxDamage();
+			StringBuilder r = new StringBuilder();
+			java.util.function.BiConsumer<String, Boolean> ok = (name, cond) -> r.append(name).append(cond ? "=ok " : "=FAIL ");
+			st.durabilityActive = true; st.durabilityLimitType = "PERCENTAGE"; st.durabilityMinPercent = 10; st.durabilityMinDurability = 30;
+			st.durabilityIgnoreUnenchanted = false; st.durabilityWhitelist = false; st.durabilityIgnoredItems = new java.util.ArrayList<>();
+			p.setDamageValue(max - 11);
+			ok.accept("pct_low", DurabilityGuard.blocked(p));
+			p.setDamageValue(max / 2);
+			ok.accept("pct_high", !DurabilityGuard.blocked(p));
+			st.durabilityLimitType = "DURABILITY";
+			p.setDamageValue(max - 20);
+			ok.accept("dur_low", DurabilityGuard.blocked(p));
+			p.setDamageValue(max - 100);
+			ok.accept("dur_high", !DurabilityGuard.blocked(p));
+			st.durabilityLimitType = "BOTH";
+			st.durabilityMinDurability = 200;
+			ok.accept("both", DurabilityGuard.blocked(p)); // 100 left: % fine, durability too low
+			st.durabilityMinDurability = 30;
+			st.durabilityLimitType = "PERCENTAGE";
+			p.setDamageValue(max - 11);
+			st.durabilityIgnoredItems = java.util.List.of("minecraft:diamond_*");
+			ok.accept("ignored_wildcard", !DurabilityGuard.blocked(p));
+			st.durabilityWhitelist = true;
+			ok.accept("whitelist_listed", DurabilityGuard.blocked(p));
+			st.durabilityIgnoredItems = java.util.List.of("netherite_*");
+			ok.accept("whitelist_unlisted", !DurabilityGuard.blocked(p));
+			st.durabilityWhitelist = false;
+			st.durabilityIgnoredItems = new java.util.ArrayList<>();
+			st.durabilityIgnoreUnenchanted = true;
+			ok.accept("ignore_unenchanted", !DurabilityGuard.blocked(p));
+			st.durabilityIgnoreUnenchanted = false;
+			st.durabilityActive = false;
+			ok.accept("inactive", !DurabilityGuard.blocked(p));
+			st.durabilityActive = true;
+			ok.accept("not_damageable", !DurabilityGuard.blocked(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE)));
+			PackMixerClient.LOGGER.info("autotest: DURA rules {}", r);
+		});
+		command("gamemode survival");
+		command("setblock ~ ~ ~2 stone");
+		command("item replace entity @p weapon.mainhand with diamond_pickaxe[damage=1550]");
+		step("dura aim", 20, () -> {
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+			mc.player.setYRot(0);
+			mc.player.setXRot(24);
+		});
+		step("dura mine worn", 60, () -> mc.options.keyAttack.setDown(true));
+		step("dura check worn", 2, () -> {
+			mc.options.keyAttack.setDown(false);
+			var pos = mc.player.blockPosition().offset(0, 0, 2);
+			PackMixerClient.LOGGER.info("autotest: DURA worn pickaxe: block still there={} damage={}",
+					!mc.level.getBlockState(pos).isAir(), mc.player.getMainHandItem().getDamageValue());
+		});
+		shot("durability_blocked");
+		command("item replace entity @p weapon.mainhand with diamond_pickaxe");
+		step("dura mine new", 60, () -> mc.options.keyAttack.setDown(true));
+		step("dura check new", 2, () -> {
+			mc.options.keyAttack.setDown(false);
+			var pos = mc.player.blockPosition().offset(0, 0, 2);
+			PackMixerClient.LOGGER.info("autotest: DURA new pickaxe: block broken={}", mc.level.getBlockState(pos).isAir());
+		});
+		command("gamemode creative");
+		command("item replace entity @p weapon.mainhand with air");
 		// sky by day, looking at a corner of the sky box (seams between the faces)
 		command("time set 6000");
 		command("weather clear");

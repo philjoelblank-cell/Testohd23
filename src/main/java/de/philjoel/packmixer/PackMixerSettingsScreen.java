@@ -58,6 +58,8 @@ public class PackMixerSettingsScreen extends Screen {
 				() -> tr(s.itemPositionEnabled ? "packmixer.changed" : "packmixer.default")));
 		settingsEntries.add(new Entry("glint", "items", Ui.icon(Items.ENCHANTED_BOOK), null, null,
 				() -> Math.round(o.glintStrength().get() * 100) + "%"));
+		settingsEntries.add(new Entry("durability", "items", Ui.icon(Items.DIAMOND_PICKAXE), () -> s.durabilityActive,
+				v -> s.durabilityActive = v, () -> s.durabilityActive ? limitText(s) : ""));
 		settingsEntries.add(new Entry("zoom", "screen", Ui.icon(Items.SPYGLASS), () -> s.zoomEnabled, v -> s.zoomEnabled = v, null));
 		settingsEntries.add(new Entry("fullbright", "screen", Ui.icon(Items.TORCH), () -> s.fullbright, v -> s.fullbright = v, null));
 		settingsEntries.add(new Entry("weather", "screen", Ui.icon(Items.CLOCK), () -> s.clearWeather, v -> s.clearWeather = v, null));
@@ -111,6 +113,7 @@ public class PackMixerSettingsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		durabilityItemsY = -1;
 		for (Entry e : settingsEntries) if (e.icon() != null) e.icon().preload();
 		for (Entry e : soundEntries) if (e.icon() != null) e.icon().preload();
 		GuiFit.fit(this);
@@ -236,6 +239,37 @@ public class PackMixerSettingsScreen extends Screen {
 					saved();
 					b.setMessage(Component.translatable(s.badgeLeft ? "packmixer.badge.left" : "packmixer.badge.right"));
 				}).bounds(x, y, cw, 14).build()); y += 18;
+			}
+			case "durability" -> {
+				addRenderableWidget(Ui.glass(limitLabel(s), b -> {
+					String[] types = {"PERCENTAGE", "DURABILITY", "BOTH"};
+					int i = java.util.Arrays.asList(types).indexOf(s.durabilityLimitType);
+					s.durabilityLimitType = types[(i + 1) % types.length];
+					saved();
+					rebuildWidgets();
+				}).bounds(x, y, cw, 14).build()); y += 18;
+				addRenderableWidget(slider(x, y, cw, tr("packmixer.durability.min_percent"), s.durabilityMinPercent, 0, 100,
+						v -> s.durabilityMinPercent = (int) Math.round(v), v -> Math.round(v) + "%")); y += 18;
+				addRenderableWidget(slider(x, y, cw, tr("packmixer.durability.min_durability"), s.durabilityMinDurability, 0, 500,
+						v -> s.durabilityMinDurability = (int) Math.round(v), v -> String.valueOf(Math.round(v)))); y += 18;
+				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.durability.ignore_unenchanted", () -> s.durabilityIgnoreUnenchanted,
+						v -> s.durabilityIgnoreUnenchanted = v)); y += 18;
+				addRenderableWidget(simpleToggle(x, y, cw, "packmixer.durability.whitelist", () -> s.durabilityWhitelist,
+						v -> s.durabilityWhitelist = v)); y += 18;
+				net.minecraft.client.gui.components.EditBox box = new net.minecraft.client.gui.components.EditBox(this.font, x, y + 10, cw, 14,
+						Component.translatable("packmixer.durability.items"));
+				box.setMaxLength(2000);
+				box.setValue(String.join(", ", s.durabilityIgnoredItems));
+				box.setHint(Component.literal("minecraft:elytra, minecraft:stone_*").withStyle(ChatFormatting.DARK_GRAY));
+				box.setResponder(text -> {
+					List<String> list = new ArrayList<>();
+					for (String p : text.split("[,;\\s]+")) if (!p.isBlank()) list.add(p.trim());
+					s.durabilityIgnoredItems = list;
+					saved();
+				});
+				addRenderableWidget(box);
+				durabilityItemsY = y;
+				y += 30;
 			}
 			case "low_shield" -> {
 				addRenderableWidget(slider(x, y, cw, tr("packmixer.shield_height"), s.shieldOffset, 0, 0.5, v -> s.shieldOffset = v,
@@ -367,6 +401,10 @@ public class PackMixerSettingsScreen extends Screen {
 			}
 			case "low_fire" -> { s.lowFire = false; s.fireOffset = 0.3; }
 			case "low_shield" -> { s.lowShield = false; s.shieldOffset = 0.25; }
+			case "durability" -> {
+				s.durabilityActive = true; s.durabilityLimitType = "PERCENTAGE"; s.durabilityMinPercent = 10; s.durabilityMinDurability = 30;
+				s.durabilityIgnoreUnenchanted = false; s.durabilityWhitelist = false; s.durabilityIgnoredItems = new ArrayList<>();
+			}
 			case "ancient_debris" -> { s.ancientDebris = false; PackBuilder.rebuildAndApply(); }
 			case "crystal_fx" -> { s.crystalFx = false; PackBuilder.rebuildAndApply(); }
 			case "tt" -> { s.totemTracker = true; TotemTracker.reset(); }
@@ -384,6 +422,21 @@ public class PackMixerSettingsScreen extends Screen {
 			}
 		}
 		o.save();
+	}
+
+	private int durabilityItemsY = -1;
+
+	private static String limitText(PackMixerConfig.Settings s) {
+		return switch (s.durabilityLimitType) {
+			case "DURABILITY" -> String.valueOf(s.durabilityMinDurability);
+			case "BOTH" -> s.durabilityMinPercent + "% / " + s.durabilityMinDurability;
+			default -> s.durabilityMinPercent + "%";
+		};
+	}
+
+	private static Component limitLabel(PackMixerConfig.Settings s) {
+		return Component.translatable("packmixer.durability.limit_type").append(": ")
+				.append(Component.translatable("packmixer.durability.type." + s.durabilityLimitType.toLowerCase(java.util.Locale.ROOT)).withStyle(ChatFormatting.AQUA));
 	}
 
 	private void saved() {
@@ -538,6 +591,7 @@ public class PackMixerSettingsScreen extends Screen {
 		Ui.section(g, title(e).getString(), null, x, boxY + 4);
 		g.fill(x, boxY + 14, x1 - 14, boxY + 15, Ui.LINE);
 
+		if (durabilityItemsY >= 0) Ui.small(g, tr("packmixer.durability.items"), x, durabilityItemsY + 2, Ui.FAINT);
 		super.extractRenderState(g, mouseX, mouseY, delta);
 
 		// list decorations: icons, values, switches
