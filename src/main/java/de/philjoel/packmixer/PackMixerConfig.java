@@ -161,6 +161,14 @@ public final class PackMixerConfig {
 		// Low shield
 		public boolean lowShield = false;
 		public double shieldOffset = 0.25;             // 0 .. 0.5
+		// durability protection (like the "Durability" mod)
+		public boolean durabilityActive = true;
+		public String durabilityLimitType = "PERCENTAGE"; // PERCENTAGE, DURABILITY or BOTH
+		public int durabilityMinPercent = 10;
+		public int durabilityMinDurability = 30;
+		public boolean durabilityIgnoreUnenchanted = false;
+		public boolean durabilityWhitelist = false;
+		public java.util.List<String> durabilityIgnoredItems = new java.util.ArrayList<>();
 
 		// Cosmetics
 		public String hat = "";                        // "" = none
