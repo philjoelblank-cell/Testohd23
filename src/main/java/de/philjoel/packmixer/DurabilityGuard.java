@@ -101,7 +101,7 @@ public final class DurabilityGuard {
 		if (mc.player == null) return;
 		int max = stack.getMaxDamage();
 		int left = max - stack.getDamageValue();
-		mc.player.displayClientMessage(Component.translatable("packmixer.durability.blocked", stack.getHoverName(), left, max,
-				Math.round(left * 100.0 / max)).withStyle(ChatFormatting.RED), true);
+		mc.player.sendOverlayMessage(Component.translatable("packmixer.durability.blocked", stack.getHoverName(), left, max,
+				Math.round(left * 100.0 / max)).withStyle(ChatFormatting.RED));
 	}
 }
